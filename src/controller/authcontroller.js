@@ -30,7 +30,8 @@ export const signInController = async (body) => {
             id: user._id,
             fullName: user.fullName,
             email: user.email,
-            role: user.role
+            role: user.role,
+            isAdmin: user.isAdmin || false
         }
     };
 };
@@ -64,7 +65,8 @@ export const signUpController = async (body) => {
             id: user._id,
             fullName: user.fullName,
             email: user.email,
-            role: user.role
+            role: user.role,
+            isAdmin: user.isAdmin || false
         }
     };
 };

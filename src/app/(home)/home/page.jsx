@@ -1,0 +1,183 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+    MdDashboard,
+    MdPersonAdd,
+    MdPeople,
+    MdHistory,
+    MdStorage,
+    MdNotifications,
+} from "react-icons/md";
+
+export default function ReceptionistHome() {
+    const router = useRouter();
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        // Get user from localStorage
+        const userData = localStorage.getItem("user");
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+
+        // Update time every minute
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.clear();
+        router.push("/auth/sign-in");
+    };
+
+    const actionCards = [
+        {
+            title: "Dashboard",
+            description: "Stay updated on donor assignments, medical reports, and pending actions",
+            icon: MdDashboard,
+            color: "from-purple-500 to-purple-600",
+            route: "/dashboard",
+        },
+        {
+            title: "Add New Donor",
+            description: "Initiate donor requirement (oocyte/semen)",
+            icon: MdPersonAdd,
+            color: "from-blue-500 to-blue-600",
+            route: "/donors/add",
+        },
+        {
+            title: "Active Donor Cases",
+            description: "Handle calls or updates for patient follow-up",
+            icon: MdPeople,
+            color: "from-green-500 to-green-600",
+            route: "/donors/active",
+        },
+        {
+            title: "Donors History",
+            description: "Track who has been assigned for screening or treatment",
+            icon: MdHistory,
+            color: "from-orange-500 to-orange-600",
+            route: "/donors/history",
+        },
+        {
+            title: "Semen Management",
+            description: "Manage patient calls and follow-up updates with ease",
+            icon: MdStorage,
+            color: "from-pink-500 to-pink-600",
+            route: "/storage",
+        },
+        {
+            title: "Notifications",
+            description: "Initiate donor requirement (oocyte/semen)",
+            icon: MdNotifications,
+            color: "from-indigo-500 to-indigo-600",
+            route: "/notifications",
+        },
+    ];
+
+    const formatTime = (date) => {
+        return date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
+    const formatDate = () => {
+        return currentTime.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+        });
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+            {/* Main Content */}
+            <div className="mx-auto max-w-6xl px-4 py-12">
+                {/* User Profile Section */}
+                <div className="mb-8 text-center">
+                    <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-xl">
+                        <Image
+                            src="/images/user/user-03.png"
+                            alt="Profile"
+                            width={128}
+                            height={128}
+                            className="h-full w-full object-cover"
+                        />
+                    </div>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+                        {user?.fullName || "User"}
+                    </h1>
+                    <p className="mt-1 text-gray-600 dark:text-gray-400">
+                        {user?.email || ""} | {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Donor Care Executive"}
+                    </p>
+
+                    {/* Time Display */}
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 shadow-md dark:bg-gray-800">
+                        <svg className="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                            {formatTime(currentTime)} | {formatDate()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Action Cards */}
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {actionCards.map((card, index) => {
+                        const Icon = card.icon;
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => router.push(card.route)}
+                                className="group rounded-2xl bg-white p-6 shadow-lg transition-all hover:scale-105 hover:shadow-2xl dark:bg-gray-800"
+                            >
+                                <div className={`mb-4 inline-flex rounded-xl bg-gradient-to-br ${card.color} p-4`}>
+                                    <Icon className="h-8 w-8 text-white" />
+                                </div>
+                                <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white">
+                                    {card.title}
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {card.description}
+                                </p>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Logout Button */}
+                <div className="mt-12 text-center">
+                    <button
+                        onClick={handleLogout}
+                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-3 font-semibold text-white shadow-lg transition hover:from-pink-600 hover:to-pink-700"
+                    >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

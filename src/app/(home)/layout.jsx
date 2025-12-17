@@ -1,18 +1,15 @@
-import { Sidebar } from "@/components/Layouts/sidebar";
-import { Header } from "@/components/Layouts/header";
+"use client";
+
+import TopNavigation from "@/components/Layouts/TopNavigation";
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <TopNavigation />
 
-      <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
-        <Header />
-
-        <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
-          {children}
-        </main>
-      </div>
+      <main className="mx-auto w-full max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+        {children}
+      </main>
     </div>
   );
 }

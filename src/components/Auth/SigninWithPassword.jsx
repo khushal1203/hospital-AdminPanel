@@ -54,11 +54,15 @@ const SigninWithPassword = () => {
 
       // ✅ JWT TOKEN
       const token = result.data.token;
+      const user = result.data.user;
 
       // ✅ STORE TOKEN IN COOKIE
-      document.cookie = `token=${token}; path=/; ${
-        data.remember ? "max-age=2592000" : ""
-      }`;
+      document.cookie = `token=${token}; path=/; ${data.remember ? "max-age=2592000" : ""
+        }`;
+
+      // ✅ STORE USER DATA IN LOCALSTORAGE (including role)
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       // ✅ REDIRECT TO ROOT ("/") AS REQUESTED
       router.push("/");
