@@ -55,14 +55,12 @@ const SigninWithPassword = () => {
       // ✅ JWT TOKEN
       const token = result.data.token;
 
-      // ✅ Remember logic
-      if (data.remember) {
-        localStorage.setItem("token", token);
-      } else {
-        sessionStorage.setItem("token", token);
-      }
+      // ✅ STORE TOKEN IN COOKIE
+      document.cookie = `token=${token}; path=/; ${
+        data.remember ? "max-age=2592000" : ""
+      }`;
 
-      // ✅ Redirect after login
+      // ✅ REDIRECT TO ROOT ("/") AS REQUESTED
       router.push("/");
     } catch (err) {
       setError(err.message);

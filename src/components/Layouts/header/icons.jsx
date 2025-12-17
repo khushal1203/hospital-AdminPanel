@@ -1,6 +1,4 @@
-import type { IconProps } from "@/types/icon-props";
-
-export function MenuIcon(props: IconProps) {
+export function MenuIcon(props) {
   return (
     <svg
       width="25"

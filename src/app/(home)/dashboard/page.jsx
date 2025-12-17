@@ -9,10 +9,10 @@ import { TopChannelsSkeleton } from "@/components/Tables/top-channels/skeleton";
 
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 
-import { ChatsCard } from "./_components/chats-card";
-import { OverviewCardsGroup } from "./_components/overview-cards";
-import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
-import { RegionLabels } from "./_components/region-labels";
+import { ChatsCard } from "../_components/chats-card";
+import { OverviewCardsGroup } from "../_components/overview-cards";
+import { OverviewCardsSkeleton } from "../_components/overview-cards/skeleton";
+import { RegionLabels } from "../_components/region-labels";
 
 export default async function Home({ searchParams }) {
   // ✅ UNWRAP PROMISE
@@ -40,7 +40,7 @@ export default async function Home({ searchParams }) {
           timeFrame={extractTimeFrame("weeks_profit")?.split(":")[1]}
         />
 
-        <UsedDevices
+        {/* <UsedDevices
           className="col-span-12 xl:col-span-5"
           key={extractTimeFrame("used_devices")}
           timeFrame={extractTimeFrame("used_devices")?.split(":")[1]}
@@ -52,11 +52,11 @@ export default async function Home({ searchParams }) {
           <Suspense fallback={<TopChannelsSkeleton />}>
             <TopChannels />
           </Suspense>
-        </div>
+        </div> */}
 
-        <Suspense fallback={null}>
+        {/* <Suspense fallback={null}>
           <ChatsCard />
-        </Suspense>
+        </Suspense> */}
       </div>
     </>
   );

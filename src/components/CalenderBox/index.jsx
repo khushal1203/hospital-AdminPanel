@@ -1,3 +1,5 @@
+"use client";
+
 const CalendarBox = () => {
   return (
     <>
@@ -81,92 +83,60 @@ const CalendarBox = () => {
                 <span className="font-medium text-dark dark:text-white">9</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  10
-                </span>
+                <span className="font-medium text-dark dark:text-white">10</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  11
-                </span>
+                <span className="font-medium text-dark dark:text-white">11</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  12
-                </span>
+                <span className="font-medium text-dark dark:text-white">12</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  13
-                </span>
+                <span className="font-medium text-dark dark:text-white">13</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  14
-                </span>
+                <span className="font-medium text-dark dark:text-white">14</span>
               </td>
             </tr>
             {/* <!-- Line 2 --> */}
             {/* <!-- Line 3 --> */}
             <tr className="grid grid-cols-7">
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  15
-                </span>
+                <span className="font-medium text-dark dark:text-white">15</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  16
-                </span>
+                <span className="font-medium text-dark dark:text-white">16</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  17
-                </span>
+                <span className="font-medium text-dark dark:text-white">17</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  18
-                </span>
+                <span className="font-medium text-dark dark:text-white">18</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  19
-                </span>
+                <span className="font-medium text-dark dark:text-white">19</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  20
-                </span>
+                <span className="font-medium text-dark dark:text-white">20</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  21
-                </span>
+                <span className="font-medium text-dark dark:text-white">21</span>
               </td>
             </tr>
             {/* <!-- Line 3 --> */}
             {/* <!-- Line 4 --> */}
             <tr className="grid grid-cols-7">
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  22
-                </span>
+                <span className="font-medium text-dark dark:text-white">22</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  23
-                </span>
+                <span className="font-medium text-dark dark:text-white">23</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  24
-                </span>
+                <span className="font-medium text-dark dark:text-white">24</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  25
-                </span>
+                <span className="font-medium text-dark dark:text-white">25</span>
                 <div className="group h-16 w-full flex-grow cursor-pointer py-1 md:h-30">
                   <span className="group-hover:text-primary md:hidden">
                     More
@@ -180,38 +150,26 @@ const CalendarBox = () => {
                 </div>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  26
-                </span>
+                <span className="font-medium text-dark dark:text-white">26</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  27
-                </span>
+                <span className="font-medium text-dark dark:text-white">27</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  28
-                </span>
+                <span className="font-medium text-dark dark:text-white">28</span>
               </td>
             </tr>
             {/* <!-- Line 4 --> */}
             {/* <!-- Line 5 --> */}
             <tr className="grid grid-cols-7">
               <td className="ease relative h-20 cursor-pointer rounded-bl-[10px] border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  29
-                </span>
+                <span className="font-medium text-dark dark:text-white">29</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  30
-                </span>
+                <span className="font-medium text-dark dark:text-white">30</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
-                <span className="font-medium text-dark dark:text-white">
-                  31
-                </span>
+                <span className="font-medium text-dark dark:text-white">31</span>
               </td>
               <td className="ease relative h-20 cursor-pointer border border-stroke p-2 transition duration-500 hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-2 md:h-25 md:p-6 xl:h-31">
                 <span className="font-medium text-dark dark:text-white">1</span>
