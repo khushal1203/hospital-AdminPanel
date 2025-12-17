@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CallIcon,
   EmailIcon,
@@ -7,8 +9,52 @@ import {
 import InputGroup from "@/components/FormElements/InputGroup";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
+import { useEffect, useState } from "react";
 
-export function PersonalInfoForm() {
+export function PersonalInfoForm({ userId }) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!userId) {
+          console.log("UserId not available yet");
+          return;
+        }
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.log("Token missing");
+          return;
+        }
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_END_POINT}/users/getUser/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+        console.log("User API Response:", data);
+
+        if (data.success) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error("Fetch user error:", error);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  if (!user) return null;
+
   return (
     <ShowcaseSection title="Personal Information" className="!p-7">
       <form>
@@ -19,7 +65,7 @@ export function PersonalInfoForm() {
             name="fullName"
             label="Full Name"
             placeholder="David Jhon"
-            defaultValue="David Jhon"
+            defaultValue={user.fullName}
             icon={<UserIcon />}
             iconPosition="left"
             height="sm"
@@ -31,7 +77,7 @@ export function PersonalInfoForm() {
             name="phoneNumber"
             label="Phone Number"
             placeholder="+990 3343 7865"
-            defaultValue={"+990 3343 7865"}
+            defaultValue={user.phoneNumber || ""}
             icon={<CallIcon />}
             iconPosition="left"
             height="sm"
@@ -44,7 +90,7 @@ export function PersonalInfoForm() {
           name="email"
           label="Email Address"
           placeholder="devidjond45@gmail.com"
-          defaultValue="devidjond45@gmail.com"
+          defaultValue={user.email}
           icon={<EmailIcon />}
           iconPosition="left"
           height="sm"
@@ -56,7 +102,7 @@ export function PersonalInfoForm() {
           name="username"
           label="Username"
           placeholder="devidjhon24"
-          defaultValue="devidjhon24"
+          defaultValue={user.username || ""}
           icon={<UserIcon />}
           iconPosition="left"
           height="sm"
@@ -67,7 +113,7 @@ export function PersonalInfoForm() {
           label="BIO"
           placeholder="Write your bio here"
           icon={<PencilSquareIcon />}
-          defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam lacinia turpis tortor, consequat efficitur mi congue a. Curabitur cursus, ipsum ut lobortis sodales, enim arcu pellentesque lectus ac suscipit diam sem a felis. Cras sapien ex, blandit eu dui et suscipit gravida nunc. Sed sed est quis dui."
+          defaultValue={user.bio || ""}
         />
 
         <div className="flex justify-end gap-3">
