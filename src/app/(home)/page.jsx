@@ -14,8 +14,12 @@ import { OverviewCardsGroup } from "./_components/overview-cards";
 import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
 import { RegionLabels } from "./_components/region-labels";
 
-export default function Home({ searchParams = {} }) {
-  const extractTimeFrame = createTimeFrameExtractor();
+export default async function Home({ searchParams }) {
+  // ✅ UNWRAP PROMISE
+  const params = await searchParams;
+
+  // ✅ PASS ONLY STRING (NOT OBJECT)
+  const extractTimeFrame = createTimeFrameExtractor(params?.timeframe);
 
   return (
     <>
