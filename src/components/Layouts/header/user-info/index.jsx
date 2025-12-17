@@ -9,28 +9,55 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
+  const [USER, setUSER] = useState(null);
   const router = useRouter();
 
-  const USER = {
-    name: "John Smith",
-    email: "johnson@nextadmin.com",
-    img: "/images/user/user-03.png",
-  };
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await fetch("/api/auth/getUserLocal", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          setUSER({
+            id: data.user._id, // ✅ ID FIX
+            name: data.user.fullName,
+            email: data.user.email,
+            img: "/images/user/user-03.png",
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleLogout = () => {
     setIsOpen(false);
 
-    // 🔹 yahan future me token/localStorage clear kar sakte ho
-    // localStorage.removeItem("token");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
 
     router.push("/auth/sign-in");
   };
+
+  if (!USER) return null;
 
   return (
     <Dropdown isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -85,7 +112,7 @@ export function UserInfo() {
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6">
           <Link
-            href="/profile"
+            href={`/profile?id=${USER.id}`}
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 dark:hover:bg-dark-3"
           >
@@ -94,7 +121,7 @@ export function UserInfo() {
           </Link>
 
           <Link
-            href="/pages/settings"
+            href={`/pages/settings?id=${USER.id}`} // ✅ ID PASS HERE
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 dark:hover:bg-dark-3"
           >
