@@ -7,16 +7,17 @@ import { useRouter } from "next/navigation";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
 
-export default function SigninWithPassword() {
+const SigninWithPassword = () => {
   const router = useRouter();
 
   const [data, setData] = useState({
-    email: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "",
-    password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "",
+    email: "",
+    password: "",
     remember: false,
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setData({
@@ -25,22 +26,59 @@ export default function SigninWithPassword() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
+    setError("");
 
-    // 🔹 Fake API delay (demo purpose)
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_END_POINT}/auth/sign-in`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+          }),
+        }
+      );
 
-      // ✅ Redirect to Home
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Login failed");
+      }
+
+      // ✅ JWT TOKEN
+      const token = result.data.token;
+
+      // ✅ Remember logic
+      if (data.remember) {
+        localStorage.setItem("token", token);
+      } else {
+        sessionStorage.setItem("token", token);
+      }
+
+      // ✅ Redirect after login
       router.push("/");
-    }, 1000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && (
+        <p className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-600">
+          {error}
+        </p>
+      )}
+
       <InputGroup
         type="email"
         label="Email"
@@ -90,14 +128,16 @@ export default function SigninWithPassword() {
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-70"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-70"
         >
           Sign In
           {loading && (
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent" />
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           )}
         </button>
       </div>
     </form>
   );
-}
+};
+
+export default SigninWithPassword;
