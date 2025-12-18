@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MdPerson, MdPhone, MdEmail, MdLocationOn, MdLocalHospital, MdDescription, MdCheck, MdCheckCircle, MdUpload, MdDelete, MdAdd } from "react-icons/md";
+import ImageUpload from "@/components/FormElements/ImageUpload";
+import DatePicker from "@/components/FormElements/DatePicker";
+import SelectField from "@/components/FormElements/SelectField";
+import "react-calendar/dist/Calendar.css";
 
 export default function DonorRegistrationForm({ params }) {
     const router = useRouter();
@@ -349,24 +353,18 @@ export default function DonorRegistrationForm({ params }) {
                             {/* 1. Donor Image Upload */}
                             <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
                                 <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Donor Image</h2>
-                                <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="donorImage" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <MdUpload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-                                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                                <span className="font-semibold">Click to upload</span> donor image
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or JPEG (MAX. 5MB)</p>
-                                        </div>
-                                        <input 
-                                            id="donorImage"
-                                            type="file" 
-                                            className="hidden" 
-                                            accept="image/*"
-                                            onChange={(e) => handleFileUpload('donorImage', e.target.files[0])}
-                                        />
-                                    </label>
-                                </div>
+                                <ImageUpload
+                                    label="Upload Donor Photo"
+                                    onImageChange={(file) => {
+                                        if (file) {
+                                            setFormData(prev => ({ ...prev, donorImage: file }));
+                                            handleFileUpload('donorImage', file);
+                                        } else {
+                                            setFormData(prev => ({ ...prev, donorImage: null }));
+                                        }
+                                    }}
+                                    className=""
+                                />
                             </div>
 
                             {/* 2. Age Check */}
@@ -374,16 +372,24 @@ export default function DonorRegistrationForm({ params }) {
                                 <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Age Check</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Date of Birth *
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="dateOfBirth"
-                                            value={formData.dateOfBirth}
-                                            onChange={handleDateOfBirthChange}
-                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                            required
+                                        <DatePicker
+                                            label="Date of Birth *"
+                                            selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null}
+                                            onChange={(date) => {
+                                                const birthDate = date ? date.toISOString().split('T')[0] : '';
+                                                const age = date ? calculateAge(birthDate) : '';
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    dateOfBirth: birthDate,
+                                                    age: age.toString()
+                                                }));
+                                            }}
+                                            dateFormat="dd/MM/yyyy"
+                                            showYearDropdown
+                                            showMonthDropdown
+                                            dropdownMode="select"
+                                            maxDate={new Date()}
+                                            placeholderText="Select date of birth"
                                         />
                                     </div>
                                     <div>
@@ -419,25 +425,35 @@ export default function DonorRegistrationForm({ params }) {
                                         <input type="text" name="husbandName" value={formData.husbandName} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Gender *</label>
-                                        <select name="gender" value={formData.gender} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required>
-                                            <option value="">Select Gender</option>
-                                            <option value="female">Female</option>
-                                            <option value="male">Male</option>
-                                        </select>
+                                        <SelectField
+                                            label="Gender *"
+                                            options={[
+                                                { value: 'female', label: 'Female' },
+                                                { value: 'male', label: 'Male' }
+                                            ]}
+                                            value={formData.gender ? { value: formData.gender, label: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1) } : null}
+                                            onChange={(option) => setFormData(prev => ({ ...prev, gender: option?.value || '' }))}
+                                            placeholder="Select Gender"
+                                            isSearchable={false}
+                                        />
                                     </div>
                                     <div>
                                         <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Aadhaar Number *</label>
                                         <input type="text" name="aadharNumber" value={formData.aadharNumber} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required />
                                     </div>
                                     <div>
-                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Marital Status</label>
-                                        <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                            <option value="">Select Status</option>
-                                            <option value="married">Married</option>
-                                            <option value="single">Single</option>
-                                            <option value="divorced">Divorced</option>
-                                        </select>
+                                        <SelectField
+                                            label="Marital Status"
+                                            options={[
+                                                { value: 'married', label: 'Married' },
+                                                { value: 'single', label: 'Single' },
+                                                { value: 'divorced', label: 'Divorced' }
+                                            ]}
+                                            value={formData.maritalStatus ? { value: formData.maritalStatus, label: formData.maritalStatus.charAt(0).toUpperCase() + formData.maritalStatus.slice(1) } : null}
+                                            onChange={(option) => setFormData(prev => ({ ...prev, maritalStatus: option?.value || '' }))}
+                                            placeholder="Select Status"
+                                            isSearchable={false}
+                                        />
                                     </div>
                                     <div>
                                         <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Cast</label>
@@ -497,18 +513,23 @@ export default function DonorRegistrationForm({ params }) {
                                         <input type="text" name="religion" value={formData.religion} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Blood Group</label>
-                                        <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                            <option value="">Select Blood Group</option>
-                                            <option value="A+">A+</option>
-                                            <option value="A-">A-</option>
-                                            <option value="B+">B+</option>
-                                            <option value="B-">B-</option>
-                                            <option value="AB+">AB+</option>
-                                            <option value="AB-">AB-</option>
-                                            <option value="O+">O+</option>
-                                            <option value="O-">O-</option>
-                                        </select>
+                                        <SelectField
+                                            label="Blood Group"
+                                            options={[
+                                                { value: 'A+', label: 'A+' },
+                                                { value: 'A-', label: 'A-' },
+                                                { value: 'B+', label: 'B+' },
+                                                { value: 'B-', label: 'B-' },
+                                                { value: 'AB+', label: 'AB+' },
+                                                { value: 'AB-', label: 'AB-' },
+                                                { value: 'O+', label: 'O+' },
+                                                { value: 'O-', label: 'O-' }
+                                            ]}
+                                            value={formData.bloodGroup ? { value: formData.bloodGroup, label: formData.bloodGroup } : null}
+                                            onChange={(option) => setFormData(prev => ({ ...prev, bloodGroup: option?.value || '' }))}
+                                            placeholder="Select Blood Group"
+                                            isSearchable={false}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -557,13 +578,23 @@ export default function DonorRegistrationForm({ params }) {
                                         <tbody>
                                             <tr>
                                                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
-                                                    <input type="date" name="lmpDate" value={formData.lmpDate} onChange={handleChange} className="w-full rounded border-0 bg-transparent focus:outline-none" />
+                                                    <DatePicker
+                                                        selected={formData.lmpDate ? new Date(formData.lmpDate) : null}
+                                                        onChange={(date) => setFormData(prev => ({ ...prev, lmpDate: date ? date.toISOString().split('T')[0] : '' }))}
+                                                        dateFormat="dd/MM/yyyy"
+                                                        placeholderText="Select date"
+                                                        className="w-full"
+                                                    />
                                                 </td>
                                                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
-                                                    <select name="lmpDay" value={formData.lmpDay} onChange={handleChange} className="w-full rounded border-0 bg-transparent focus:outline-none">
-                                                        <option value="">Select Day</option>
-                                                        {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-                                                    </select>
+                                                    <SelectField
+                                                        options={[...Array(31)].map((_, i) => ({ value: i+1, label: i+1 }))}
+                                                        value={formData.lmpDay ? { value: formData.lmpDay, label: formData.lmpDay } : null}
+                                                        onChange={(option) => setFormData(prev => ({ ...prev, lmpDay: option?.value || '' }))}
+                                                        placeholder="Day"
+                                                        isSearchable={false}
+                                                        className="w-full"
+                                                    />
                                                 </td>
                                                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
                                                     <input type="text" name="etValue" value={formData.etValue} onChange={handleChange} placeholder="-" className="w-full rounded border-0 bg-transparent focus:outline-none" />
@@ -585,8 +616,13 @@ export default function DonorRegistrationForm({ params }) {
                                     </label>
                                     {formData.stimulationProcess && (
                                         <div className="mt-4">
-                                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Process Start Date</label>
-                                            <input type="date" name="processStartDate" value={formData.processStartDate} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                            <DatePicker
+                                                label="Process Start Date"
+                                                selected={formData.processStartDate ? new Date(formData.processStartDate) : null}
+                                                onChange={(date) => setFormData(prev => ({ ...prev, processStartDate: date ? date.toISOString().split('T')[0] : '' }))}
+                                                dateFormat="dd/MM/yyyy"
+                                                placeholderText="Select start date"
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -743,22 +779,22 @@ export default function DonorRegistrationForm({ params }) {
                                 <div className="mb-8">
                                     <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Donor Aadhaar Card</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Aadhaar – Front</label>
-                                            <label htmlFor="aadharFront" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
-                                                <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
-                                                <p className="mt-2 text-sm text-gray-600">Drag or click to upload</p>
-                                                <input id="aadharFront" type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload('donorAadharFront', e.target.files[0])} />
-                                            </label>
-                                        </div>
-                                        <div>
-                                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Aadhaar – Back</label>
-                                            <label htmlFor="aadharBack" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
-                                                <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
-                                                <p className="mt-2 text-sm text-gray-600">Drag or click to upload</p>
-                                                <input id="aadharBack" type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload('donorAadharBack', e.target.files[0])} />
-                                            </label>
-                                        </div>
+                                        <ImageUpload
+                                            label="Upload Aadhaar – Front"
+                                            onImageChange={(file) => {
+                                                if (file) {
+                                                    handleFileUpload('donorAadharFront', file);
+                                                }
+                                            }}
+                                        />
+                                        <ImageUpload
+                                            label="Upload Aadhaar – Back"
+                                            onImageChange={(file) => {
+                                                if (file) {
+                                                    handleFileUpload('donorAadharBack', file);
+                                                }
+                                            }}
+                                        />
                                     </div>
                                 </div>
 
@@ -773,11 +809,14 @@ export default function DonorRegistrationForm({ params }) {
                                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
                                             rows="3"
                                         ></textarea>
-                                        <label htmlFor="healthInsurance" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
-                                            <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
-                                            <p className="mt-2 text-sm text-gray-600">Drag or Scan document</p>
-                                            <input id="healthInsurance" type="file" className="hidden" onChange={(e) => handleFileUpload('healthInsurance', e.target.files[0])} />
-                                        </label>
+                                        <ImageUpload
+                                            label=""
+                                            onImageChange={(file) => {
+                                                if (file) {
+                                                    handleFileUpload('healthInsurance', file);
+                                                }
+                                            }}
+                                        />
                                     </div>
                                 </div>
 
@@ -792,11 +831,14 @@ export default function DonorRegistrationForm({ params }) {
                                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
                                             rows="3"
                                         ></textarea>
-                                        <label htmlFor="lifeInsurance" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
-                                            <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
-                                            <p className="mt-2 text-sm text-gray-600">Drag or Scan document</p>
-                                            <input id="lifeInsurance" type="file" className="hidden" onChange={(e) => handleFileUpload('lifeInsurance', e.target.files[0])} />
-                                        </label>
+                                        <ImageUpload
+                                            label=""
+                                            onImageChange={(file) => {
+                                                if (file) {
+                                                    handleFileUpload('lifeInsurance', file);
+                                                }
+                                            }}
+                                        />
                                     </div>
                                 </div>
 
@@ -828,11 +870,14 @@ export default function DonorRegistrationForm({ params }) {
                                                     className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
                                                     rows="3"
                                                 ></textarea>
-                                                <label htmlFor={`medicalReport${index}`} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
-                                                    <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
-                                                    <p className="mt-2 text-sm text-gray-600">Drag or Scan document</p>
-                                                    <input id={`medicalReport${index}`} type="file" className="hidden" onChange={(e) => handleDocumentChange('file', e.target.files[0], index)} />
-                                                </label>
+                                                <ImageUpload
+                                                    label=""
+                                                    onImageChange={(file) => {
+                                                        if (file) {
+                                                            handleDocumentChange('file', file, index);
+                                                        }
+                                                    }}
+                                                />
                                             </div>
                                         </div>
                                     ))}

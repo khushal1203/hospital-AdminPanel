@@ -34,24 +34,21 @@ export default function TopNavigation() {
     }, []);
 
     const getNavItems = () => {
-        if (role === ROLES.RECEPTIONIST) {
-            return [
-                { name: "Home", href: "/home", icon: MdHome },
-                { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-                { name: "Active Donors", href: "/donors/active", icon: MdPeople },
-                { name: "Donors History", href: "/donors/history", icon: MdHistory },
-                { name: "Semen Storage", href: "/storage", icon: MdStorage },
-                { name: "Add New Donor", href: "/donors/add", icon: MdPersonAdd },
-            ];
-        }
-        return [
-            { name: "Home", href: "/home1", icon: MdHome },
+        const baseItems = [
+            { name: "Home", href: "/home", icon: MdHome },
             { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-            { name: "Users", href: "/users", icon: MdPeople },
-            { name: "Tables", href: "/tables", icon: MdHistory },
             { name: "Profile", href: "/profile", icon: MdStorage },
             { name: "Add Donor", href: "/donors/add", icon: MdPersonAdd },
         ];
+
+        if (role === ROLES.DOCTOR || role === ROLES.ADMIN) {
+            return [
+                ...baseItems,
+                { name: "Users", href: "/users", icon: MdPeople },
+            ];
+        }
+
+        return baseItems;
     };
 
     const navItems = getNavItems();
@@ -59,7 +56,7 @@ export default function TopNavigation() {
     const isActive = (href) => pathname === href;
 
     return (
-        <nav className="sticky top-0 z-50 bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg">
+        <nav className="sticky top-0 z-[10000] bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg">
             <div className="mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
@@ -93,8 +90,19 @@ export default function TopNavigation() {
                         </div>
                     </div>
 
-                    {/* Right Side - Notifications & User */}
+                    {/* Right Side - Add User, Notifications & User */}
                     <div className="flex items-center gap-4">
+                        {/* Add User Button - Doctor Only */}
+                        {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
+                            <Link
+                                href="/users/add"
+                                className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/30"
+                            >
+                                <MdPersonAdd className="h-5 w-5" />
+                                <span className="hidden md:block">Add User</span>
+                            </Link>
+                        )}
+
                         {/* Notifications */}
                         <button className="relative rounded-full p-2 text-white/80 transition hover:bg-white/10 hover:text-white">
                             <MdNotifications className="h-6 w-6" />
