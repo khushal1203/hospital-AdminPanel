@@ -37,8 +37,9 @@ export default function TopNavigation() {
         const baseItems = [
             { name: "Home", href: "/home", icon: MdHome },
             { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-            { name: "Profile", href: "/profile", icon: MdStorage },
-            { name: "Add Donor", href: "/donors/add", icon: MdPersonAdd },
+            { name: "Active Donors", href: "/donors/active", icon: MdPeople },
+            { name: "Donors History", href: "/donors/history", icon: MdHistory },
+            { name: "Semen Storage", href: "/donors/semen", icon: MdStorage },
         ];
 
         if (role === ROLES.DOCTOR || role === ROLES.ADMIN) {
@@ -78,8 +79,8 @@ export default function TopNavigation() {
                                         key={item.name}
                                         href={item.href}
                                         className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${isActive(item.href)
-                                                ? "bg-white/20 text-white"
-                                                : "text-white/80 hover:bg-white/10 hover:text-white"
+                                            ? "bg-white/20 text-white"
+                                            : "text-white/80 hover:bg-white/10 hover:text-white"
                                             }`}
                                     >
                                         <Icon className="h-5 w-5" />
@@ -92,6 +93,15 @@ export default function TopNavigation() {
 
                     {/* Right Side - Add User, Notifications & User */}
                     <div className="flex items-center gap-4">
+                        {/* Add New Donor Button */}
+                        <Link
+                            href="/donors/add"
+                            className="flex items-center gap-2 rounded-lg bg-pink-500/20 px-4 py-2 text-sm font-medium text-white ring-1 ring-pink-500/50 transition hover:bg-pink-500/30"
+                        >
+                            <MdPersonAdd className="h-5 w-5" />
+                            <span className="hidden md:block">Add New Donor</span>
+                        </Link>
+
                         {/* Add User Button - Doctor Only */}
                         {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
                             <Link
