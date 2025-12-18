@@ -2,69 +2,268 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import InputGroup from "@/components/FormElements/InputGroup";
-import { EmailIcon } from "@/assets/icons";
+import { MdPerson, MdPhone, MdEmail, MdLocationOn, MdLocalHospital, MdDescription, MdCheck, MdCheckCircle, MdUpload, MdDelete, MdAdd } from "react-icons/md";
 
 export default function DonorRegistrationForm({ params }) {
     const router = useRouter();
-    const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [donorType, setDonorType] = useState(null);
 
-    // Unwrap params for Next.js 15
     useEffect(() => {
         params.then(p => setDonorType(p.type));
     }, [params]);
 
     const [formData, setFormData] = useState({
-        // Basic Information
-        fullName: "",
+        // Donor Image
+        donorImage: null,
+        
+        // Age Check
         dateOfBirth: "",
+        age: "",
+        
+        // Personal Information
+        fullName: "",
+        husbandName: "",
         gender: "",
-        bloodGroup: "",
-        contactNumber: "",
+        aadharNumber: "",
+        maritalStatus: "",
+        cast: "",
+        phoneNumber: "",
         email: "",
-
+        referenceName: "",
+        referenceNumber: "",
+        
         // Address
-        street: "",
+        address: "",
         city: "",
         state: "",
         pincode: "",
-
-        // Medical Information
+        
+        // Other Information
+        placeOfBirth: "",
+        religion: "",
+        bloodGroup: "",
+        
+        // Professional Details
+        donorEducation: "",
+        donorOccupation: "",
+        monthlyIncome: "",
+        spouseEducation: "",
+        spouseOccupation: "",
+        
+        // Follicular Details
+        lmpDate: "",
+        lmpDay: "",
+        etValue: "",
+        rightOvary: "",
+        leftOvary: "",
+        stimulationProcess: false,
+        processStartDate: "",
+        
+        // Physical Attributes
         height: "",
         weight: "",
-        medicalHistory: "",
-        currentMedications: "",
-        allergies: "",
-
-        // Documents
-        aadharNumber: "",
-
-        // Status
-        status: "pending",
+        skinColor: "",
+        hairColor: "",
+        eyeColor: "",
+        
+        // Obstetric History
+        numberOfDeliveries: "",
+        numberOfAbortions: "",
+        otherNotes: "",
+        
+        // Menstrual & Contraceptive History
+        menstrualHistory: false,
+        contraceptives: false,
+        
+        // Medical & Family History
+        medicalHistory: false,
+        familyMedicalHistory: false,
+        abnormalityInChild: false,
+        bloodTransfusion: false,
+        substanceAbuse: false,
+        geneticAbnormality: false,
+        
+        // Physical Examination
+        pulse: "",
+        bp: "",
+        temperature: "",
+        respiratorySystem: "",
+        cardiovascularSystem: "",
+        abdominalExamination: "",
+        otherSystems: "",
     });
 
-    const totalSteps = 5;
+    const [documents, setDocuments] = useState({
+        donorAadharFront: null,
+        donorAadharBack: null,
+        healthInsurance: { file: null, description: "" },
+        lifeInsurance: { file: null, description: "" },
+        medicalReports: [
+            { title: "", file: null, description: "" },
+            { title: "", file: null, description: "" }
+        ]
+    });
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const calculateAge = (birthDate) => {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const handleDateOfBirthChange = (e) => {
+        const birthDate = e.target.value;
+        const age = calculateAge(birthDate);
+        setFormData(prev => ({
+            ...prev,
+            dateOfBirth: birthDate,
+            age: age.toString()
+        }));
+    };
+
+    const handleFileUpload = async (field, file) => {
+        if (!file) return;
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (field === 'donorImage') {
+                    setFormData(prev => ({ ...prev, donorImage: result.filePath }));
+                } else if (field.includes('Aadhar')) {
+                    setDocuments(prev => ({ ...prev, [field]: result.filePath }));
+                } else if (field === 'healthInsurance' || field === 'lifeInsurance') {
+                    setDocuments(prev => ({
+                        ...prev,
+                        [field]: { ...prev[field], file: result.filePath }
+                    }));
+                }
+            } else {
+                setError(result.message);
+            }
+        } catch (error) {
+            setError('File upload failed');
+        }
+    };
+
+    const handleDocumentChange = async (field, value, index = null) => {
+        if (index !== null) {
+            if (field === 'file' && value) {
+                // Handle file upload for medical reports
+                try {
+                    const formData = new FormData();
+                    formData.append('file', value);
+                    
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        setDocuments(prev => ({
+                            ...prev,
+                            medicalReports: prev.medicalReports.map((report, i) => 
+                                i === index ? { ...report, file: result.filePath } : report
+                            )
+                        }));
+                    } else {
+                        setError(result.message);
+                    }
+                } catch (error) {
+                    setError('File upload failed');
+                }
+            } else {
+                setDocuments(prev => ({
+                    ...prev,
+                    medicalReports: prev.medicalReports.map((report, i) => 
+                        i === index ? { ...report, [field]: value } : report
+                    )
+                }));
+            }
+        } else {
+            setDocuments(prev => ({
+                ...prev,
+                [field]: { ...prev[field], description: value }
+            }));
+        }
+    };
+
+    const addMedicalReport = () => {
+        setDocuments(prev => ({
+            ...prev,
+            medicalReports: [...prev.medicalReports, { title: "", file: null, description: "" }]
+        }));
+    };
+
+    const removeMedicalReport = (index) => {
+        setDocuments(prev => ({
+            ...prev,
+            medicalReports: prev.medicalReports.filter((_, i) => i !== index)
+        }));
+    };
+
+    const getFormSections = () => {
+        return [
+            { title: "Donor Image", fields: ["donorImage"], color: "indigo" },
+            { title: "Age Check", fields: ["dateOfBirth", "age"], color: "blue" },
+            { title: "Personal Information", fields: ["fullName", "husbandName", "gender", "aadharNumber", "maritalStatus", "cast", "phoneNumber", "email", "referenceName", "referenceNumber", "address", "city", "state", "pincode"], color: "green" },
+            { title: "Other Information", fields: ["placeOfBirth", "religion", "bloodGroup"], color: "purple" },
+            { title: "Professional Details", fields: ["donorEducation", "donorOccupation", "monthlyIncome", "spouseEducation", "spouseOccupation"], color: "orange" },
+            { title: "Follicular Details", fields: ["lmpDate", "lmpDay", "etValue", "rightOvary", "leftOvary"], color: "pink" },
+            { title: "Physical Attributes", fields: ["height", "weight", "skinColor", "hairColor", "eyeColor"], color: "cyan" },
+            { title: "Obstetric History", fields: ["numberOfDeliveries", "numberOfAbortions", "otherNotes"], color: "teal" },
+            { title: "Medical History", fields: ["pulse", "bp", "temperature", "respiratorySystem", "cardiovascularSystem", "abdominalExamination", "otherSystems"], color: "red" },
+        ];
+    };
+
+    const getSectionProgress = (fields) => {
+        const filledFields = fields.filter(field => {
+            const value = formData[field];
+            return value && value.toString().trim() !== "";
         });
+        return {
+            filled: filledFields.length,
+            total: fields.length,
+            percentage: Math.round((filledFields.length / fields.length) * 100)
+        };
     };
 
-    const handleNext = () => {
-        if (currentStep < totalSteps) {
-            setCurrentStep(currentStep + 1);
-        }
-    };
-
-    const handlePrevious = () => {
-        if (currentStep > 1) {
-            setCurrentStep(currentStep - 1);
-        }
+    const getTotalProgress = () => {
+        const allFields = Object.keys(formData).filter(key => key !== "stimulationProcess");
+        const filledFields = allFields.filter(field => {
+            const value = formData[field];
+            return value && value.toString().trim() !== "";
+        });
+        return {
+            filled: filledFields.length,
+            total: allFields.length,
+            percentage: Math.round((filledFields.length / allFields.length) * 100)
+        };
     };
 
     const handleSubmit = async (e) => {
@@ -83,19 +282,23 @@ export default function DonorRegistrationForm({ params }) {
                 body: JSON.stringify({
                     ...formData,
                     donorType,
-                    address: {
-                        street: formData.street,
-                        city: formData.city,
-                        state: formData.state,
-                        pincode: formData.pincode,
-                    },
+                    documents: {
+                        donorAadharFront: documents.donorAadharFront,
+                        donorAadharBack: documents.donorAadharBack,
+                        healthInsurance: documents.healthInsurance,
+                        lifeInsurance: documents.lifeInsurance,
+                        medicalReports: documents.medicalReports
+                    }
                 }),
             });
 
             const data = await res.json();
 
             if (data.success) {
-                router.push("/dashboard");
+                setSuccess("Donor added successfully!");
+                setTimeout(() => {
+                    router.push("/dashboard");
+                }, 2000);
             } else {
                 setError(data.message);
             }
@@ -107,353 +310,661 @@ export default function DonorRegistrationForm({ params }) {
     };
 
     if (!donorType) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
     }
 
+    const totalProgress = getTotalProgress();
+
     return (
-        <div className="mx-auto max-w-4xl">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-dark dark:text-white">
-                    {donorType === "oocyte" ? "Oocyte" : "Semen"} Donor Registration
-                </h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                    Complete all steps to register a new donor
-                </p>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between">
-                    {[1, 2, 3, 4, 5].map((step) => (
-                        <div key={step} className="flex flex-1 items-center">
-                            <div
-                                className={`flex h-10 w-10 items-center justify-center rounded-full ${step <= currentStep
-                                    ? "bg-primary text-white"
-                                    : "bg-gray-200 text-gray-600 dark:bg-gray-700"
-                                    }`}
-                            >
-                                {step}
-                            </div>
-                            {step < 5 && (
-                                <div
-                                    className={`h-1 flex-1 ${step < currentStep
-                                        ? "bg-primary"
-                                        : "bg-gray-200 dark:bg-gray-700"
-                                        }`}
-                                ></div>
-                            )}
-                        </div>
-                    ))}
+        <div className="min-h-screen bg-white  dark:bg-gray-900 p-6">
+            <div className="mx-auto max-w-7xl">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        {donorType === "oocyte" ? "Oocyte" : "Semen"} Donor Registration
+                    </h1>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">
+                        Complete comprehensive donor registration form
+                    </p>
                 </div>
-                <div className="mt-2 flex justify-between text-xs text-gray-600 dark:text-gray-400">
-                    <span>Basic Info</span>
-                    <span>Contact</span>
-                    <span>Medical</span>
-                    <span>Documents</span>
-                    <span>Review</span>
-                </div>
-            </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="mb-6 rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20">
-                    {error}
-                </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleSubmit}>
-                <div className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-dark">
-                    {/* Step 1: Basic Information */}
-                    {currentStep === 1 && (
-                        <div className="space-y-4">
-                            <h2 className="mb-4 text-xl font-semibold text-dark dark:text-white">
-                                Basic Information
-                            </h2>
-
-                            <InputGroup
-                                type="text"
-                                label="Full Name"
-                                placeholder="Enter full name"
-                                name="fullName"
-                                value={formData.fullName}
-                                handleChange={handleChange}
-                                required
-                            />
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <InputGroup
-                                    type="date"
-                                    label="Date of Birth"
-                                    name="dateOfBirth"
-                                    value={formData.dateOfBirth}
-                                    handleChange={handleChange}
-                                    required
-                                />
-
-                                <div>
-                                    <label className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                        Gender
-                                    </label>
-                                    <select
-                                        name="gender"
-                                        value={formData.gender}
-                                        onChange={handleChange}
-                                        className="w-full rounded-lg border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2"
-                                        required
-                                    >
-                                        <option value="">Select gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div className="lg:col-span-3">
+                        {error && (
+                            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+                                <p className="text-red-700 dark:text-red-300">{error}</p>
                             </div>
-
-                            <div>
-                                <label className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                    Blood Group
-                                </label>
-                                <select
-                                    name="bloodGroup"
-                                    value={formData.bloodGroup}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2"
-                                >
-                                    <option value="">Select blood group</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 2: Contact Details */}
-                    {currentStep === 2 && (
-                        <div className="space-y-4">
-                            <h2 className="mb-4 text-xl font-semibold text-dark dark:text-white">
-                                Contact Details
-                            </h2>
-
-                            <InputGroup
-                                type="tel"
-                                label="Contact Number"
-                                placeholder="Enter contact number"
-                                name="contactNumber"
-                                value={formData.contactNumber}
-                                handleChange={handleChange}
-                                required
-                            />
-
-                            <InputGroup
-                                type="email"
-                                label="Email"
-                                placeholder="Enter email address"
-                                name="email"
-                                value={formData.email}
-                                handleChange={handleChange}
-                                icon={<EmailIcon />}
-                            />
-
-                            <InputGroup
-                                type="text"
-                                label="Street Address"
-                                placeholder="Enter street address"
-                                name="street"
-                                value={formData.street}
-                                handleChange={handleChange}
-                            />
-
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <InputGroup
-                                    type="text"
-                                    label="City"
-                                    placeholder="City"
-                                    name="city"
-                                    value={formData.city}
-                                    handleChange={handleChange}
-                                />
-
-                                <InputGroup
-                                    type="text"
-                                    label="State"
-                                    placeholder="State"
-                                    name="state"
-                                    value={formData.state}
-                                    handleChange={handleChange}
-                                />
-
-                                <InputGroup
-                                    type="text"
-                                    label="Pincode"
-                                    placeholder="Pincode"
-                                    name="pincode"
-                                    value={formData.pincode}
-                                    handleChange={handleChange}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 3: Medical Information */}
-                    {currentStep === 3 && (
-                        <div className="space-y-4">
-                            <h2 className="mb-4 text-xl font-semibold text-dark dark:text-white">
-                                Medical Information
-                            </h2>
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <InputGroup
-                                    type="number"
-                                    label="Height (cm)"
-                                    placeholder="Enter height in cm"
-                                    name="height"
-                                    value={formData.height}
-                                    handleChange={handleChange}
-                                />
-
-                                <InputGroup
-                                    type="number"
-                                    label="Weight (kg)"
-                                    placeholder="Enter weight in kg"
-                                    name="weight"
-                                    value={formData.weight}
-                                    handleChange={handleChange}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                    Medical History
-                                </label>
-                                <textarea
-                                    name="medicalHistory"
-                                    value={formData.medicalHistory}
-                                    onChange={handleChange}
-                                    rows={4}
-                                    className="w-full rounded-lg border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2"
-                                    placeholder="Enter medical history"
-                                ></textarea>
-                            </div>
-
-                            <InputGroup
-                                type="text"
-                                label="Current Medications"
-                                placeholder="Enter current medications (comma separated)"
-                                name="currentMedications"
-                                value={formData.currentMedications}
-                                handleChange={handleChange}
-                            />
-
-                            <InputGroup
-                                type="text"
-                                label="Allergies"
-                                placeholder="Enter allergies (comma separated)"
-                                name="allergies"
-                                value={formData.allergies}
-                                handleChange={handleChange}
-                            />
-                        </div>
-                    )}
-
-                    {/* Step 4: Documents */}
-                    {currentStep === 4 && (
-                        <div className="space-y-4">
-                            <h2 className="mb-4 text-xl font-semibold text-dark dark:text-white">
-                                Documents & Identification
-                            </h2>
-
-                            <InputGroup
-                                type="text"
-                                label="Aadhar Number"
-                                placeholder="Enter Aadhar number"
-                                name="aadharNumber"
-                                value={formData.aadharNumber}
-                                handleChange={handleChange}
-                            />
-
-                            <div>
-                                <label className="mb-3 block text-sm font-medium text-dark dark:text-white">
-                                    Upload Documents
-                                </label>
-                                <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-                                    <p className="text-gray-600 dark:text-gray-400">
-                                        Document upload functionality will be added
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 5: Review */}
-                    {currentStep === 5 && (
-                        <div className="space-y-4">
-                            <h2 className="mb-4 text-xl font-semibold text-dark dark:text-white">
-                                Review & Submit
-                            </h2>
-
-                            <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
-                                <h3 className="mb-4 font-semibold">Donor Information Summary</h3>
-                                <dl className="grid gap-4 md:grid-cols-2">
-                                    <div>
-                                        <dt className="text-sm text-gray-600 dark:text-gray-400">Full Name</dt>
-                                        <dd className="font-medium">{formData.fullName}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-sm text-gray-600 dark:text-gray-400">Date of Birth</dt>
-                                        <dd className="font-medium">{formData.dateOfBirth}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-sm text-gray-600 dark:text-gray-400">Contact</dt>
-                                        <dd className="font-medium">{formData.contactNumber}</dd>
-                                    </div>
-                                    <div>
-                                        <dt className="text-sm text-gray-600 dark:text-gray-400">Email</dt>
-                                        <dd className="font-medium">{formData.email}</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Navigation Buttons */}
-                    <div className="mt-8 flex justify-between">
-                        <button
-                            type="button"
-                            onClick={handlePrevious}
-                            disabled={currentStep === 1}
-                            className="rounded-lg border border-stroke px-6 py-3 font-semibold transition hover:bg-gray-100 disabled:opacity-50 dark:border-dark-3 dark:hover:bg-gray-800"
-                        >
-                            Previous
-                        </button>
-
-                        {currentStep < totalSteps ? (
-                            <button
-                                type="button"
-                                onClick={handleNext}
-                                className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-opacity-90"
-                            >
-                                Next
-                            </button>
-                        ) : (
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-opacity-90 disabled:opacity-70"
-                            >
-                                {loading ? "Submitting..." : "Submit"}
-                            </button>
                         )}
+                        
+                        {success && (
+                            <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                                <p className="text-green-700 dark:text-green-300">{success}</p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* 1. Donor Image Upload */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Donor Image</h2>
+                                <div className="flex items-center justify-center w-full">
+                                    <label htmlFor="donorImage" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <MdUpload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
+                                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                <span className="font-semibold">Click to upload</span> donor image
+                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or JPEG (MAX. 5MB)</p>
+                                        </div>
+                                        <input 
+                                            id="donorImage"
+                                            type="file" 
+                                            className="hidden" 
+                                            accept="image/*"
+                                            onChange={(e) => handleFileUpload('donorImage', e.target.files[0])}
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* 2. Age Check */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Age Check</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Date of Birth *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="dateOfBirth"
+                                            value={formData.dateOfBirth}
+                                            onChange={handleDateOfBirthChange}
+                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Age
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="age"
+                                            value={formData.age}
+                                            readOnly
+                                            className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 dark:border-gray-600 dark:bg-gray-600 dark:text-white"
+                                        />
+                                        {formData.age && (
+                                            <p className={`mt-1 text-sm ${parseInt(formData.age) >= 23 && parseInt(formData.age) <= 35 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {parseInt(formData.age) >= 23 && parseInt(formData.age) <= 35 ? '✓ Eligible (Age between 23 to 35 years)' : '✗ Not eligible'}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 3. Personal Information */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Personal Information</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name *</label>
+                                        <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Husband Name</label>
+                                        <input type="text" name="husbandName" value={formData.husbandName} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Gender *</label>
+                                        <select name="gender" value={formData.gender} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="female">Female</option>
+                                            <option value="male">Male</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Aadhaar Number *</label>
+                                        <input type="text" name="aadharNumber" value={formData.aadharNumber} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Marital Status</label>
+                                        <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                            <option value="">Select Status</option>
+                                            <option value="married">Married</option>
+                                            <option value="single">Single</option>
+                                            <option value="divorced">Divorced</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Cast</label>
+                                        <input type="text" name="cast" value={formData.cast} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number *</label>
+                                        <div className="flex">
+                                            <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">+91</span>
+                                            <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full rounded-r-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Email *</label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" required />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Reference Name</label>
+                                        <input type="text" name="referenceName" value={formData.referenceName} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Reference Number</label>
+                                        <div className="flex">
+                                            <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400">+91</span>
+                                            <input type="tel" name="referenceNumber" value={formData.referenceNumber} onChange={handleChange} className="w-full rounded-r-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                                        <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                                        <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">State</label>
+                                        <input type="text" name="state" value={formData.state} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pin Code</label>
+                                        <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 4. Other Information */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Other Information</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Place of Birth</label>
+                                        <input type="text" name="placeOfBirth" value={formData.placeOfBirth} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Religion</label>
+                                        <input type="text" name="religion" value={formData.religion} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Blood Group</label>
+                                        <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                            <option value="">Select Blood Group</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 5. Professional Details */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Professional Details</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Donor Education</label>
+                                        <input type="text" name="donorEducation" value={formData.donorEducation} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Donor Occupation</label>
+                                        <input type="text" name="donorOccupation" value={formData.donorOccupation} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Monthly Income</label>
+                                        <input type="number" name="monthlyIncome" value={formData.monthlyIncome} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Spouse Education</label>
+                                        <input type="text" name="spouseEducation" value={formData.spouseEducation} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Spouse Occupation</label>
+                                        <input type="text" name="spouseOccupation" value={formData.spouseOccupation} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 6. Follicular Details */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Follicular Details</h2>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                                        <thead>
+                                            <tr className="bg-gray-50 dark:bg-gray-700">
+                                                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Date</th>
+                                                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Day of LMP</th>
+                                                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">ET</th>
+                                                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Right Ovary</th>
+                                                <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Left Ovary</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                                                    <input type="date" name="lmpDate" value={formData.lmpDate} onChange={handleChange} className="w-full rounded border-0 bg-transparent focus:outline-none" />
+                                                </td>
+                                                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                                                    <select name="lmpDay" value={formData.lmpDay} onChange={handleChange} className="w-full rounded border-0 bg-transparent focus:outline-none">
+                                                        <option value="">Select Day</option>
+                                                        {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                                                    </select>
+                                                </td>
+                                                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                                                    <input type="text" name="etValue" value={formData.etValue} onChange={handleChange} placeholder="-" className="w-full rounded border-0 bg-transparent focus:outline-none" />
+                                                </td>
+                                                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                                                    <textarea name="rightOvary" value={formData.rightOvary} onChange={handleChange} placeholder="Write here..." className="w-full rounded border-0 bg-transparent focus:outline-none resize-none" rows="2"></textarea>
+                                                </td>
+                                                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                                                    <textarea name="leftOvary" value={formData.leftOvary} onChange={handleChange} placeholder="Write here..." className="w-full rounded border-0 bg-transparent focus:outline-none resize-none" rows="2"></textarea>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="mt-6">
+                                    <label className="flex items-center space-x-3">
+                                        <input type="checkbox" name="stimulationProcess" checked={formData.stimulationProcess} onChange={handleChange} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Do you want to add the Stimulation Process Start Date?</span>
+                                    </label>
+                                    {formData.stimulationProcess && (
+                                        <div className="mt-4">
+                                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Process Start Date</label>
+                                            <input type="date" name="processStartDate" value={formData.processStartDate} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 7. Physical Attributes */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Physical Attributes</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Height (cm)</label>
+                                        <input type="number" name="height" value={formData.height} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+                                        <input type="number" name="weight" value={formData.weight} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Skin Colour</label>
+                                        <input type="text" name="skinColor" value={formData.skinColor} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Hair Colour</label>
+                                        <input type="text" name="hairColor" value={formData.hairColor} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Eye Colour</label>
+                                        <input type="text" name="eyeColor" value={formData.eyeColor} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 8. Obstetric History */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Obstetric History</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Number of deliveries</label>
+                                        <input type="number" name="numberOfDeliveries" value={formData.numberOfDeliveries} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Number of abortions</label>
+                                        <input type="number" name="numberOfAbortions" value={formData.numberOfAbortions} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Other points of note</label>
+                                        <textarea name="otherNotes" value={formData.otherNotes} onChange={handleChange} rows="3" className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 9. Menstrual & Contraceptive History */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Menstrual & Contraceptive History</h2>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Menstrual history</span>
+                                        <div className="flex space-x-4">
+                                            <label className="flex items-center">
+                                                <input type="checkbox" checked={formData.menstrualHistory === true} onChange={() => setFormData(prev => ({...prev, menstrualHistory: formData.menstrualHistory === true ? null : true}))} className="rounded border-gray-300 focus:ring-2 focus:ring-[#402575] text-[#402575] mr-2" />
+                                                <span>Yes</span>
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input type="checkbox" checked={formData.menstrualHistory === false} onChange={() => setFormData(prev => ({...prev, menstrualHistory: formData.menstrualHistory === false ? null : false}))} className="rounded border-gray-300 focus:ring-2 focus:ring-[#402575] text-[#402575] mr-2" />
+                                                <span>No</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Use of contraceptives</span>
+                                        <div className="flex space-x-4">
+                                            <label className="flex items-center">
+                                                <input type="checkbox" checked={formData.contraceptives === true} onChange={() => setFormData(prev => ({...prev, contraceptives: formData.contraceptives === true ? null : true}))} className="rounded border-gray-300 focus:ring-2 focus:ring-[#402575] text-[#402575] mr-2" />
+                                                <span>Yes</span>
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input type="checkbox" checked={formData.contraceptives === false} onChange={() => setFormData(prev => ({...prev, contraceptives: formData.contraceptives === false ? null : false}))} className="rounded border-gray-300 focus:ring-2 focus:ring-[#402575] text-[#402575] mr-2" />
+                                                <span>No</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 10. Medical & Family History */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Medical & Family History</h2>
+                                <div className="space-y-4">
+                                    {[
+                                        { key: 'medicalHistory', label: 'Medical history' },
+                                        { key: 'familyMedicalHistory', label: 'Family medical history' },
+                                        { key: 'abnormalityInChild', label: 'Abnormality in child' },
+                                        { key: 'bloodTransfusion', label: 'History of blood transfusion' },
+                                        { key: 'substanceAbuse', label: 'Substance abuse' },
+                                        { key: 'geneticAbnormality', label: 'Genetic abnormality' }
+                                    ].map((item) => (
+                                        <div key={item.key} className="flex items-center justify-between">
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
+                                            <div className="flex space-x-4">
+                                                <label className="flex items-center">
+                                                    <input type="checkbox" checked={formData[item.key] === true} onChange={() => setFormData(prev => ({...prev, [item.key]: formData[item.key] === true ? null : true}))} className="rounded border-gray-300 focus:ring-2 focus:ring-[#402575] text-[#402575] mr-2" />
+                                                    <span>Yes</span>
+                                                </label>
+                                                <label className="flex items-center">
+                                                    <input type="checkbox" checked={formData[item.key] === false} onChange={() => setFormData(prev => ({...prev, [item.key]: formData[item.key] === false ? null : false}))} className="rounded border-gray-300 focus:ring-2 focus:ring-[#402575] text-[#402575] mr-2" />
+                                                    <span>No</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 11. Physical Examination */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Physical Examination</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pulse</label>
+                                        <input type="text" name="pulse" value={formData.pulse} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">BP</label>
+                                        <input type="text" name="bp" value={formData.bp} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Temperature</label>
+                                        <input type="text" name="temperature" value={formData.temperature} onChange={handleChange} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Respiratory System</label>
+                                        <textarea name="respiratorySystem" value={formData.respiratorySystem} onChange={handleChange} rows="3" className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Cardiovascular System</label>
+                                        <textarea name="cardiovascularSystem" value={formData.cardiovascularSystem} onChange={handleChange} rows="3" className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Per Abdominal Examination</label>
+                                        <textarea name="abdominalExamination" value={formData.abdominalExamination} onChange={handleChange} rows="3" className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Other Systems</label>
+                                        <textarea name="otherSystems" value={formData.otherSystems} onChange={handleChange} rows="3" className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 12. Documents Upload */}
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Documents</h2>
+                                
+                                {/* Donor Aadhaar Card */}
+                                <div className="mb-8">
+                                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Donor Aadhaar Card</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Aadhaar – Front</label>
+                                            <label htmlFor="aadharFront" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
+                                                <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
+                                                <p className="mt-2 text-sm text-gray-600">Drag or click to upload</p>
+                                                <input id="aadharFront" type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload('donorAadharFront', e.target.files[0])} />
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Aadhaar – Back</label>
+                                            <label htmlFor="aadharBack" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
+                                                <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
+                                                <p className="mt-2 text-sm text-gray-600">Drag or click to upload</p>
+                                                <input id="aadharBack" type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload('donorAadharBack', e.target.files[0])} />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Health Insurance */}
+                                <div className="mb-8">
+                                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Health Insurance Document</h3>
+                                    <div className="space-y-4">
+                                        <textarea 
+                                            placeholder="Description..." 
+                                            value={documents.healthInsurance.description}
+                                            onChange={(e) => handleDocumentChange('healthInsurance', e.target.value)}
+                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
+                                            rows="3"
+                                        ></textarea>
+                                        <label htmlFor="healthInsurance" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
+                                            <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
+                                            <p className="mt-2 text-sm text-gray-600">Drag or Scan document</p>
+                                            <input id="healthInsurance" type="file" className="hidden" onChange={(e) => handleFileUpload('healthInsurance', e.target.files[0])} />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Life Insurance */}
+                                <div className="mb-8">
+                                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Life Insurance Document</h3>
+                                    <div className="space-y-4">
+                                        <textarea 
+                                            placeholder="Description..." 
+                                            value={documents.lifeInsurance.description}
+                                            onChange={(e) => handleDocumentChange('lifeInsurance', e.target.value)}
+                                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
+                                            rows="3"
+                                        ></textarea>
+                                        <label htmlFor="lifeInsurance" className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
+                                            <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
+                                            <p className="mt-2 text-sm text-gray-600">Drag or Scan document</p>
+                                            <input id="lifeInsurance" type="file" className="hidden" onChange={(e) => handleFileUpload('lifeInsurance', e.target.files[0])} />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Medical Reports */}
+                                <div>
+                                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Medical Reports</h3>
+                                    {documents.medicalReports.map((report, index) => (
+                                        <div key={index} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h4 className="font-medium">Document {index + 1}</h4>
+                                                {documents.medicalReports.length > 2 && (
+                                                    <button type="button" onClick={() => removeMedicalReport(index)} className="text-red-600 hover:text-red-800">
+                                                        <MdDelete className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="space-y-4">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Document title" 
+                                                    value={report.title}
+                                                    onChange={(e) => handleDocumentChange('title', e.target.value, index)}
+                                                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                                />
+                                                <textarea 
+                                                    placeholder="Description..." 
+                                                    value={report.description}
+                                                    onChange={(e) => handleDocumentChange('description', e.target.value, index)}
+                                                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
+                                                    rows="3"
+                                                ></textarea>
+                                                <label htmlFor={`medicalReport${index}`} className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer block hover:bg-gray-50">
+                                                    <MdUpload className="mx-auto h-12 w-12 text-gray-400" />
+                                                    <p className="mt-2 text-sm text-gray-600">Drag or Scan document</p>
+                                                    <input id={`medicalReport${index}`} type="file" className="hidden" onChange={(e) => handleDocumentChange('file', e.target.files[0], index)} />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button 
+                                        type="button" 
+                                        onClick={addMedicalReport}
+                                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
+                                    >
+                                        <MdAdd className="h-5 w-5" />
+                                        <span>Add New Document</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                                >
+                                    <MdCheck className="h-5 w-5" />
+                                    <span>{loading ? "Submitting..." : "Submit Registration"}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Progress Sidebar */}
+                    <div className="lg:col-span-1">
+                        <div className="sticky top-20 mt-4 max-h-[calc(100vh-3rem)] overflow-y-auto">
+                            <div className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800" style={{ backgroundColor: '#F9FAFB' }}>
+                                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Form Progress</h3>
+                                
+                                {/* Overall Progress */}
+                                <div className="mb-6">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Completion</span>
+                                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">{totalProgress.percentage}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                                        <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500" style={{ width: `${totalProgress.percentage}%` }}></div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{totalProgress.filled} of {totalProgress.total} fields completed</p>
+                                </div>
+
+                                {/* Step Progress */}
+                                <div className="space-y-1">
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Form Steps</h4>
+                                    {getFormSections().map((section, index) => {
+                                        const progress = getSectionProgress(section.fields);
+                                        const isComplete = progress.percentage === 100;
+                                        const isInProgress = progress.percentage > 0 && progress.percentage < 100;
+                                        const isNotStarted = progress.percentage === 0;
+                                        
+                                        return (
+                                            <div key={index} className="relative">
+                                                {/* Connector Line */}
+                                                {index < getFormSections().length - 1 && (
+                                                    <div className="absolute top-8 w-0.5 h-10 bg-gray-200 dark:bg-gray-600" style={{ left: '22px' }}></div>
+                                                )}
+                                                
+                                                <div className="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                                    {/* Step Number/Status */}
+                                                    <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium relative z-10 ${
+                                                        isComplete 
+                                                            ? 'text-white' 
+                                                            : isInProgress 
+                                                                ? 'bg-blue-500 text-white' 
+                                                                : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                                                    }`} style={isComplete ? { backgroundColor: '#402575' } : {}}>
+                                                        {isComplete ? (
+                                                            <MdCheckCircle className="h-5 w-5" />
+                                                        ) : (
+                                                            <span>{index + 1}</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Step Details */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between">
+                                                            <p className={`text-sm font-medium truncate ${
+                                                                isComplete 
+                                                                    ? 'dark:text-gray-300' 
+                                                                    : isInProgress 
+                                                                        ? 'text-blue-700 dark:text-blue-400' 
+                                                                        : 'text-gray-600 dark:text-gray-400'
+                                                            }`} style={isComplete ? { color: '#402575' } : {}}>
+                                                                {section.title}
+                                                            </p>
+                                                            <span className={`text-xs font-medium ml-2 ${
+                                                                isComplete 
+                                                                    ? 'dark:text-gray-400' 
+                                                                    : isInProgress 
+                                                                        ? 'text-blue-600 dark:text-blue-400' 
+                                                                        : 'text-gray-500 dark:text-gray-500'
+                                                            }`} style={isComplete ? { color: '#402575' } : {}}>
+                                                                {progress.percentage}%
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        {/* Progress Bar */}
+                                                        <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                                            <div 
+                                                                className={`h-1.5 rounded-full transition-all duration-300 ${
+                                                                    isComplete 
+                                                                        ? '' 
+                                                                        : isInProgress 
+                                                                            ? 'bg-blue-500' 
+                                                                            : 'bg-gray-300'
+                                                                }`}
+                                                                style={isComplete ? { width: `${progress.percentage}%`, backgroundColor: '#402575' } : { width: `${progress.percentage}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                            {progress.filled}/{progress.total} fields
+                                                            {isComplete && <span className="ml-1" style={{ color: '#402575' }}>✓ Complete</span>}
+                                                            {isInProgress && <span className="text-blue-600 dark:text-blue-400 ml-1">• In Progress</span>}
+                                                            {isNotStarted && <span className="text-gray-500 dark:text-gray-500 ml-1">• Not Started</span>}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }
