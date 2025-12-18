@@ -100,7 +100,6 @@ const SigninWithPassword = () => {
         name="password"
         handleChange={handleChange}
         value={data.password}
-        icon={<PasswordIcon />}
       />
 
       <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">

@@ -145,7 +145,7 @@ export const createDonorController = async (body, userId) => {
             otherSystems,
         },
         documents,
-        status: status || "pending",
+        status: status || "active",
         createdBy: userId,
     });
 
@@ -166,36 +166,12 @@ export const createDonorController = async (body, userId) => {
  */
 const isDonorComplete = (donor) => {
     const requiredFields = [
-        'fullName', 'dateOfBirth', 'gender', 'contactNumber', 'email',
-        'address', 'city', 'state', 'bloodGroup', 'height', 'weight'
+        'fullName', 'dateOfBirth', 'gender', 'contactNumber', 'email'
     ];
     
     // Check basic required fields
     for (const field of requiredFields) {
         if (!donor[field]) return false;
-    }
-    
-    // Check document status
-    if (donor.consentFormStatus !== 'signed' || 
-        donor.affidavitStatus !== 'signed' || 
-        donor.follicularScanStatus !== 'signed') {
-        return false;
-    }
-    
-    // Check donor type specific requirements
-    if (donor.donorType === 'oocyte') {
-        if (!donor.oocyteData?.menstrualCycleLength || 
-            !donor.oocyteData?.lastPeriodDate) {
-            return false;
-        }
-    }
-    
-    if (donor.donorType === 'semen') {
-        if (!donor.semenData?.spermCount || 
-            !donor.semenData?.motility || 
-            donor.semenData?.bloodReportStatus !== 'signed') {
-            return false;
-        }
     }
     
     return true;

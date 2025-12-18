@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getUserRole, ROLES } from "@/utils/roleUtils";
 import {
     MdDashboard,
     MdPersonAdd,
@@ -12,7 +13,7 @@ import {
     MdNotifications,
 } from "react-icons/md";
 
-export default function ReceptionistHome() {
+export default function HomePage() {
     const router = useRouter();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [user, setUser] = useState(null);
@@ -37,50 +38,61 @@ export default function ReceptionistHome() {
         router.push("/auth/sign-in");
     };
 
-    const actionCards = [
-        {
-            title: "Dashboard",
-            description: "Stay updated on donor assignments, medical reports, and pending actions",
-            icon: MdDashboard,
-            color: "from-purple-500 to-purple-600",
-            route: "/dashboard",
-        },
-        {
-            title: "Add New Donor",
-            description: "Initiate donor requirement (oocyte/semen)",
-            icon: MdPersonAdd,
-            color: "from-blue-500 to-blue-600",
-            route: "/donors/add",
-        },
-        {
-            title: "Active Donor Cases",
-            description: "Handle calls or updates for patient follow-up",
-            icon: MdPeople,
-            color: "from-green-500 to-green-600",
-            route: "/donors/active",
-        },
-        {
-            title: "Donors History",
-            description: "Track who has been assigned for screening or treatment",
-            icon: MdHistory,
-            color: "from-orange-500 to-orange-600",
-            route: "/donors/history",
-        },
-        {
-            title: "Semen Management",
-            description: "Manage patient calls and follow-up updates with ease",
-            icon: MdStorage,
-            color: "from-pink-500 to-pink-600",
-            route: "/storage",
-        },
-        {
-            title: "Notifications",
-            description: "Initiate donor requirement (oocyte/semen)",
-            icon: MdNotifications,
-            color: "from-indigo-500 to-indigo-600",
-            route: "/notifications",
-        },
-    ];
+    const [role, setRole] = useState(null);
+
+    useEffect(() => {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+        setRole(getUserRole());
+
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    const getActionCards = () => {
+        const baseCards = [
+            {
+                title: "Dashboard",
+                description: "View analytics and system overview",
+                icon: MdDashboard,
+                color: "from-purple-500 to-purple-600",
+                route: "/dashboard",
+            },
+            {
+                title: "Add New Donor",
+                description: "Register new donor (oocyte/semen)",
+                icon: MdPersonAdd,
+                color: "from-blue-500 to-blue-600",
+                route: "/donors/add",
+            },
+            {
+                title: "Profile",
+                description: "View and edit your profile",
+                icon: MdHistory,
+                color: "from-orange-500 to-orange-600",
+                route: "/profile",
+            },
+        ];
+
+        if (role === ROLES.DOCTOR || role === ROLES.ADMIN) {
+            baseCards.push({
+                title: "User Management",
+                description: "Manage users and roles",
+                icon: MdPeople,
+                color: "from-green-500 to-green-600",
+                route: "/users",
+            });
+        }
+
+        return baseCards;
+    };
+
+    const actionCards = getActionCards();
 
     const formatTime = (date) => {
         return date.toLocaleTimeString("en-US", {

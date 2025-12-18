@@ -34,24 +34,22 @@ export default function TopNavigation() {
     }, []);
 
     const getNavItems = () => {
-        if (role === ROLES.RECEPTIONIST) {
+        const baseItems = [
+            { name: "Home", href: "/home", icon: MdHome },
+            { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
+            { name: "Active Donors", href: "/donors/active", icon: MdPeople },
+            { name: "Donors History", href: "/donors/history", icon: MdHistory },
+            { name: "Semen Storage", href: "/donors/semen", icon: MdStorage },
+        ];
+
+        if (role === ROLES.DOCTOR || role === ROLES.ADMIN) {
             return [
-                { name: "Home", href: "/home", icon: MdHome },
-                { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-                { name: "Active Donors", href: "/donors/active", icon: MdPeople },
-                { name: "Donors History", href: "/donors/history", icon: MdHistory },
-                { name: "Semen Storage", href: "/storage", icon: MdStorage },
-                { name: "Add New Donor", href: "/donors/add", icon: MdPersonAdd },
+                ...baseItems,
+                { name: "Users", href: "/users", icon: MdPeople },
             ];
         }
-        return [
-            { name: "Home", href: "/home1", icon: MdHome },
-            { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-            { name: "Users", href: "/users", icon: MdPeople },
-            { name: "Tables", href: "/tables", icon: MdHistory },
-            { name: "Profile", href: "/profile", icon: MdStorage },
-            { name: "Add Donor", href: "/donors/add", icon: MdPersonAdd },
-        ];
+
+        return baseItems;
     };
 
     const navItems = getNavItems();
@@ -59,17 +57,19 @@ export default function TopNavigation() {
     const isActive = (href) => pathname === href;
 
     return (
-        <nav className="sticky top-0 z-50 bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg">
+        <nav className="sticky top-0 z-[10000] bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg">
             <div className="mx-auto px-4">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center gap-8">
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <div className="flex items-center">
-                                <div className="text-2xl font-bold text-white">
-                                    <span className="text-pink-400">GEN</span>IFY
-                                </div>
-                            </div>
+                            <Image
+                                src="/images/icon/brand.svg"
+                                alt="Logo"
+                                width={120}
+                                height={32}
+                                className="brightness-0 invert"
+                            />
                         </Link>
 
                         {/* Navigation Items */}
@@ -81,8 +81,8 @@ export default function TopNavigation() {
                                         key={item.name}
                                         href={item.href}
                                         className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${isActive(item.href)
-                                                ? "bg-white/20 text-white"
-                                                : "text-white/80 hover:bg-white/10 hover:text-white"
+                                            ? "bg-white/20 text-white"
+                                            : "text-white/80 hover:bg-white/10 hover:text-white"
                                             }`}
                                     >
                                         <Icon className="h-5 w-5" />
@@ -93,8 +93,28 @@ export default function TopNavigation() {
                         </div>
                     </div>
 
-                    {/* Right Side - Notifications & User */}
+                    {/* Right Side - Add User, Notifications & User */}
                     <div className="flex items-center gap-4">
+                        {/* Add New Donor Button */}
+                        <Link
+                            href="/donors/add"
+                            className="flex items-center gap-2 rounded-lg bg-pink-500/20 px-4 py-2 text-sm font-medium text-white ring-1 ring-pink-500/50 transition hover:bg-pink-500/30"
+                        >
+                            <MdPersonAdd className="h-5 w-5" />
+                            <span className="hidden md:block">Add New Donor</span>
+                        </Link>
+
+                        {/* Add User Button - Doctor Only */}
+                        {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
+                            <Link
+                                href="/users/add"
+                                className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/30"
+                            >
+                                <MdPersonAdd className="h-5 w-5" />
+                                <span className="hidden md:block">Add User</span>
+                            </Link>
+                        )}
+
                         {/* Notifications */}
                         <button className="relative rounded-full p-2 text-white/80 transition hover:bg-white/10 hover:text-white">
                             <MdNotifications className="h-6 w-6" />

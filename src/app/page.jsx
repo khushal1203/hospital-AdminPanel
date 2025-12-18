@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getUserRole, ROLES } from "@/utils/roleUtils";
 
 export default function RootPage() {
   const router = useRouter();
@@ -15,13 +14,7 @@ export default function RootPage() {
       return;
     }
 
-    const role = getUserRole();
-    
-    if (role === ROLES.RECEPTIONIST) {
-      router.push("/home");
-    } else {
-      router.push("/dashboard");
-    }
+    router.push("/home");
   }, [router]);
 
   return (

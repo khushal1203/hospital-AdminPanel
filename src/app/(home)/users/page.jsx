@@ -3,31 +3,20 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isAdmin } from "@/utils/roleUtils";
-import { EmailIcon, PasswordIcon } from "@/assets/icons";
-import InputGroup from "@/components/FormElements/InputGroup";
 
 export default function UserManagement() {
     const router = useRouter();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showAddForm, setShowAddForm] = useState(false);
+   
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    const [formData, setFormData] = useState({
-        fullName: "",
-        email: "",
-        password: "",
-        role: "receptionist",
-    });
-
     useEffect(() => {
-        // Check if user is admin
         if (!isAdmin()) {
             router.push("/dashboard");
             return;
         }
-
         fetchUsers();
     }, [router]);
 
@@ -51,49 +40,6 @@ export default function UserManagement() {
             setError("Failed to fetch users");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setSuccess("");
-
-        try {
-            const token = localStorage.getItem("token");
-            const res = await fetch("/api/users/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                setSuccess("User created successfully!");
-                setFormData({
-                    fullName: "",
-                    email: "",
-                    password: "",
-                    role: "receptionist",
-                });
-                setShowAddForm(false);
-                fetchUsers(); // Refresh user list
-            } else {
-                setError(data.message);
-            }
-        } catch (err) {
-            setError("Failed to create user");
         }
     };
 
@@ -156,7 +102,7 @@ export default function UserManagement() {
                 </div>
 
                 <button
-                    onClick={() => setShowAddForm(!showAddForm)}
+                    onClick={() => router.push('/users/add')}
                     className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-opacity-90"
                 >
                     <svg
@@ -189,82 +135,7 @@ export default function UserManagement() {
                 </div>
             )}
 
-            {/* Add User Form */}
-            {showAddForm && (
-                <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-dark">
-                    <h2 className="mb-6 text-xl font-semibold text-dark dark:text-white">
-                        Add New User
-                    </h2>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <InputGroup
-                            type="text"
-                            label="Full Name"
-                            placeholder="Enter full name"
-                            name="fullName"
-                            value={formData.fullName}
-                            handleChange={handleInputChange}
-                            required
-                        />
-
-                        <InputGroup
-                            type="email"
-                            label="Email"
-                            placeholder="Enter email address"
-                            name="email"
-                            value={formData.email}
-                            handleChange={handleInputChange}
-                            icon={<EmailIcon />}
-                            required
-                        />
-
-                        <InputGroup
-                            type="password"
-                            label="Password"
-                            placeholder="Enter password"
-                            name="password"
-                            value={formData.password}
-                            handleChange={handleInputChange}
-                            icon={<PasswordIcon />}
-                            required
-                        />
-
-                        <div>
-                            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                Role
-                            </label>
-                            <select
-                                name="role"
-                                value={formData.role}
-                                onChange={handleInputChange}
-                                className="w-full rounded-lg border border-stroke bg-transparent px-5 py-3 text-dark outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-gray-2 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-                                required
-                            >
-                                <option value="receptionist">Receptionist</option>
-                                <option value="doctor">Doctor</option>
-                                <option value="laboratory">Laboratory Admin</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button
-                                type="submit"
-                                className="flex-1 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-opacity-90"
-                            >
-                                Create User
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowAddForm(false)}
-                                className="rounded-lg border border-stroke px-6 py-3 font-semibold text-dark transition hover:bg-gray-2 dark:border-dark-3 dark:text-white dark:hover:bg-dark-3"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
 
             {/* Users Table */}
             <div className="rounded-lg bg-white shadow-lg dark:bg-gray-dark">
