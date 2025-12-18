@@ -12,12 +12,10 @@ const DonorSchema = new mongoose.Schema(
             required: true,
         },
 
-        // Basic Information
-        fullName: {
-            type: String,
-            required: true,
-            trim: true,
-        },
+        // Donor Image
+        donorImage: String,
+
+        // Age Check
         dateOfBirth: {
             type: Date,
             required: true,
@@ -25,15 +23,32 @@ const DonorSchema = new mongoose.Schema(
         age: {
             type: Number,
         },
+
+        // Personal Information
+        fullName: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        husbandName: {
+            type: String,
+            trim: true,
+        },
         gender: {
             type: String,
             enum: ["male", "female", "other"],
             required: true,
         },
-        bloodGroup: {
+        aadharNumber: {
             type: String,
-            enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+            unique: true,
+            sparse: true,
         },
+        maritalStatus: {
+            type: String,
+            enum: ["married", "single", "divorced"],
+        },
+        cast: String,
         contactNumber: {
             type: String,
             required: true,
@@ -42,23 +57,83 @@ const DonorSchema = new mongoose.Schema(
             type: String,
             lowercase: true,
             trim: true,
+            required: true,
         },
+        referenceName: String,
+        referenceNumber: String,
 
         // Address
-        address: {
-            street: String,
-            city: String,
-            state: String,
-            pincode: String,
+        address: String,
+        city: String,
+        state: String,
+        pincode: String,
+
+        // Other Information
+        placeOfBirth: String,
+        religion: String,
+        bloodGroup: {
+            type: String,
+            enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
         },
 
-        // Medical Information
+        // Professional Details
+        donorEducation: String,
+        donorOccupation: String,
+        monthlyIncome: Number,
+        spouseEducation: String,
+        spouseOccupation: String,
+
+        // Follicular Details
+        follicularDetails: {
+            lmpDate: Date,
+            lmpDay: Number,
+            etValue: String,
+            rightOvary: String,
+            leftOvary: String,
+            stimulationProcess: {
+                type: Boolean,
+                default: false,
+            },
+            processStartDate: Date,
+        },
+
+        // Physical Attributes
         height: Number, // in cm
         weight: Number, // in kg
         bmi: Number,
-        medicalHistory: String,
-        currentMedications: [String],
-        allergies: [String],
+        skinColor: String,
+        hairColor: String,
+        eyeColor: String,
+
+        // Obstetric History
+        obstetricHistory: {
+            numberOfDeliveries: Number,
+            numberOfAbortions: Number,
+            otherNotes: String,
+        },
+
+        // Menstrual & Contraceptive History
+        menstrualHistory: Boolean,
+        contraceptives: Boolean,
+
+        // Medical & Family History
+        medicalHistory: Boolean,
+        familyMedicalHistory: Boolean,
+        abnormalityInChild: Boolean,
+        bloodTransfusion: Boolean,
+        substanceAbuse: Boolean,
+        geneticAbnormality: Boolean,
+
+        // Physical Examination
+        physicalExamination: {
+            pulse: String,
+            bp: String,
+            temperature: String,
+            respiratorySystem: String,
+            cardiovascularSystem: String,
+            abdominalExamination: String,
+            otherSystems: String,
+        },
 
         // Status & Tracking
         status: {
@@ -71,11 +146,6 @@ const DonorSchema = new mongoose.Schema(
             default: Date.now,
         },
         nextAppointment: Date,
-        aadharNumber: {
-            type: String,
-            unique: true,
-            sparse: true,
-        },
 
         // Documents Status
         consentFormStatus: {
@@ -139,10 +209,21 @@ const DonorSchema = new mongoose.Schema(
 
         // Documents/Files (store file paths or URLs)
         documents: {
-            profilePhoto: String,
-            aadharCard: String,
-            medicalReports: [String],
-            consentForms: [String],
+            donorAadharFront: String,
+            donorAadharBack: String,
+            healthInsurance: {
+                file: String,
+                description: String,
+            },
+            lifeInsurance: {
+                file: String,
+                description: String,
+            },
+            medicalReports: [{
+                title: String,
+                file: String,
+                description: String,
+            }],
         },
 
         // Metadata
