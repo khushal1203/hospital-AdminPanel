@@ -9,7 +9,6 @@ const DonorSchema = new mongoose.Schema(
         donorType: {
             type: String,
             enum: ["oocyte", "semen"],
-            required: true,
         },
 
         // Donor Image
@@ -41,8 +40,8 @@ const DonorSchema = new mongoose.Schema(
         },
         aadharNumber: {
             type: String,
+            required: true,
             unique: true,
-            sparse: true,
         },
         maritalStatus: {
             type: String,
