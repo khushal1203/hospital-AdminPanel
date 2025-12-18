@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { type HTMLInputTypeAttribute, useId } from "react";
+import { type HTMLInputTypeAttribute, useId, useState } from "react";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 type InputGroupProps = {
   className?: string;
@@ -32,6 +33,9 @@ const InputGroup: React.FC<InputGroupProps> = ({
   ...props
 }) => {
   const id = useId();
+  const [showPassword, setShowPassword] = useState(false);
+  const isPasswordField = type === "password";
+  const inputType = isPasswordField && showPassword ? "text" : type;
 
   return (
     <div className={className}>
@@ -53,7 +57,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
       >
         <input
           id={id}
-          type={type}
+          type={inputType}
           name={props.name}
           placeholder={placeholder}
           onChange={handleChange}
@@ -65,6 +69,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
               ? getFileStyles(props.fileStyleVariant!)
               : "px-5.5 py-3 text-dark placeholder:text-dark-6 dark:text-white",
             props.iconPosition === "left" && "pl-12.5",
+            isPasswordField && "pr-12.5",
             props.height === "sm" && "py-2.5",
           )}
           required={required}
@@ -72,7 +77,17 @@ const InputGroup: React.FC<InputGroupProps> = ({
           data-active={active}
         />
 
-        {icon}
+        {isPasswordField ? (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            {showPassword ? <MdVisibilityOff className="h-5 w-5" /> : <MdVisibility className="h-5 w-5" />}
+          </button>
+        ) : (
+          icon
+        )}
       </div>
     </div>
   );
