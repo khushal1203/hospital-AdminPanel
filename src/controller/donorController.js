@@ -162,6 +162,46 @@ export const createDonorController = async (body, userId) => {
 };
 
 /**
+ * Check if donor has all required fields complete
+ */
+const isDonorComplete = (donor) => {
+    const requiredFields = [
+        'fullName', 'dateOfBirth', 'gender', 'contactNumber', 'email',
+        'address', 'city', 'state', 'bloodGroup', 'height', 'weight'
+    ];
+    
+    // Check basic required fields
+    for (const field of requiredFields) {
+        if (!donor[field]) return false;
+    }
+    
+    // Check document status
+    if (donor.consentFormStatus !== 'signed' || 
+        donor.affidavitStatus !== 'signed' || 
+        donor.follicularScanStatus !== 'signed') {
+        return false;
+    }
+    
+    // Check donor type specific requirements
+    if (donor.donorType === 'oocyte') {
+        if (!donor.oocyteData?.menstrualCycleLength || 
+            !donor.oocyteData?.lastPeriodDate) {
+            return false;
+        }
+    }
+    
+    if (donor.donorType === 'semen') {
+        if (!donor.semenData?.spermCount || 
+            !donor.semenData?.motility || 
+            donor.semenData?.bloodReportStatus !== 'signed') {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
+/**
  * Get all donors with optional filters
  */
 export const getAllDonorsController = async (filters = {}) => {
@@ -189,10 +229,48 @@ export const getAllDonorsController = async (filters = {}) => {
         .sort({ createdAt: -1 })
         .select("-__v");
 
+    // Auto-update status based on completeness
+    const updatedDonors = donors.map(donor => {
+        const isComplete = isDonorComplete(donor);
+        const newStatus = isComplete ? 'active' : 'pending';
+        
+        // Only update if status has changed
+        if (donor.status !== newStatus && ['pending', 'active'].includes(donor.status)) {
+            donor.status = newStatus;
+            donor.save(); // Save the updated status
+        }
+        
+        return donor;
+    });
+
     return {
         success: true,
-        donors,
-        count: donors.length,
+        donors: updatedDonors,
+        count: updatedDonors.length,
+    };
+};
+
+/**
+ * Update donor with next appointment
+ */
+export const updateDonorAppointmentController = async (donorId, appointmentDate, userId) => {
+    const donor = await Donor.findByIdAndUpdate(
+        donorId,
+        {
+            nextAppointment: appointmentDate,
+            updatedBy: userId,
+        },
+        { new: true }
+    );
+
+    if (!donor) {
+        throw new Error("Donor not found");
+    }
+
+    return {
+        success: true,
+        message: "Appointment updated successfully",
+        donor,
     };
 };
 
@@ -272,12 +350,13 @@ export const getDonorStatsController = async () => {
                 $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
             },
         }),
-        Donor.countDocuments({ status: { $in: ["allotted", "referred", "s2s_accepted"] } }),
+        Donor.countDocuments({ status: "active" }),
         Donor.countDocuments({
             $or: [
                 { consentFormStatus: "pending" },
                 { affidavitStatus: "pending" },
                 { follicularScanStatus: "pending" },
+                { insuranceStatus: "pending" },
             ],
         }),
     ]);
@@ -307,7 +386,27 @@ export const getTodayFollowUpsController = async () => {
         },
     })
         .sort({ nextAppointment: 1 })
-        .select("donorId fullName status registrationDate nextAppointment");
+        .select("-__v");
+
+    return {
+        success: true,
+        donors,
+    };
+};
+
+/**
+ * Get donors with pending blood collections
+ */
+export const getPendingBloodCollectionsController = async () => {
+    const donors = await Donor.find({
+        $or: [
+            { bloodGroup: { $exists: false } },
+            { bloodGroup: null },
+            { "semenData.bloodReportStatus": "pending" },
+        ],
+    })
+        .sort({ createdAt: -1 })
+        .select("-__v");
 
     return {
         success: true,

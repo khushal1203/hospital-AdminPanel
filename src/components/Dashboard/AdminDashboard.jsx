@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import StatsCard from "./StatsCard";
 import { MdPeople, MdFolder, MdDescription, MdPersonAdd } from "react-icons/md";
 
@@ -7,30 +8,55 @@ import { MdPeople, MdFolder, MdDescription, MdPersonAdd } from "react-icons/md";
  * AdminDashboard - Dashboard for admin, doctor, and laboratory roles
  */
 export default function AdminDashboard() {
-    // Mock data - will be replaced with API calls
-    const stats = {
-        todayFollowUps: 2,
-        activeCases: 12,
-        pendingDocuments: 8,
-        totalDonors: 245,
-    };
+    const [stats, setStats] = useState({
+        todayFollowUps: 0,
+        activeCases: 0,
+        pendingDocuments: 0,
+        totalDonors: 0,
+    });
+    const [donors, setDonors] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const todayFollowUps = [
-        {
-            id: "#809776",
-            date: "Apr 12, 2025",
-            name: "Manishaben Kantilalbhai Dave",
-            status: "allotted",
-            next: "20",
-        },
-        {
-            id: "#809776",
-            date: "Apr 12, 2025",
-            name: "Poonamben Bharatbhai Vyas",
-            status: "referred",
-            next: "20",
-        },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) return;
+
+                // Fetch stats
+                const statsRes = await fetch('/api/donors/stats', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const statsData = await statsRes.json();
+                if (statsData.success) {
+                    setStats(statsData.stats);
+                }
+
+                // Fetch all donors
+                const donorsRes = await fetch('/api/donors/all', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const donorsData = await donorsRes.json();
+                if (donorsData.success) {
+                    setDonors(donorsData.donors.slice(0, 10)); // Show only first 10
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex min-h-[400px] items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -78,25 +104,67 @@ export default function AdminDashboard() {
             {/* Tables Grid */}
             <div className="grid gap-6 lg:grid-cols-2">
                 {/* Today's Follow-Ups Table */}
-                <DonorTable title="Today's Follow-Ups" donors={todayFollowUps} />
+                <DonorTable 
+                    title="Today's Follow-Ups" 
+                    donors={donors.filter(d => {
+                        const today = new Date().toDateString();
+                        return new Date(d.createdAt).toDateString() === today;
+                    }).slice(0, 5)} 
+                />
 
                 {/* Active Donor Cases Table */}
-                <DonorTable title="Active Donor Cases" donors={todayFollowUps} />
+                <DonorTable 
+                    title="Active Donor Cases" 
+                    donors={donors.filter(d => d.status === 'active').slice(0, 5)} 
+                />
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
                 {/* Pending Blood Collections Table */}
-                <DonorTable title="Pending Blood Collections" donors={todayFollowUps} showBloodReport />
+                <DonorTable 
+                    title="Pending Blood Collections" 
+                    donors={donors.filter(d => 
+                        !d.bloodGroup || 
+                        !d.donorEducation || 
+                        !d.donorOccupation
+                    ).slice(0, 5)} 
+                    showBloodReport 
+                />
 
                 {/* Overdue Donors/Pending Documents Table */}
-                <DonorTable title="Overdue Donors/Pending Documents" donors={todayFollowUps} />
+                <DonorTable 
+                    title="Overdue Donors/Pending Documents" 
+                    donors={donors.filter(d => 
+                        d.consentFormStatus === 'pending' || 
+                        d.affidavitStatus === 'pending' || 
+                        d.follicularScanStatus === 'pending'
+                    ).slice(0, 5)} 
+                    showMissingFields
+                />
             </div>
         </div>
     );
 }
 
 // Donor Table Component
-function DonorTable({ title, donors, showBloodReport = false }) {
+function DonorTable({ title, donors, showBloodReport = false, showMissingFields = false }) {
+    
+    const getMissingFields = (donor) => {
+        const missing = [];
+        
+        // Check document status
+        if (donor.consentFormStatus === 'pending') missing.push('Consent Form');
+        if (donor.affidavitStatus === 'pending') missing.push('Affidavit');
+        if (donor.follicularScanStatus === 'pending') missing.push('Scan Report');
+        if (donor.insuranceStatus === 'pending') missing.push('Insurance');
+        
+        // Check type-specific documents
+        if (donor.donorType === 'semen' && donor.semenData?.bloodReportStatus === 'pending') {
+            missing.push('Blood Report');
+        }
+        
+        return missing;
+    };
     const getStatusColor = (status) => {
         const colors = {
             allotted: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
@@ -128,29 +196,38 @@ function DonorTable({ title, donors, showBloodReport = false }) {
                                     BLOOD REPORT STATUS
                                 </th>
                             )}
+                            {showMissingFields && (
+                                <th className="pb-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400">
+                                    MISSING FIELDS
+                                </th>
+                            )}
                             <th className="pb-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400">
-                                NEXT
+                                TYPE
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         {donors.map((donor, index) => (
-                            <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
-                                <td className="py-3 text-sm text-dark dark:text-white">{donor.id}</td>
-                                <td className="py-3 text-sm text-gray-600 dark:text-gray-400">{donor.date}</td>
+                            <tr key={donor._id || index} className="border-b border-gray-100 dark:border-gray-800">
+                                <td className="py-3 text-sm text-dark dark:text-white">{donor.donorId}</td>
+                                <td className="py-3 text-sm text-gray-600 dark:text-gray-400">
+                                    {new Date(donor.createdAt || donor.registrationDate).toLocaleDateString()}
+                                </td>
                                 <td className="py-3">
                                     <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-full bg-gray-300"></div>
+                                        <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600">
+                                            {donor.fullName?.charAt(0)?.toUpperCase()}
+                                        </div>
                                         <div>
                                             <div className="text-sm font-medium text-dark dark:text-white">
-                                                {donor.name}
+                                                {donor.fullName}
                                             </div>
                                             <span
                                                 className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(
                                                     donor.status
                                                 )}`}
                                             >
-                                                {donor.status.toUpperCase()}
+                                                {donor.status?.toUpperCase()}
                                             </span>
                                         </div>
                                     </div>
@@ -158,11 +235,27 @@ function DonorTable({ title, donors, showBloodReport = false }) {
                                 {showBloodReport && (
                                     <td className="py-3">
                                         <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-1 text-xs text-orange-800">
-                                            <span className="text-orange-600">⏱</span> Pending
+                                            <span className="text-orange-600">⏱</span> {donor.bloodGroup || 'Pending'}
                                         </span>
                                     </td>
                                 )}
-                                <td className="py-3 text-right text-sm text-dark dark:text-white">{donor.next}</td>
+                                {showMissingFields && (
+                                    <td className="py-3">
+                                        <div className="flex flex-wrap gap-1">
+                                            {getMissingFields(donor).slice(0, 3).map((field, idx) => (
+                                                <span key={idx} className="inline-block rounded bg-red-100 px-1 py-0.5 text-xs text-red-800">
+                                                    {field}
+                                                </span>
+                                            ))}
+                                            {getMissingFields(donor).length > 3 && (
+                                                <span className="text-xs text-gray-500">+{getMissingFields(donor).length - 3}</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                )}
+                                <td className="py-3 text-right text-sm text-dark dark:text-white">
+                                    {donor.donorType?.charAt(0)?.toUpperCase()}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
