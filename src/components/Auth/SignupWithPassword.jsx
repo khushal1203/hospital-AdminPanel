@@ -122,7 +122,6 @@ const SignupWithPassword = () => {
                 name="password"
                 handleChange={handleChange}
                 value={data.password}
-                icon={<PasswordIcon />}
             />
 
             {/* Confirm Password */}
@@ -134,7 +133,6 @@ const SignupWithPassword = () => {
                 name="confirmPassword"
                 handleChange={handleChange}
                 value={data.confirmPassword}
-                icon={<PasswordIcon />}
             />
 
             <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">

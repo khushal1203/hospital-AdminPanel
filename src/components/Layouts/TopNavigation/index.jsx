@@ -63,11 +63,13 @@ export default function TopNavigation() {
                     {/* Logo */}
                     <div className="flex items-center gap-8">
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <div className="flex items-center">
-                                <div className="text-2xl font-bold text-white">
-                                    <span className="text-pink-400">GEN</span>IFY
-                                </div>
-                            </div>
+                            <Image
+                                src="/images/icon/brand.svg"
+                                alt="Logo"
+                                width={120}
+                                height={32}
+                                className="brightness-0 invert"
+                            />
                         </Link>
 
                         {/* Navigation Items */}
