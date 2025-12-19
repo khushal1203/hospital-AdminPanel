@@ -14,11 +14,11 @@ export default async function DonorsHistoryPage({ searchParams }) {
     const page = parseInt(params?.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
-    
-    const { donors, total } = await getAllDonorsController({ 
-        status: "completed", 
+
+    const { donors, total } = await getAllDonorsController({
+        status: "completed",
         skip,
-        limit 
+        limit
     });
 
     return (
@@ -33,8 +33,8 @@ export default async function DonorsHistoryPage({ searchParams }) {
             </div>
             <div className="bg-gray-100 flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-auto p-3 sm:p-6">
-                    <DonorListTable 
-                        donors={JSON.parse(JSON.stringify(donors))} 
+                    <DonorListTable
+                        donors={JSON.parse(JSON.stringify(donors))}
                         currentPage={page}
                         totalItems={total}
                         itemsPerPage={limit}

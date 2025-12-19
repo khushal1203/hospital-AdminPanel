@@ -66,94 +66,88 @@ export const createDonorController = async (body, userId) => {
     } = body;
 
     // Validate required fields
-    if (!fullName || !email || !phoneNumber || !dateOfBirth || !gender || !aadharNumber) {
-        throw new Error("Required fields are missing: fullName, email, phoneNumber, dateOfBirth, gender, aadharNumber");
+    if (!fullName || !dateOfBirth) {
+        throw new Error("Required fields are missing: fullName, dateOfBirth");
     }
 
     // Generate donor ID
     const count = await Donor.countDocuments();
     const generatedDonorId = `#${String(count + 809776).padStart(6, "0")}`;
 
-    // Create donor data with only non-empty values
+    // Create donor data with all fields (including null/empty values)
     const donorData = {
         donorId: generatedDonorId,
-        fullName,
-        email,
-        contactNumber: phoneNumber,
+        donorType: donorType || null,
+        donorImage: donorImage || null,
         dateOfBirth,
-        gender,
-        aadharNumber,
+        age: age || null,
+        fullName,
+        husbandName: husbandName || null,
+        gender: gender ? gender.toLowerCase() : null,
+        aadharNumber: aadharNumber || null,
+        maritalStatus: maritalStatus ? maritalStatus.toLowerCase() : null,
+        cast: cast || null,
+        contactNumber: phoneNumber || null,
+        email: email || null,
+        referenceName: referenceName || null,
+        referenceNumber: referenceNumber || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        pincode: pincode || null,
+        placeOfBirth: placeOfBirth || null,
+        religion: religion || null,
+        bloodGroup: bloodGroup || null,
+        donorEducation: donorEducation || null,
+        donorOccupation: donorOccupation || null,
+        monthlyIncome: monthlyIncome || null,
+        spouseEducation: spouseEducation || null,
+        spouseOccupation: spouseOccupation || null,
+        height: height || null,
+        weight: weight || null,
+        skinColor: skinColor || null,
+        hairColor: hairColor || null,
+        eyeColor: eyeColor || null,
+        menstrualHistory: menstrualHistory !== undefined ? menstrualHistory : null,
+        contraceptives: contraceptives !== undefined ? contraceptives : null,
+        medicalHistory: medicalHistory !== undefined ? medicalHistory : null,
+        familyMedicalHistory: familyMedicalHistory !== undefined ? familyMedicalHistory : null,
+        abnormalityInChild: abnormalityInChild !== undefined ? abnormalityInChild : null,
+        bloodTransfusion: bloodTransfusion !== undefined ? bloodTransfusion : null,
+        substanceAbuse: substanceAbuse !== undefined ? substanceAbuse : null,
+        geneticAbnormality: geneticAbnormality !== undefined ? geneticAbnormality : null,
+        documents: documents || null,
         status: "active",
+        bloodReportStatus: "pending",
+        opuProcessStatus: "pending",
         createdBy: userId,
-    };
-
-    // Add optional fields only if they have values
-    if (donorType) donorData.donorType = donorType;
-    if (donorImage) donorData.donorImage = donorImage;
-    if (age) donorData.age = age;
-    if (husbandName) donorData.husbandName = husbandName;
-    if (maritalStatus) donorData.maritalStatus = maritalStatus;
-    if (cast) donorData.cast = cast;
-    if (referenceName) donorData.referenceName = referenceName;
-    if (referenceNumber) donorData.referenceNumber = referenceNumber;
-    if (address) donorData.address = address;
-    if (city) donorData.city = city;
-    if (state) donorData.state = state;
-    if (pincode) donorData.pincode = pincode;
-    if (placeOfBirth) donorData.placeOfBirth = placeOfBirth;
-    if (religion) donorData.religion = religion;
-    if (bloodGroup && bloodGroup.trim()) donorData.bloodGroup = bloodGroup;
-    if (donorEducation) donorData.donorEducation = donorEducation;
-    if (donorOccupation) donorData.donorOccupation = donorOccupation;
-    if (monthlyIncome) donorData.monthlyIncome = monthlyIncome;
-    if (spouseEducation) donorData.spouseEducation = spouseEducation;
-    if (spouseOccupation) donorData.spouseOccupation = spouseOccupation;
-    if (height) donorData.height = height;
-    if (weight) donorData.weight = weight;
-    if (skinColor) donorData.skinColor = skinColor;
-    if (hairColor) donorData.hairColor = hairColor;
-    if (eyeColor) donorData.eyeColor = eyeColor;
-    if (menstrualHistory !== undefined) donorData.menstrualHistory = menstrualHistory;
-    if (contraceptives !== undefined) donorData.contraceptives = contraceptives;
-    if (medicalHistory !== undefined) donorData.medicalHistory = medicalHistory;
-    if (familyMedicalHistory !== undefined) donorData.familyMedicalHistory = familyMedicalHistory;
-    if (abnormalityInChild !== undefined) donorData.abnormalityInChild = abnormalityInChild;
-    if (bloodTransfusion !== undefined) donorData.bloodTransfusion = bloodTransfusion;
-    if (substanceAbuse !== undefined) donorData.substanceAbuse = substanceAbuse;
-    if (geneticAbnormality !== undefined) donorData.geneticAbnormality = geneticAbnormality;
-    if (documents) donorData.documents = documents;
-
-    // Add nested objects only if they have data
-    if (lmpDate || lmpDay || etValue || rightOvary || leftOvary || stimulationProcess || processStartDate) {
-        donorData.follicularDetails = {
-            lmpDate,
-            lmpDay,
-            etValue,
-            rightOvary,
-            leftOvary,
-            stimulationProcess,
-            processStartDate,
-        };
-    }
-
-    if (numberOfDeliveries || numberOfAbortions || otherNotes) {
-        donorData.obstetricHistory = {
-            numberOfDeliveries,
-            numberOfAbortions,
-            otherNotes,
-        };
-    }
-
-    if (pulse || bp || temperature || respiratorySystem || cardiovascularSystem || abdominalExamination || otherSystems) {
-        donorData.physicalExamination = {
-            pulse,
-            bp,
-            temperature,
-            respiratorySystem,
-            cardiovascularSystem,
-            abdominalExamination,
-            otherSystems,
-        };
+        
+        // Always include nested objects (even if empty)
+        follicularDetails: {
+            lmpDate: lmpDate || null,
+            lmpDay: lmpDay || null,
+            etValue: etValue || null,
+            rightOvary: rightOvary || null,
+            leftOvary: leftOvary || null,
+            stimulationProcess: stimulationProcess !== undefined ? stimulationProcess : false,
+            processStartDate: processStartDate || null,
+        },
+        
+        obstetricHistory: {
+            numberOfDeliveries: numberOfDeliveries || null,
+            numberOfAbortions: numberOfAbortions || null,
+            otherNotes: otherNotes || null,
+        },
+        
+        physicalExamination: {
+            pulse: pulse || null,
+            bp: bp || null,
+            temperature: temperature || null,
+            respiratorySystem: respiratorySystem || null,
+            cardiovascularSystem: cardiovascularSystem || null,
+            abdominalExamination: abdominalExamination || null,
+            otherSystems: otherSystems || null,
+        },
     }
 
     // Create donor
@@ -223,24 +217,10 @@ export const getAllDonorsController = async (filters = {}) => {
 
     const donors = await donorQuery;
 
-    // Auto-update status based on completeness
-    const updatedDonors = donors.map(donor => {
-        const isComplete = isDonorComplete(donor);
-        const newStatus = isComplete ? 'active' : 'pending';
-        
-        // Only update if status has changed
-        if (donor.status !== newStatus && ['pending', 'active'].includes(donor.status)) {
-            donor.status = newStatus;
-            donor.save(); // Save the updated status
-        }
-        
-        return donor;
-    });
-
     return {
         success: true,
-        donors: updatedDonors,
-        count: updatedDonors.length,
+        donors,
+        count: donors.length,
         total,
     };
 };
@@ -273,6 +253,11 @@ export const updateDonorAppointmentController = async (donorId, appointmentDate,
  * Get donor by ID
  */
 export const getDonorByIdController = async (donorId) => {
+    // Validate MongoDB ObjectId format
+    if (!donorId || !donorId.match(/^[0-9a-fA-F]{24}$/)) {
+        throw new Error("Invalid donor ID format");
+    }
+
     const donor = await Donor.findById(donorId).select("-__v");
 
     if (!donor) {
@@ -290,6 +275,17 @@ export const getDonorByIdController = async (donorId) => {
  */
 export const updateDonorController = async (donorId, updates, userId) => {
     const updateData = { ...updates };
+    
+    // Convert enum values to lowercase
+    if (updateData.gender) {
+        updateData.gender = updateData.gender.toLowerCase();
+    }
+    if (updateData.maritalStatus) {
+        updateData.maritalStatus = updateData.maritalStatus.toLowerCase();
+    }
+    if (updateData.donorType) {
+        updateData.donorType = updateData.donorType.toLowerCase();
+    }
     
     // Only add updatedBy if userId is provided and valid
     if (userId) {

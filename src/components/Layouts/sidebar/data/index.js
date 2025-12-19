@@ -1,6 +1,5 @@
-import { HiHome } from "react-icons/hi";
-import { FiCalendar, FiUser } from "react-icons/fi";
-import { MdStorage, MdDashboard, MdPeople, MdLocalHospital } from "react-icons/md";
+import { FiUser } from "react-icons/fi";
+import { MdStorage, MdDashboard, MdPeople } from "react-icons/md";
 import { FaPlus, FaUserMd, FaFlask, FaUsers } from "react-icons/fa";
 
 // Navigation data for Admin role
@@ -94,7 +93,7 @@ const LABORATORY_NAV = [
       },
       {
         title: "Active Donors",
-        url: "/laboratory",
+        url: "/donors/active",
         icon: MdPeople,
         items: [],
       },

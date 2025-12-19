@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { type HTMLInputTypeAttribute, useState, useEffect } from "react";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";

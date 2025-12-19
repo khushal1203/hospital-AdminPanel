@@ -27,6 +27,29 @@ const FormField = ({ label, name, value, onChange, type = "text", options = null
                 rows={3}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
             />
+        ) : type === "checkbox" ? (
+            <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        name={name}
+                        checked={value === true || value === "yes"}
+                        onChange={(e) => onChange({ target: { name, value: e.target.checked } })}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">Yes</span>
+                </label>
+                <label className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        name={name}
+                        checked={value === false || value === "no"}
+                        onChange={(e) => onChange({ target: { name, value: !e.target.checked } })}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">No</span>
+                </label>
+            </div>
         ) : (
             <input
                 type={type}
@@ -140,14 +163,14 @@ export default function EditMedicalModal({ isOpen, onClose, donor, section, onSa
                             name="menstrualHistory" 
                             value={formData.menstrualHistory} 
                             onChange={handleChange}
-                            type="textarea"
+                            type="checkbox"
                         />
                         <FormField 
-                            label="Contraceptives" 
+                            label="Use of Contraceptives" 
                             name="contraceptives" 
                             value={formData.contraceptives} 
                             onChange={handleChange}
-                            options={["yes", "no"]}
+                            type="checkbox"
                         />
                     </>
                 );
@@ -185,42 +208,42 @@ export default function EditMedicalModal({ isOpen, onClose, donor, section, onSa
                             name="medicalHistory" 
                             value={formData.medicalHistory} 
                             onChange={handleChange}
-                            type="textarea"
+                            type="checkbox"
                         />
                         <FormField 
                             label="Family Medical History" 
                             name="familyMedicalHistory" 
                             value={formData.familyMedicalHistory} 
                             onChange={handleChange}
-                            type="textarea"
+                            type="checkbox"
                         />
                         <FormField 
                             label="Abnormality in Child" 
                             name="abnormalityInChild" 
                             value={formData.abnormalityInChild} 
                             onChange={handleChange}
-                            options={["yes", "no"]}
+                            type="checkbox"
                         />
                         <FormField 
                             label="Blood Transfusion" 
                             name="bloodTransfusion" 
                             value={formData.bloodTransfusion} 
                             onChange={handleChange}
-                            options={["yes", "no"]}
+                            type="checkbox"
                         />
                         <FormField 
                             label="Substance Abuse" 
                             name="substanceAbuse" 
                             value={formData.substanceAbuse} 
                             onChange={handleChange}
-                            options={["yes", "no"]}
+                            type="checkbox"
                         />
                         <FormField 
                             label="Genetic Abnormality" 
                             name="geneticAbnormality" 
                             value={formData.geneticAbnormality} 
                             onChange={handleChange}
-                            options={["yes", "no"]}
+                            type="checkbox"
                         />
                     </>
                 );
@@ -311,8 +334,11 @@ export default function EditMedicalModal({ isOpen, onClose, donor, section, onSa
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
+                            {isLoading && (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                            )}
                             {isLoading ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>

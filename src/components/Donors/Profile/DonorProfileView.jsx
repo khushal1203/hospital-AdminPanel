@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { MdEdit, MdMoreVert, MdPrint } from "react-icons/md";
+import { toast } from "@/utils/toast";
 
 import DonorTimeline from "./DonorTimeline";
 import OverviewTab from "./OverviewTab";
@@ -23,6 +24,38 @@ const Tag = ({ text, type }) => {
 
 export default function DonorProfileView({ donor }) {
     const [activeTab, setActiveTab] = useState("overview");
+    const [donorImage, setDonorImage] = useState(donor.donorImage);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const handleImageUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('donorId', donor._id);
+
+        try {
+            const response = await fetch('/api/donors/upload-image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                setDonorImage(result.imageUrl);
+                toast.success('Photo uploaded successfully!');
+            } else {
+                toast.error(result.message || 'Failed to upload photo');
+            }
+        } catch (error) {
+            toast.error('Failed to upload photo');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const tabs = [
         { id: "overview", label: "Overview", icon: MdOutlineDashboard },
@@ -38,10 +71,10 @@ export default function DonorProfileView({ donor }) {
                 <div className="p-6">
                     <div className="flex items-start justify-between">
                         <div className="flex gap-6">
-                            <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-gray-100">
-                                {donor.donorImage ? (
+                            <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-gray-100 group">
+                                {donorImage ? (
                                     <Image
-                                        src={donor.donorImage}
+                                        src={donorImage}
                                         alt={donor.fullName}
                                         width={96}
                                         height={96}
@@ -50,6 +83,31 @@ export default function DonorProfileView({ donor }) {
                                 ) : (
                                     <div className="flex h-full w-full items-center justify-center bg-purple-100 text-2xl font-bold text-purple-600">
                                         {donor.fullName?.charAt(0)}
+                                    </div>
+                                )}
+                                
+                                {/* Upload Button */}
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploading}
+                                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                >
+                                    <MdEdit className="h-6 w-6 text-white" />
+                                </button>
+                                
+                                {/* Hidden File Input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                />
+                                
+                                {/* Loading Overlay */}
+                                {uploading && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
                                     </div>
                                 )}
                             </div>

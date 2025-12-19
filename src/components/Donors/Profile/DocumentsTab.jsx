@@ -11,25 +11,27 @@ export default function DocumentsTab({ donor }) {
 
     const defaultDocuments = {
         donorDocuments: [
-            { reportName: 'Consent Form', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Affidavit Form', documentName: null, uploadBy: null, uploadDate: null, hasFile: false }
+            { reportName: 'Consent Form', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Affidavit Form', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false }
         ],
         reports: [
-            { reportName: 'OvaCare Evaluation Report', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Lumine Report', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Blood Report', documentName: null, uploadBy: null, uploadDate: null, hasFile: false }
+            { reportName: 'OvaCare Evaluation Report', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Lumine Report', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Blood Report', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'OPU Process', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false }
         ],
         otherDocuments: [
-            { reportName: 'Aadhaar Card Front', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Aadhaar Card Back', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Husband/Nominee Aadhaar Card Front', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Husband/Nominee Aadhaar Card Back', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Health Insurance Document', documentName: null, uploadBy: null, uploadDate: null, hasFile: false },
-            { reportName: 'Life Insurance Document', documentName: null, uploadBy: null, uploadDate: null, hasFile: false }
+            { reportName: 'Aadhaar Card Front', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Aadhaar Card Back', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Husband/Nominee Aadhaar Card Front', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Husband/Nominee Aadhaar Card Back', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Health Insurance Document', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+            { reportName: 'Life Insurance Document', documentName: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false }
         ]
     };
 
     const [documents, setDocuments] = useState(defaultDocuments);
+    const [uploading, setUploading] = useState({});
 
     useEffect(() => {
         const user = localStorage.getItem('user');
@@ -37,6 +39,45 @@ export default function DocumentsTab({ donor }) {
             const userData = JSON.parse(user);
             setCurrentUser(userData.name || userData.fullName || 'Unknown User');
         }
+        
+        // Load documents from database and localStorage
+        const uploadedDocs = JSON.parse(localStorage.getItem('uploadedDocs') || '{}');
+        
+        const finalDocs = {
+            donorDocuments: [],
+            reports: [],
+            otherDocuments: []
+        };
+        
+        // Merge database documents with defaults and localStorage
+        ['donorDocuments', 'reports', 'otherDocuments'].forEach(section => {
+            const dbDocs = donor.documents?.[section] || [];
+            const defaults = defaultDocuments[section];
+            
+            finalDocs[section] = defaults.map((defaultDoc, index) => {
+                const docKey = `${donor._id}-${section}-${index}`;
+                
+                // Priority: localStorage > database > default
+                if (uploadedDocs[docKey]) {
+                    return uploadedDocs[docKey];
+                }
+                
+                const dbDoc = dbDocs.find(doc => doc.reportName === defaultDoc.reportName);
+                if (dbDoc) {
+                    return { ...dbDoc, isUploaded: dbDoc.hasFile || dbDoc.isUploaded || false };
+                }
+                return defaultDoc;
+            });
+        });
+        
+        setDocuments(finalDocs);
+    }, [donor]);
+    
+    // Clear localStorage on component unmount
+    useEffect(() => {
+        return () => {
+            // Optional: Clear old entries to prevent memory buildup
+        };
     }, []);
 
     const handleAddNew = (type) => {
@@ -67,26 +108,95 @@ export default function DocumentsTab({ donor }) {
         setShowModal(false);
     };
 
-    const handleUpload = (sectionKey, index) => {
+    const handleDelete = async (sectionKey, index) => {
+        const updatedDoc = {
+            reportName: documents[sectionKey][index].reportName,
+            documentName: null,
+            uploadBy: null,
+            uploadDate: null,
+            hasFile: false,
+            isUploaded: false
+        };
+        
+        // Update state
+        setDocuments(prev => ({
+            ...prev,
+            [sectionKey]: prev[sectionKey].map((doc, i) => 
+                i === index ? updatedDoc : doc
+            )
+        }));
+        
+        // Remove from localStorage
+        const uploadedDocs = JSON.parse(localStorage.getItem('uploadedDocs') || '{}');
+        const docKey = `${donor._id}-${sectionKey}-${index}`;
+        delete uploadedDocs[docKey];
+        localStorage.setItem('uploadedDocs', JSON.stringify(uploadedDocs));
+        
+        // TODO: Call API to delete document from server
+        console.log('Document deleted:', { sectionKey, index });
+    };
+
+    const handleUpload = async (sectionKey, index) => {
         const inputId = `${sectionKey}-${index}`;
         if (!fileInputRefs.current[inputId]) {
             fileInputRefs.current[inputId] = document.createElement('input');
             fileInputRefs.current[inputId].type = 'file';
-            fileInputRefs.current[inputId].onchange = (e) => {
+            fileInputRefs.current[inputId].onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    setDocuments(prev => ({
-                        ...prev,
-                        [sectionKey]: prev[sectionKey].map((doc, i) => 
-                            i === index ? {
-                                ...doc,
+                    setUploading(prev => ({ ...prev, [`${sectionKey}-${index}`]: true }));
+                    
+                    const formData = new FormData();
+                    formData.append('document', file);
+                    formData.append('donorId', donor._id);
+                    formData.append('sectionKey', sectionKey);
+                    console.log('Upload params:', { sectionKey, index, reportName: documents[sectionKey][index].reportName });
+                    formData.append('index', index);
+                    formData.append('reportName', documents[sectionKey][index].reportName);
+                    
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch('/api/donors/upload-document', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        console.log('Upload response:', data);
+                        if (data.success) {
+                            const updatedDoc = {
+                                reportName: documents[sectionKey][index].reportName,
                                 documentName: file.name,
+                                filePath: data.filePath,
                                 uploadBy: currentUser,
                                 uploadDate: new Date().toISOString(),
-                                hasFile: true
-                            } : doc
-                        )
-                    }));
+                                hasFile: true,
+                                isUploaded: true
+                            };
+                            
+                            // Update state
+                            setDocuments(prev => ({
+                                ...prev,
+                                [sectionKey]: prev[sectionKey].map((doc, i) => 
+                                    i === index ? updatedDoc : doc
+                                )
+                            }));
+                            
+                            // Save to localStorage for persistence
+                            const uploadedDocs = JSON.parse(localStorage.getItem('uploadedDocs') || '{}');
+                            const docKey = `${donor._id}-${sectionKey}-${index}`;
+                            uploadedDocs[docKey] = updatedDoc;
+                            localStorage.setItem('uploadedDocs', JSON.stringify(uploadedDocs));
+                        }
+                    } catch (error) {
+                        console.error('Error uploading document:', error);
+                        console.error('Upload error details:', error.message);
+                    } finally {
+                        setUploading(prev => ({ ...prev, [`${sectionKey}-${index}`]: false }));
+                    }
                 }
             };
         }
@@ -110,7 +220,7 @@ export default function DocumentsTab({ donor }) {
                     <thead className="bg-gray-50 text-gray-500 font-medium">
                         <tr>
                             <th className="p-3">Report Name</th>
-                            <th className="p-3">Document</th>
+                            <th className="p-3">Status</th>
                             <th className="p-3">Upload By</th>
                             <th className="p-3">Date</th>
                             <th className="p-3">Action</th>
@@ -121,16 +231,21 @@ export default function DocumentsTab({ donor }) {
                             <tr key={index}>
                                 <td className="p-3 text-gray-900">{doc.reportName}</td>
                                 <td className="p-3 text-gray-900">
-                                    {doc.hasFile ? (
-                                        <span className="text-green-600">{doc.documentName}</span>
+                                    {doc.isUploaded ? (
+                                        <span className="text-green-600 flex items-center gap-1">
+                                            <span className="h-2 w-2 bg-green-500 rounded-full"></span>
+                                            Uploaded
+                                        </span>
+                                    ) : uploading[`${type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments'}-${index}`] ? (
+                                        <span className="text-blue-600 flex items-center gap-1">
+                                            <div className="h-3 w-3 animate-spin rounded-full border border-blue-600 border-t-transparent"></div>
+                                            Uploading...
+                                        </span>
                                     ) : (
-                                        <button 
-                                            onClick={() => handleUpload(type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments', index)}
-                                            className="flex items-center gap-1 text-purple-600 hover:text-purple-800 text-sm"
-                                        >
-                                            <MdUpload className="h-3 w-3" />
-                                            Upload Document
-                                        </button>
+                                        <span className="text-orange-600 flex items-center gap-1">
+                                            <span className="h-2 w-2 bg-orange-500 rounded-full"></span>
+                                            Pending
+                                        </span>
                                     )}
                                 </td>
                                 <td className="p-3 text-gray-900">{doc.uploadBy || '-'}</td>
@@ -138,12 +253,23 @@ export default function DocumentsTab({ donor }) {
                                     {doc.uploadDate ? dayjs(doc.uploadDate).format("DD MMM YYYY") : '-'}
                                 </td>
                                 <td className="p-3">
-                                    {doc.hasFile ? (
-                                        <button className="text-purple-600 hover:text-purple-800">
-                                            <MdFileDownload className="h-4 w-4" />
+                                    {doc.isUploaded ? (
+                                        <button 
+                                            onClick={() => handleDelete(type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments', index)}
+                                            className="text-red-600 hover:text-red-800"
+                                        >
+                                            <MdClose className="h-4 w-4" />
                                         </button>
                                     ) : (
-                                        <span className="text-gray-400">-</span>
+                                        <button 
+                                            onClick={() => {
+                                                const sectionKey = type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments';
+                                                handleUpload(sectionKey, index);
+                                            }}
+                                            className="text-purple-600 hover:text-purple-800"
+                                        >
+                                            <MdUpload className="h-4 w-4" />
+                                        </button>
                                     )}
                                 </td>
                             </tr>

@@ -12,7 +12,7 @@ const ImageUpload = ({ label, onImageChange, error, className, accept = "image/*
         if (file && file.type.startsWith('image/')) {
             // Validate file size (5MB max)
             if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
+                console.error('File size must be less than 5MB');
                 return;
             }
 

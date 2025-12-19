@@ -54,13 +54,11 @@ export default function OverviewTab({ donor }) {
             if (response.ok) {
                 const result = await response.json();
                 setDonorData(result.data || updatedData);
-                alert('Donor information updated successfully!');
             } else {
                 throw new Error('Failed to update donor information');
             }
         } catch (error) {
             console.error('Error updating donor:', error);
-            alert('Failed to update donor information. Please try again.');
         }
     };
 

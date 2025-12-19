@@ -14,12 +14,50 @@ import {
     MdNavigateNext
 } from "react-icons/md";
 
-const StatusBadge = ({ status }) => {
-    const isCompleted = status === "signed" || status === "uploaded";
+const StatusBadge = ({ status, donor, documentType }) => {
+    // Helper function to check if document has file uploaded
+    const getDocumentStatus = (docType) => {
+        if (!donor?.documents) return status;
+        
+        // Check in all document arrays
+        const allDocs = [
+            ...(donor.documents.donorDocuments || []),
+            ...(donor.documents.reports || []),
+            ...(donor.documents.otherDocuments || [])
+        ];
+        
+        // Find specific document type
+        const doc = allDocs.find(d => {
+            if (!d.reportName && !d.documentName) return false;
+            
+            const name = (d.reportName || d.documentName || '').toLowerCase();
+            const searchTerm = docType.toLowerCase();
+            
+            // Match specific document types
+            if (searchTerm === 'consent' && (name.includes('consent') || name.includes('form'))) return true;
+            if (searchTerm === 'affidavit' && name.includes('affidavit')) return true;
+            if (searchTerm === 'insurance' && name.includes('insurance')) return true;
+            if (searchTerm === 'scan' && (name.includes('scan') || name.includes('follicular'))) return true;
+            if (searchTerm === 'blood' && (name.includes('blood') || name.includes('report'))) return true;
+            if (searchTerm === 'opu' && (name.includes('opu') || name.includes('process'))) return true;
+            
+            return name.includes(searchTerm);
+        });
+        
+        // Return uploaded only if specific document has hasFile true
+        if (doc && doc.hasFile === true) {
+            return 'uploaded';
+        }
+        
+        return status;
+    };
+
+    const finalStatus = documentType ? getDocumentStatus(documentType) : status;
+    const isCompleted = finalStatus === "signed" || finalStatus === "uploaded";
 
     const getLabel = () => {
-        if (status === "signed") return "Signed";
-        if (status === "uploaded") return "Uploaded";
+        if (finalStatus === "signed") return "Signed";
+        if (finalStatus === "uploaded") return "Uploaded";
         return "Pending";
     };
 
@@ -139,8 +177,9 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Aadhar Number</th>
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Consent Form</th>
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Affidavit</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Scan Status</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Blood Report</th>
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Insurance</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">OPU Process</th>
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Action</th>
                             </tr>
                         </thead>
@@ -180,8 +219,8 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                                 <span className="font-medium text-gray-900 flex items-center">
                                                     {donor.fullName}
                                                     {donor.tag && <Tag text={donor.tag} type={donor.tagType} />}
-                                                    {/* Placeholder logic for tags until backend provides them */}
-                                                    {donor.status === 'active' && !donor.tag && <Tag text="ALLOTTED" />}
+                                                    {/* Show ALLOTTED tag only when isAllotted is true */}
+                                                    {donor.isAllotted && <Tag text="ALLOTTED" />}
                                                 </span>
                                             </div>
                                         </div>
@@ -190,10 +229,11 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                         {donor.nextAppointment ? dayjs(donor.nextAppointment).format("DD MMM, YYYY") : "-"}
                                     </td>
                                     <td className="p-4 text-gray-600">{donor.aadharNumber || "-"}</td>
-                                    <td className="p-4"><StatusBadge status={donor.consentFormStatus} /></td>
-                                    <td className="p-4"><StatusBadge status={donor.affidavitStatus} /></td>
-                                    <td className="p-4"><StatusBadge status={donor.follicularScanStatus} /></td>
-                                    <td className="p-4"><StatusBadge status={donor.insuranceStatus} /></td>
+                                    <td className="p-4"><StatusBadge status={donor.consentFormStatus} donor={donor} documentType="consent" /></td>
+                                    <td className="p-4"><StatusBadge status={donor.affidavitStatus} donor={donor} documentType="affidavit" /></td>
+                                    <td className="p-4"><StatusBadge status={donor.bloodReportStatus} donor={donor} documentType="blood" /></td>
+                                    <td className="p-4"><StatusBadge status={donor.insuranceStatus} donor={donor} documentType="insurance" /></td>
+                                    <td className="p-4"><StatusBadge status={donor.opuProcessStatus} donor={donor} documentType="opu" /></td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
                                             <Link
