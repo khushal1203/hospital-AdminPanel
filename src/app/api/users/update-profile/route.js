@@ -30,7 +30,6 @@ export async function PUT(request) {
     await user.save();
     
     const updatedUser = await User.findById(id).select("-password");
-    console.log("Updated user:", updatedUser);
 
     return NextResponse.json({
       success: true,

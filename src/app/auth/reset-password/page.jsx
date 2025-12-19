@@ -1,16 +1,13 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import InputGroup from "@/components/FormElements/InputGroup";
-
-export default function ResetPassword() {
+function ResetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
-
     const [formData, setFormData] = useState({
         password: "",
         confirmPassword: "",
@@ -18,37 +15,31 @@ export default function ResetPassword() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-
     useEffect(() => {
         if (!token) {
             setError("Invalid reset link");
         }
     }, [token]);
-
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
-
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match");
             setLoading(false);
             return;
         }
-
         if (formData.password.length < 6) {
             setError("Password must be at least 6 characters long");
             setLoading(false);
             return;
         }
-
         try {
             const res = await fetch("/api/auth/reset-password", {
                 method: "POST",
@@ -60,9 +51,7 @@ export default function ResetPassword() {
                     password: formData.password,
                 }),
             });
-
             const result = await res.json();
-
             if (result.success) {
                 setSuccess(true);
                 setTimeout(() => {
@@ -77,13 +66,12 @@ export default function ResetPassword() {
             setLoading(false);
         }
     };
-
     if (success) {
         return (
             <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
                 <div className="flex items-center justify-center p-12">
                     <div className="text-center">
-                        <div className="mb-4 text-6xl">✅</div>
+                        <div className="mb-4 text-6xl">:white_check_mark:</div>
                         <h2 className="mb-2 text-2xl font-bold text-dark dark:text-white">
                             Password Reset Successful!
                         </h2>
@@ -95,7 +83,6 @@ export default function ResetPassword() {
             </div>
         );
     }
-
     return (
         <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
             <div className="flex flex-wrap items-center">
@@ -110,13 +97,11 @@ export default function ResetPassword() {
                                     Enter your new password below.
                                 </p>
                             </div>
-
                             {error && (
                                 <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-600">
                                     {error}
                                 </div>
                             )}
-
                             <InputGroup
                                 type="password"
                                 label="New Password"
@@ -127,7 +112,6 @@ export default function ResetPassword() {
                                 value={formData.password}
                                 required
                             />
-
                             <InputGroup
                                 type="password"
                                 label="Confirm Password"
@@ -138,7 +122,6 @@ export default function ResetPassword() {
                                 value={formData.confirmPassword}
                                 required
                             />
-
                             <div className="mb-4.5">
                                 <button
                                     type="submit"
@@ -151,7 +134,6 @@ export default function ResetPassword() {
                                     )}
                                 </button>
                             </div>
-
                             <div className="text-center">
                                 <Link
                                     href="/auth/sign-in"
@@ -163,7 +145,6 @@ export default function ResetPassword() {
                         </form>
                     </div>
                 </div>
-
                 <div className="hidden w-full p-7.5 xl:block xl:w-1/2">
                     <div className="bg-gradient-to-br from-blue-600 to-purple-700 overflow-hidden rounded-2xl px-12.5 pt-12.5">
                         <Link className="mb-10 inline-block" href="/">
@@ -174,19 +155,15 @@ export default function ResetPassword() {
                                 height={32}
                             />
                         </Link>
-
                         <p className="mb-3 text-xl font-medium text-white">
                             Almost there!
                         </p>
-
                         <h1 className="mb-4 text-2xl font-bold text-white sm:text-heading-3">
                             Create New Password
                         </h1>
-
                         <p className="w-full max-w-[375px] font-medium text-white/80">
                             Choose a strong password to secure your account
                         </p>
-
                         <div className="mt-31">
                             <Image
                                 src="/images/grids/grid-02.svg"
@@ -202,3 +179,17 @@ export default function ResetPassword() {
         </div>
     );
 }
+export default function ResetPassword() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+            <ResetPasswordForm />
+        </Suspense>
+    );
+}
+
+
+
+
+
+
+
