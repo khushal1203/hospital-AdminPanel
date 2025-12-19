@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import { Donor } from "@/modals/donorModal";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises"; // ✅ ADD mkdir
 import path from "path";
 
 export async function POST(request) {
@@ -9,79 +9,99 @@ export async function POST(request) {
         await connectDB();
 
         const formData = await request.formData();
-        const file = formData.get('document');
-        const donorId = formData.get('donorId');
-        const sectionKey = formData.get('sectionKey');
-        const index = parseInt(formData.get('index'));
-        const reportName = formData.get('reportName');
+        const file = formData.get("document");
+        const donorId = formData.get("donorId");
+        const sectionKey = formData.get("sectionKey");
+        const index = Number(formData.get("index"));
+        const reportName = formData.get("reportName");
 
-        if (!file || !donorId || !sectionKey || index === undefined) {
-            return NextResponse.json({ success: false, message: "Missing required fields" });
+        if (!file || !donorId || !sectionKey || Number.isNaN(index)) {
+            return NextResponse.json(
+                { success: false, message: "Missing required fields" },
+                { status: 400 }
+            );
         }
 
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const fileName = `${reportName.replace(/[\s\/\\:*?"<>|]/g, '_')}-${donorId}-${Date.now()}.${file.name.split('.').pop()}`;
-        const filePath = path.join(process.cwd(), 'public/uploads/documents', fileName);
+        const safeName = reportName.replace(/[\s\/\\:*?"<>|]/g, "_");
+        const ext = file.name.split(".").pop();
+
+        const fileName = `${safeName}-${donorId}-${Date.now()}.${ext}`;
+
+        // ✅ ENSURE DIRECTORY EXISTS
+        const uploadDir = path.join(
+            process.cwd(),
+            "public",
+            "uploads",
+            "documents"
+        );
+
+        await mkdir(uploadDir, { recursive: true }); // 🔥 FIX
+
+        const filePath = path.join(uploadDir, fileName);
 
         await writeFile(filePath, buffer);
 
         const fileUrl = `/uploads/documents/${fileName}`;
 
-        // Update donor document in database
+        // DB update
         const donor = await Donor.findById(donorId);
-
-        // Initialize documents if not exists
-        if (!donor.documents) {
-            donor.documents = { donorDocuments: [], reports: [], otherDocuments: [] };
+        if (!donor) {
+            return NextResponse.json(
+                { success: false, message: "Donor not found" },
+                { status: 404 }
+            );
         }
 
-        // Ensure section exists
+        if (!donor.documents) {
+            donor.documents = {
+                donorDocuments: [],
+                reports: [],
+                otherDocuments: [],
+            };
+        }
+
         if (!donor.documents[sectionKey]) {
             donor.documents[sectionKey] = [];
         }
 
-        // Ensure array has enough elements
         while (donor.documents[sectionKey].length <= index) {
             donor.documents[sectionKey].push({
-                reportName: '',
+                reportName: "",
                 documentName: null,
                 filePath: null,
                 uploadBy: null,
                 uploadDate: null,
                 hasFile: false,
-                isUploaded: false
+                isUploaded: false,
             });
         }
 
-        // Update the document
         donor.documents[sectionKey][index] = {
-            reportName: reportName,
+            reportName,
             documentName: file.name,
             filePath: fileUrl,
-            uploadBy: 'Current User',
+            uploadBy: "Current User",
             uploadDate: new Date(),
             hasFile: true,
-            isUploaded: true
+            isUploaded: true,
         };
 
-        // Mark as modified and save
-        donor.markModified('documents');
+        donor.markModified("documents");
         await donor.save();
 
         return NextResponse.json({
             success: true,
             filePath: fileUrl,
-            message: "Document uploaded successfully"
+            message: "Document uploaded successfully",
         });
-
     } catch (error) {
         console.error("Upload error:", error);
-        console.error("Error details:", error.message);
-        return NextResponse.json({
-            success: false,
-            message: "Failed to upload document"
-        });
+        return NextResponse.json(
+            { success: false, message: error.message },
+            { status: 500 }
+        );
     }
 }
