@@ -36,12 +36,11 @@ const DonorSchema = new mongoose.Schema(
         gender: {
             type: String,
             enum: ["male", "female", "other"],
-            required: true,
         },
         aadharNumber: {
             type: String,
-            required: true,
             unique: true,
+            sparse: true,
         },
         maritalStatus: {
             type: String,
@@ -50,13 +49,11 @@ const DonorSchema = new mongoose.Schema(
         cast: String,
         contactNumber: {
             type: String,
-            required: true,
         },
         email: {
             type: String,
             lowercase: true,
             trim: true,
-            required: true,
         },
         referenceName: String,
         referenceNumber: String,
@@ -95,6 +92,16 @@ const DonorSchema = new mongoose.Schema(
             },
             processStartDate: Date,
         },
+        
+        // Follicular Scans Array
+        follicularScans: [{
+            scanDate: Date,
+            lmpDay: Number,
+            etValue: String,
+            rightOvary: String,
+            leftOvary: String,
+            createdAt: { type: Date, default: Date.now }
+        }],
 
         // Physical Attributes
         height: Number, // in cm
@@ -140,6 +147,10 @@ const DonorSchema = new mongoose.Schema(
             enum: ["allotted", "referred", "s2s_accepted", "pending", "active", "inactive"],
             default: "pending",
         },
+        isAllotted: {
+            type: Boolean,
+            default: false,
+        },
         registrationDate: {
             type: Date,
             default: Date.now,
@@ -165,6 +176,16 @@ const DonorSchema = new mongoose.Schema(
         insuranceStatus: {
             type: String,
             enum: ["uploaded", "pending", "unneeded"],
+            default: "pending",
+        },
+        bloodReportStatus: {
+            type: String,
+            enum: ["uploaded", "pending", "signed"],
+            default: "pending",
+        },
+        opuProcessStatus: {
+            type: String,
+            enum: ["uploaded", "pending", "signed", "completed"],
             default: "pending",
         },
 
@@ -208,21 +229,30 @@ const DonorSchema = new mongoose.Schema(
 
         // Documents/Files (store file paths or URLs)
         documents: {
-            donorAadharFront: String,
-            donorAadharBack: String,
-            healthInsurance: {
-                file: String,
-                description: String,
-            },
-            lifeInsurance: {
-                file: String,
-                description: String,
-            },
-            medicalReports: [{
-                title: String,
-                file: String,
-                description: String,
+            donorDocuments: [{
+                reportName: String,
+                documentName: String,
+                filePath: String,
+                uploadBy: String,
+                uploadDate: Date,
+                hasFile: { type: Boolean, default: false }
             }],
+            reports: [{
+                reportName: String,
+                documentName: String,
+                filePath: String,
+                uploadBy: String,
+                uploadDate: Date,
+                hasFile: { type: Boolean, default: false }
+            }],
+            otherDocuments: [{
+                reportName: String,
+                documentName: String,
+                filePath: String,
+                uploadBy: String,
+                uploadDate: Date,
+                hasFile: { type: Boolean, default: false }
+            }]
         },
 
         // Metadata

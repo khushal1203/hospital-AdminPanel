@@ -11,13 +11,13 @@ export default function StatsCard({ title, value, icon: Icon, color = "blue" }) 
     };
 
     return (
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-dark">
+        <div className="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <p className="text-sm font-medium text-gray-600">
                         {title}
                     </p>
-                    <h3 className="mt-2 text-3xl font-bold text-dark dark:text-white">
+                    <h3 className="mt-2 text-3xl font-bold text-gray-900">
                         {value}
                     </h3>
                 </div>

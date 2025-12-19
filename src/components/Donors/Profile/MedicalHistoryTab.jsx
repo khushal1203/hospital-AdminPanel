@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { MdEdit, MdAdd } from "react-icons/md";
+import { MdEdit, MdAdd, MdDelete } from "react-icons/md";
 import dayjs from "dayjs";
 import EditMedicalModal from "./EditMedicalModal";
+import AddFollicularScanModal from "./AddFollicularScanModal";
 
 const Section = ({ title, onEdit, children, expanded = true }) => {
     return (
@@ -52,10 +53,12 @@ const BooleanItem = ({ label, value, reason }) => (
 export default function MedicalHistoryTab({ donor }) {
     const [donorData, setDonorData] = useState(donor);
     const [editModal, setEditModal] = useState({ isOpen: false, section: "" });
+    const [scanModal, setScanModal] = useState(false);
     
     const follicular = donorData.follicularDetails || {};
     const obstetric = donorData.obstetricHistory || {};
     const physical = donorData.physicalExamination || {};
+    const follicularScans = donorData.follicularScans || [];
 
     const handleEdit = (section) => {
         setEditModal({ isOpen: true, section });
@@ -78,13 +81,59 @@ export default function MedicalHistoryTab({ donor }) {
             if (response.ok) {
                 const result = await response.json();
                 setDonorData(result.donor || updatedData);
-                alert('Medical history updated successfully!');
             } else {
                 throw new Error('Failed to update medical history');
             }
         } catch (error) {
             console.error('Error updating medical history:', error);
-            alert('Failed to update medical history. Please try again.');
+        }
+    };
+
+    const handleAddScan = async (scanData) => {
+        try {
+            const donorId = donorData._id || donorData.id;
+            const updatedScans = [...follicularScans, scanData];
+            
+            const response = await fetch(`/api/donors/${donorId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ follicularScans: updatedScans }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setDonorData(result.donor);
+            } else {
+                throw new Error('Failed to add scan');
+            }
+        } catch (error) {
+            console.error('Error adding scan:', error);
+        }
+    };
+
+    const handleDeleteScan = async (index) => {
+        try {
+            const donorId = donorData._id || donorData.id;
+            const updatedScans = follicularScans.filter((_, i) => i !== index);
+            
+            const response = await fetch(`/api/donors/${donorId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ follicularScans: updatedScans }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setDonorData(result.donor);
+            } else {
+                throw new Error('Failed to delete scan');
+            }
+        } catch (error) {
+            console.error('Error deleting scan:', error);
         }
     };
 
@@ -92,9 +141,6 @@ export default function MedicalHistoryTab({ donor }) {
         <div className="flex flex-col gap-6">
 
             <Section title="Follicular Details" onEdit={() => handleEdit("Follicular Details")}>
-                {/* Hardcoded table structure for follicular details based on image if needed, or simple key-value */}
-                {/* The image shows a table for follicular details with Date, Day of LMP, ET, Right Ovary, Left Ovary */}
-                {/* Assuming single record for now based on data structure provided in controller */}
                 <div className="col-span-full overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 text-gray-500 font-medium">
@@ -104,20 +150,37 @@ export default function MedicalHistoryTab({ donor }) {
                                 <th className="p-3">ET</th>
                                 <th className="p-3">Right Ovary</th>
                                 <th className="p-3">Left Ovary</th>
+                                <th className="p-3">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {/* Placeholder row since controller structure has single values */}
-                            <tr>
-                                <td className="p-3 text-gray-900">{follicular.lmpDate ? dayjs(follicular.lmpDate).format("DD MMM YYYY") : "-"}</td>
-                                <td className="p-3 text-gray-900">{follicular.lmpDay || "-"}</td>
-                                <td className="p-3 text-gray-900">{follicular.etValue || "-"}</td>
-                                <td className="p-3 text-gray-900">{follicular.rightOvary || "-"}</td>
-                                <td className="p-3 text-gray-900">{follicular.leftOvary || "-"}</td>
-                            </tr>
+                            {follicularScans.length > 0 ? follicularScans.map((scan, index) => (
+                                <tr key={index}>
+                                    <td className="p-3 text-gray-900">{scan.scanDate ? dayjs(scan.scanDate).format("DD MMM YYYY") : "-"}</td>
+                                    <td className="p-3 text-gray-900">{scan.lmpDay || "-"}</td>
+                                    <td className="p-3 text-gray-900">{scan.etValue || "-"}</td>
+                                    <td className="p-3 text-gray-900">{scan.rightOvary || "-"}</td>
+                                    <td className="p-3 text-gray-900">{scan.leftOvary || "-"}</td>
+                                    <td className="p-3">
+                                        <button
+                                            onClick={() => handleDeleteScan(index)}
+                                            className="text-red-600 hover:text-red-700"
+                                        >
+                                            <MdDelete className="h-4 w-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="6" className="p-3 text-center text-gray-500">No follicular scans added yet</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
-                    <button className="mt-4 flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700">
+                    <button 
+                        onClick={() => setScanModal(true)}
+                        className="mt-4 flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700"
+                    >
                         <MdAdd className="h-4 w-4" />
                         Add Follicular Scan
                     </button>
@@ -125,8 +188,8 @@ export default function MedicalHistoryTab({ donor }) {
             </Section>
 
             <Section title="Menstrual & Contraceptive History" onEdit={() => handleEdit("Menstrual & Contraceptive History")}>
-                <BooleanItem label="Menstrual history" value={false} reason="Stimulation process not stated yet due to pending prerequisite steps or documentation." />
-                <BooleanItem label="Use of contraceptives" value={donor.contraceptives === 'yes'} reason="Stimulation process not stated yet due to pending prerequisite steps or documentation." />
+                <BooleanItem label="Menstrual history" value={donorData.menstrualHistory === true} />
+                <BooleanItem label="Use of contraceptives" value={donorData.contraceptives === true} />
             </Section>
 
             <Section title="Obstetric History" onEdit={() => handleEdit("Obstetric History")}>
@@ -141,12 +204,12 @@ export default function MedicalHistoryTab({ donor }) {
             </Section>
 
             <Section title="Medical & Family History" onEdit={() => handleEdit("Medical & Family History")}>
-                <BooleanItem label="Medical history?" value={!!donor.medicalHistory} reason={donor.medicalHistory} />
-                <BooleanItem label="Family medical history?" value={!!donor.familyMedicalHistory} reason={donor.familyMedicalHistory} />
-                <BooleanItem label="Abnormality in child?" value={donor.abnormalityInChild === 'yes'} />
-                <BooleanItem label="History of blood transfusion" value={donor.bloodTransfusion === 'yes'} />
-                <BooleanItem label="Substance abuse" value={donor.substanceAbuse === 'yes'} />
-                <BooleanItem label="Genetic abnormality" value={donor.geneticAbnormality === 'yes'} />
+                <BooleanItem label="Medical history?" value={donorData.medicalHistory === true} />
+                <BooleanItem label="Family medical history?" value={donorData.familyMedicalHistory === true} />
+                <BooleanItem label="Abnormality in child?" value={donorData.abnormalityInChild === true} />
+                <BooleanItem label="History of blood transfusion" value={donorData.bloodTransfusion === true} />
+                <BooleanItem label="Substance abuse" value={donorData.substanceAbuse === true} />
+                <BooleanItem label="Genetic abnormality" value={donorData.geneticAbnormality === true} />
             </Section>
 
             <Section title="Physical Examination" onEdit={() => handleEdit("Physical Examination")}>
@@ -168,6 +231,13 @@ export default function MedicalHistoryTab({ donor }) {
                 donor={donorData}
                 section={editModal.section}
                 onSave={handleSave}
+            />
+            
+            {/* Add Follicular Scan Modal */}
+            <AddFollicularScanModal
+                isOpen={scanModal}
+                onClose={() => setScanModal(false)}
+                onSave={handleAddScan}
             />
         </div>
     );

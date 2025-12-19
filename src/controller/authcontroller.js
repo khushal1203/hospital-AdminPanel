@@ -1,10 +1,30 @@
 import { User } from "@/modals/userModal";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {
-    validateSignIn,
-    validateSignUp
-} from "@/validation/auth-validation";
+
+// Inline validation functions
+const validateSignIn = (body) => {
+    const { email, password } = body;
+    if (!email || !password) {
+        throw new Error("Email and password are required");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error("Invalid email format");
+    }
+};
+
+const validateSignUp = (body) => {
+    const { fullName, email, password } = body;
+    if (!fullName || !email || !password) {
+        throw new Error("Full name, email and password are required");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error("Invalid email format");
+    }
+    if (password.length < 6) {
+        throw new Error("Password must be at least 6 characters");
+    }
+};
 
 /* ================= SIGN IN ================= */
 export const signInController = async (body) => {

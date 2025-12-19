@@ -7,12 +7,21 @@ export async function GET(request, { params }) {
     try {
         await connectDB();
         const { id } = await params;
+        
+        if (!id) {
+            return NextResponse.json(
+                { success: false, message: "Donor ID is required" },
+                { status: 400 }
+            );
+        }
+        
         const result = await getDonorByIdController(id);
         return NextResponse.json(result);
     } catch (error) {
+        const status = error.message.includes("Invalid") ? 400 : 404;
         return NextResponse.json(
             { success: false, message: error.message },
-            { status: 404 }
+            { status }
         );
     }
 }

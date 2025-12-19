@@ -7,11 +7,20 @@ let toastContainer = null;
 
 // Create toast container if it doesn't exist
 const createToastContainer = () => {
-    if (toastContainer) return toastContainer;
+    if (toastContainer && document.body.contains(toastContainer)) {
+        return toastContainer;
+    }
+    
+    // Remove existing container if it exists but not in DOM
+    if (toastContainer) {
+        toastContainer = null;
+    }
     
     toastContainer = document.createElement('div');
     toastContainer.id = 'toast-container';
-    toastContainer.className = 'fixed top-4 right-4 z-50 space-y-2';
+    toastContainer.className = 'fixed right-4 z-[9999] space-y-2 pointer-events-none';
+    toastContainer.style.top = '80px'; // Position below top navigation
+    toastContainer.style.zIndex = '9999';
     document.body.appendChild(toastContainer);
     
     return toastContainer;
@@ -33,8 +42,9 @@ const createToastElement = (message, type = 'info') => {
         px-6 py-3 rounded-lg shadow-lg 
         transform transition-all duration-300 ease-in-out
         translate-x-full opacity-0
-        max-w-sm
+        max-w-sm pointer-events-auto
     `;
+    toast.style.zIndex = '10000';
     
     toast.innerHTML = `
         <div class="flex items-center justify-between">
@@ -52,25 +62,35 @@ const createToastElement = (message, type = 'info') => {
 export const showToast = (message, type = 'info', duration = 3000) => {
     if (typeof window === 'undefined') return;
     
+    // Ensure DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast(message, type, duration);
+        });
+        return;
+    }
+    
     const container = createToastContainer();
     const toast = createToastElement(message, type);
     
     container.appendChild(toast);
     
-    // Animate in
-    setTimeout(() => {
+    // Force reflow and animate in immediately
+    requestAnimationFrame(() => {
         toast.classList.remove('translate-x-full', 'opacity-0');
         toast.classList.add('translate-x-0', 'opacity-100');
-    }, 10);
+    });
     
     // Auto remove after duration
     setTimeout(() => {
-        toast.classList.add('translate-x-full', 'opacity-0');
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
+        if (toast.parentNode) {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
     }, duration);
 };
 
