@@ -1,6 +1,7 @@
 import { User } from "@/modals/userModal";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendWelcomeEmail } from "@/lib/nodemailer";
 
 // Inline validation functions
 const validateSignIn = (body) => {
@@ -78,6 +79,15 @@ export const signUpController = async (body) => {
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
     );
+
+    // Send welcome email with credentials
+    try {
+        await sendWelcomeEmail(email, fullName, password);
+        console.log('Welcome email sent to:', email);
+    } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't throw error - user creation should still succeed
+    }
 
     return {
         token,

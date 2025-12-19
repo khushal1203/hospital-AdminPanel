@@ -15,13 +15,17 @@ import {
 } from "react-icons/md";
 import { getUserRole, ROLES } from "@/utils/roleUtils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import NotificationDropdown from "./NotificationDropdown";
+import { MdMenu, MdClose } from "react-icons/md";
 
 export default function TopNavigation() {
     const pathname = usePathname();
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [role, setRole] = useState(null);
     const { user } = useCurrentUser();
     const dropdownRef = useRef(null);
+    const mobileMenuRef = useRef(null);
 
     useEffect(() => {
         setRole(getUserRole());
@@ -31,6 +35,9 @@ export default function TopNavigation() {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setShowUserMenu(false);
+            }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+                setShowMobileMenu(false);
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -63,8 +70,16 @@ export default function TopNavigation() {
     return (
         <nav className="sticky top-0 z-[10000] bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg border-b border-white/10">
             <div className="mx-auto px-4 sm:px-6">
-                <div className="flex h-16 items-center justify-between">
-                    <div className="flex items-center gap-8">
+                <div className="flex h-20 items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setShowMobileMenu(!showMobileMenu)}
+                            className="md:hidden rounded-lg p-2 text-white/80 hover:bg-white/15 hover:text-white transition-colors"
+                        >
+                            {showMobileMenu ? <MdClose className="h-6 w-6" /> : <MdMenu className="h-6 w-6" />}
+                        </button>
+
                         <Link href="/dashboard" className="flex items-center gap-2">
                             <Image
                                 src="/images/icon/brand.svg"
@@ -82,13 +97,13 @@ export default function TopNavigation() {
                                     <Link
                                         key={item.name}
                                         href={item.href}
-                                        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                                        className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-bold transition-all duration-200 ${
                                             isActive(item.href)
                                                 ? "bg-white/20 text-white shadow-sm"
                                                 : "text-white/80 hover:bg-white/15 hover:text-white hover:shadow-sm"
                                         }`}
                                     >
-                                        <Icon className="h-4 w-4" />
+                                        <Icon className="h-5 w-5" />
                                         <span className="whitespace-nowrap">{item.name}</span>
                                     </Link>
                                 );
@@ -97,30 +112,30 @@ export default function TopNavigation() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button className="relative rounded-full p-2 text-white/80 transition-all duration-200 hover:bg-white/15 hover:text-white hover:scale-105">
-                            <MdNotifications className="h-5 w-5" />
-                            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-pink-500 animate-pulse"></span>
-                        </button>
+                        <NotificationDropdown />
 
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setShowUserMenu(!showUserMenu)}
                                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-white transition-all duration-200 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/20"
                             >
-                                <div className="relative">
+                                <div className="relative w-10 h-10 flex-shrink-0">
                                     <Image
                                         src={user?.profileImage || "/images/user/user-03.png"}
                                         alt="User"
-                                        width={32}
-                                        height={32}
-                                        className="rounded-full ring-2 ring-white/20"
+                                        width={40}
+                                        height={40}
+                                        className="w-full h-full rounded-full ring-2 ring-white/20 object-cover"
                                         key={user?.profileImage}
+                                        onError={(e) => {
+                                            e.target.src = "/images/user/user-03.png";
+                                        }}
                                     />
                                     <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-400 ring-2 ring-white"></div>
                                 </div>
-                                <span className="hidden text-sm font-medium md:block max-w-24 truncate">{user?.fullName || "User"}</span>
+                                <span className="hidden text-base font-medium md:block max-w-28 truncate">{user?.fullName || "User"}</span>
                                 <svg
-                                    className={`h-4 w-4 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""}`}
+                                    className={`h-5 w-5 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""}`}
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -190,6 +205,32 @@ export default function TopNavigation() {
                         </div>
                     </div>
                 </div>
+
+            {/* Mobile Menu Overlay */}
+            {showMobileMenu && (
+                <div ref={mobileMenuRef} className="absolute top-full left-0 right-0 md:hidden bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] border-t border-white/20 shadow-lg z-50">
+                    <div className="px-4 py-6 space-y-3">
+                        {navItems.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={() => setShowMobileMenu(false)}
+                                    className={`flex items-center gap-4 rounded-lg px-4 py-4 text-base font-semibold transition-all duration-200 ${
+                                        isActive(item.href)
+                                            ? "bg-white/25 text-white shadow-sm"
+                                            : "text-white/90 hover:bg-white/20 hover:text-white"
+                                    }`}
+                                >
+                                    <Icon className="h-5 w-5" />
+                                    <span>{item.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
             </div>
         </nav>
     );

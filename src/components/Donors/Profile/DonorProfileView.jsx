@@ -68,10 +68,10 @@ export default function DonorProfileView({ donor }) {
         <div className="flex flex-col h-full">
             {/* Sticky Profile Header */}
             <div className="bg-white sticky top-0 z-10 border-b border-gray-200">
-                <div className="p-6">
-                    <div className="flex items-start justify-between">
-                        <div className="flex gap-6">
-                            <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-gray-100 group">
+                <div className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                            <div className="relative h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-full border-4 border-gray-100 group mx-auto sm:mx-0">
                                 {donorImage ? (
                                     <Image
                                         src={donorImage}
@@ -81,7 +81,7 @@ export default function DonorProfileView({ donor }) {
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
-                                    <div className="flex h-full w-full items-center justify-center bg-purple-100 text-2xl font-bold text-purple-600">
+                                    <div className="flex h-full w-full items-center justify-center bg-purple-100 text-xl sm:text-2xl font-bold text-purple-600">
                                         {donor.fullName?.charAt(0)}
                                     </div>
                                 )}
@@ -92,7 +92,7 @@ export default function DonorProfileView({ donor }) {
                                     disabled={uploading}
                                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                 >
-                                    <MdEdit className="h-6 w-6 text-white" />
+                                    <MdEdit className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                                 </button>
                                 
                                 {/* Hidden File Input */}
@@ -107,71 +107,75 @@ export default function DonorProfileView({ donor }) {
                                 {/* Loading Overlay */}
                                 {uploading && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                                        <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent"></div>
                                     </div>
                                 )}
                             </div>
-                            <div className="pt-2">
-                                <div className="flex items-center mb-1">
+                            <div className="text-center sm:text-left sm:pt-2">
+                                <div className="flex items-center justify-center sm:justify-start mb-1">
                                     <Tag text="ALLOTTED" />
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-1">{donor.fullName}</h2>
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{donor.fullName}</h2>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500">
                                     <span>Donor ID : {donor.donorId}</span>
-                                    <span className="h-4 w-px bg-gray-300"></span>
+                                    <span className="hidden sm:block h-4 w-px bg-gray-300"></span>
                                     <span>{donor.gender} ({donor.age || "-"})</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-2">
-                            <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        <div className="flex justify-center sm:justify-end">
+                            <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 <MdPrint className="h-4 w-4" />
-                                Print
+                                <span className="hidden sm:inline">Print</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="mt-8 flex items-center gap-8 border-b border-gray-100">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
-                                        activeTab === tab.id
-                                            ? "border-purple-600 text-purple-600"
-                                            : "border-transparent text-gray-500 hover:text-gray-700"
-                                        }`}
-                                >
-                                    <Icon className="h-5 w-5" />
-                                    {tab.label}
-                                </button>
-                            )
-                        })}
+                    {/* Mobile Tabs - Horizontal Scroll */}
+                    <div className="mt-6 sm:mt-8">
+                        <div className="flex overflow-x-auto border-b border-gray-100 scrollbar-hide">
+                            <div className="flex gap-1 sm:gap-8 min-w-max px-1">
+                                {tabs.map((tab) => {
+                                    const Icon = tab.icon;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex flex-col sm:flex-row items-center gap-1 sm:gap-2 border-b-2 px-3 sm:px-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                                                activeTab === tab.id
+                                                    ? "border-purple-600 text-purple-600"
+                                                    : "border-transparent text-gray-500 hover:text-gray-700"
+                                                }`}
+                                        >
+                                            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                                            <span className="text-center">{tab.label}</span>
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-auto p-6">
-                <div className="grid grid-cols-12 gap-6">
-                    {/* Left Column - Tab Content */}
-                    <div className="col-span-12 lg:col-span-9">
+            <div className="flex-1 overflow-auto p-3 sm:p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+                    {/* Tab Content */}
+                    <div className="lg:col-span-9">
                         {activeTab === "overview" && <OverviewTab donor={donor} />}
                         {activeTab === "medical" && <MedicalHistoryTab donor={donor} />}
                         {activeTab === "documents" && <DocumentsTab donor={donor} />}
                         {activeTab === "allotment" && (
-                            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500 shadow-sm">
+                            <div className="rounded-lg border border-gray-200 bg-white p-6 sm:p-8 text-center text-gray-500 shadow-sm">
                                 Allotment Details
                             </div>
                         )}
                     </div>
 
-                    {/* Right Column - Timeline */}
-                    <div className="col-span-12 lg:col-span-3">
+                    {/* Timeline - Hidden on mobile, shown on desktop */}
+                    <div className="hidden lg:block lg:col-span-3">
                         <DonorTimeline donor={donor} />
                     </div>
                 </div>

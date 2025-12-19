@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import jwt from "jsonwebtoken";
 
 export async function POST(request) {
@@ -21,21 +20,8 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate unique filename
-    const timestamp = Date.now();
-    const filename = `profile-${timestamp}-${file.name}`;
-    const filepath = path.join(process.cwd(), "public/uploads/profiles", filename);
-
-    // Ensure directory exists
-    const fs = require("fs");
-    const uploadDir = path.join(process.cwd(), "public/uploads/profiles");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    await writeFile(filepath, buffer);
-
-    const imageUrl = `/uploads/profiles/${filename}`;
+    const result = await uploadToCloudinary(buffer, 'hospital-admin/profiles');
+    const imageUrl = result.secure_url;
 
     return NextResponse.json({
       success: true,
