@@ -166,8 +166,17 @@ export default function UserManagement() {
                                     key={user._id}
                                     className="border-b border-stroke dark:border-dark-3"
                                 >
-                                    <td className="px-6 py-4 text-sm text-dark dark:text-white">
-                                        {user.fullName}
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={user.profileImage || "/images/user/user-03.png"}
+                                                alt={user.fullName}
+                                                className="h-10 w-10 rounded-full object-cover"
+                                            />
+                                            <span className="text-sm text-dark dark:text-white">
+                                                {user.fullName}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                                         {user.email}

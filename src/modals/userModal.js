@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema(
         resetPasswordExpiry: {
             type: Date,
         },
+        profileImage: {
+            type: String,
+            default: "/images/user/user-03.png",
+        },
     },
     {
         timestamps: true,

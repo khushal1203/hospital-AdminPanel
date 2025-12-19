@@ -9,44 +9,25 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
-  const [USER, setUSER] = useState(null);
+  const { user, loading } = useCurrentUser();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+  const USER = user ? {
+    id: user._id,
+    name: user.fullName,
+    email: user.email,
+    img: user.profileImage || "/images/user/user-03.png",
+  } : null;
 
-        const res = await fetch("/api/auth/getUserLocal", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          setUSER({
-            id: data.user._id, // ✅ ID FIX
-            name: data.user.fullName,
-            email: data.user.email,
-            img: "/images/user/user-03.png",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  console.log("User data:", user);
+  console.log("USER img:", USER?.img);
 
   const handleLogout = () => {
     setIsOpen(false);
@@ -72,6 +53,11 @@ export function UserInfo() {
               alt={`Avatar of ${USER.name}`}
               width={40}
               height={40}
+              key={USER.img}
+              onError={(e) => {
+                console.log("Image load error:", e.target.src);
+                e.target.src = "/images/user/user-03.png";
+              }}
             />
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
@@ -105,6 +91,10 @@ export function UserInfo() {
               alt={`Avatar for ${USER.name}`}
               width={48}
               height={48}
+              key={USER.img}
+              onError={(e) => {
+                e.target.src = "/images/user/user-03.png";
+              }}
             />
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
@@ -122,7 +112,7 @@ export function UserInfo() {
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6">
           <Link
-            href={`/profile?id=${USER.id}`}
+            href="/profile"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 dark:hover:bg-dark-3"
           >
@@ -130,14 +120,14 @@ export function UserInfo() {
             <span className="mr-auto font-medium">View profile</span>
           </Link>
 
-          <Link
+          {/* <Link
             href={`/pages/settings?id=${USER.id}`} // ✅ ID PASS HERE
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 dark:hover:bg-dark-3"
           >
             <SettingsIcon />
             <span className="mr-auto font-medium">Account Settings</span>
-          </Link>
+          </Link> */}
         </div>
 
         <hr className="border-[#E8E8E8] dark:border-dark-3" />

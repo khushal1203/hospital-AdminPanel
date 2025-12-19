@@ -25,7 +25,7 @@ export async function GET(req) {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const user = await User.findById(decoded.userId).select("-password");
+        let user = await User.findById(decoded.userId).select("-password");
 
         if (!user) {
             return NextResponse.json(
@@ -37,6 +37,12 @@ export async function GET(req) {
                     status: 404,
                 }
             );
+        }
+
+        // Set default profile image if not exists
+        if (!user.profileImage) {
+            user.profileImage = "/images/user/user-03.png";
+            await user.save();
         }
 
         return NextResponse.json({

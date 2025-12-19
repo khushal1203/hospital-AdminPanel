@@ -14,24 +14,17 @@ import {
     MdNotifications
 } from "react-icons/md";
 import { getUserRole, ROLES } from "@/utils/roleUtils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function TopNavigation() {
     const pathname = usePathname();
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [role, setRole] = useState(null);
-    const [user, setUser] = useState(null);
+    const { user } = useCurrentUser();
     const dropdownRef = useRef(null);
 
     useEffect(() => {
         setRole(getUserRole());
-        const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
-        if (userData) {
-            try {
-                setUser(JSON.parse(userData));
-            } catch (error) {
-                console.error('Error parsing user data:', error);
-            }
-        }
     }, []);
 
     useEffect(() => {
@@ -116,11 +109,12 @@ export default function TopNavigation() {
                             >
                                 <div className="relative">
                                     <Image
-                                        src="/images/user/user-03.png"
+                                        src={user?.profileImage || "/images/user/user-03.png"}
                                         alt="User"
                                         width={32}
                                         height={32}
                                         className="rounded-full ring-2 ring-white/20"
+                                        key={user?.profileImage}
                                     />
                                     <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-400 ring-2 ring-white"></div>
                                 </div>
@@ -150,9 +144,9 @@ export default function TopNavigation() {
                                             <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                             </svg>
-                                            Profile
+                                            Profile     
                                         </Link>
-                                        <Link
+                                        {/* <Link
                                             href="/pages/settings"
                                             className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                                             onClick={() => setShowUserMenu(false)}
@@ -162,7 +156,7 @@ export default function TopNavigation() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                             Settings
-                                        </Link>
+                                        </Link> */}
                                         {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
                                             <Link
                                                 href="/users"
