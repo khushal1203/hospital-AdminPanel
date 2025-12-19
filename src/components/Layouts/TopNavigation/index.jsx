@@ -34,22 +34,24 @@ export default function TopNavigation() {
     }, []);
 
     const getNavItems = () => {
-        const baseItems = [
+        if (role === ROLES.LABORATORY) {
+            return [
+                { name: "Home", href: "/home", icon: MdHome },
+                { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
+                { name: "Active Donors", href: "/donors/active", icon: MdPeople },
+                { name: "Semen Storage", href: "/donors/semen", icon: MdStorage },
+            ];
+        }
+
+        // Doctor/Admin और Receptionist के लिए
+        return [
             { name: "Home", href: "/home", icon: MdHome },
             { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
             { name: "Active Donors", href: "/donors/active", icon: MdPeople },
             { name: "Donors History", href: "/donors/history", icon: MdHistory },
             { name: "Semen Storage", href: "/donors/semen", icon: MdStorage },
+            { name: "Add Donor", href: "/donors/add", icon: MdPersonAdd },
         ];
-
-        if (role === ROLES.DOCTOR || role === ROLES.ADMIN) {
-            return [
-                ...baseItems,
-                { name: "Users", href: "/users", icon: MdPeople },
-            ];
-        }
-
-        return baseItems;
     };
 
     const navItems = getNavItems();
@@ -68,7 +70,7 @@ export default function TopNavigation() {
                                 alt="Logo"
                                 width={120}
                                 height={32}
-                                className="brightness-0 invert"
+                                className=""
                             />
                         </Link>
 
@@ -96,24 +98,15 @@ export default function TopNavigation() {
                     {/* Right Side - Add User, Notifications & User */}
                     <div className="flex items-center gap-4">
                         {/* Add New Donor Button */}
-                        <Link
+                        {/* <Link
                             href="/donors/add"
                             className="flex items-center gap-2 rounded-lg bg-pink-500/20 px-4 py-2 text-sm font-medium text-white ring-1 ring-pink-500/50 transition hover:bg-pink-500/30"
                         >
                             <MdPersonAdd className="h-5 w-5" />
                             <span className="hidden md:block">Add New Donor</span>
-                        </Link>
+                        </Link> */}
 
-                        {/* Add User Button - Doctor Only */}
-                        {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
-                            <Link
-                                href="/users/add"
-                                className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/30"
-                            >
-                                <MdPersonAdd className="h-5 w-5" />
-                                <span className="hidden md:block">Add User</span>
-                            </Link>
-                        )}
+
 
                         {/* Notifications */}
                         <button className="relative rounded-full p-2 text-white/80 transition hover:bg-white/10 hover:text-white">
@@ -160,12 +153,15 @@ export default function TopNavigation() {
                                     >
                                         Settings
                                     </Link>
-                                    <Link
-                                        href="/users"
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    >
-                                        User Management
-                                    </Link>
+                                    {/* User Management - सिर्फ Doctor/Admin को दिखेगा */}
+                                    {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
+                                        <Link
+                                            href="/users"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                            User Management
+                                        </Link>
+                                    )}
                                     <hr className="my-2" />
                                     <button
                                         onClick={() => {

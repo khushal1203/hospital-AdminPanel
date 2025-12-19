@@ -1,26 +1,46 @@
 import DonorListTable from "@/components/Donors/DonorListTable";
+import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
 import { getAllDonorsController } from "@/controller/donorController";
 import { connectDB } from "@/lib/connectdb";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 
 export const metadata = {
     title: "Active Donors | Hospital Admin Panel",
     description: "List of active donors",
 };
 
-export default async function ActiveDonorsPage() {
+export default async function ActiveDonorsPage({ searchParams }) {
     await connectDB();
-    // Fetch active donors
-    // For now fetching 'active' status. If oocyte/semen separation is strict, we might filter donorType here too.
-    // Assuming Active Donors is primarily Oocyte for now as Semen has its own tab.
-    const { donors } = await getAllDonorsController({ status: "active", donorType: "oocyte" });
+    const params = await searchParams;
+    const page = parseInt(params?.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    
+    const { donors, total } = await getAllDonorsController({ 
+        status: "active", 
+        donorType: "oocyte",
+        skip,
+        limit 
+    });
 
     return (
-        <div className="mx-auto max-w-7xl">
-            <Breadcrumb pageName="Active Donors" />
-
-            <div className="flex flex-col gap-10">
-                <DonorListTable donors={JSON.parse(JSON.stringify(donors))} />
+        <div className="min-h-screen flex flex-col">
+            <div className="bg-white px-4 py-3 shadow-sm flex-shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Active Donors</h1>
+                    <div className="w-full sm:w-auto">
+                        <DonorTableToolbar />
+                    </div>
+                </div>
+            </div>
+            <div className="bg-gray-100 flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-auto p-3 sm:p-6">
+                    <DonorListTable 
+                        donors={JSON.parse(JSON.stringify(donors))} 
+                        currentPage={page}
+                        totalItems={total}
+                        itemsPerPage={limit}
+                    />
+                </div>
             </div>
         </div>
     );

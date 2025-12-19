@@ -3,12 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 import {
     MdCheckCircle,
     MdPending,
     MdChevronRight,
-    MdMoreVert
+    MdMoreVert,
+    MdNavigateBefore,
+    MdNavigateNext
 } from "react-icons/md";
 
 const StatusBadge = ({ status }) => {
@@ -50,7 +53,47 @@ const Tag = ({ text, type }) => {
 
 import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
 
-export default function DonorListTable({ donors }) {
+const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    const handlePageChange = (page) => {
+        const params = new URLSearchParams(searchParams);
+        params.set('page', page.toString());
+        router.push(`?${params.toString()}`);
+    };
+
+    return (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 bg-white px-3 sm:px-4 py-3">
+            <div className="text-xs sm:text-sm text-gray-700">
+                Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+                <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{" "}
+                <span className="font-medium">{totalItems}</span> results
+            </div>
+            <div className="flex gap-2">
+                <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <MdNavigateBefore className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="hidden sm:inline">Previous</span>
+                </button>
+                <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <span className="hidden sm:inline">Next</span>
+                    <MdNavigateNext className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default function DonorListTable({ donors, currentPage = 1, totalItems = 0, itemsPerPage = 10 }) {
     const [selectedDonors, setSelectedDonors] = useState([]);
 
     const toggleSelectAll = () => {
@@ -70,19 +113,18 @@ export default function DonorListTable({ donors }) {
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            <DonorTableToolbar />
-
+        <div className="flex flex-col h-full">
             {(!donors || donors.length === 0) ? (
-                <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm">
-                    <p className="text-gray-500">No donors found.</p>
+                <div className="rounded-xl border border-gray-200 bg-white p-12 text-center shadow-md">
+                    <p className="text-lg text-gray-500">No active donors found.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                    <table className="w-full min-w-[1200px] table-auto text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-600 font-medium uppercase">
-                            <tr>
-                                <th className="p-4">
+                <div className="flex flex-col rounded-2xl border border-gray-200 bg-white shadow-md overflow-hidden">
+                    <div className="overflow-auto flex-1">
+                        <table className="w-full min-w-[1600px] sm:min-w-[1200px] table-auto text-left text-xs sm:text-sm">
+                        <thead className="bg-gradient-to-r from-purple-50 to-pink-50">
+                            <tr className="border-b border-gray-200">
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
                                     <input
                                         type="checkbox"
                                         className="h-4 w-4 rounded border-gray-300"
@@ -90,21 +132,21 @@ export default function DonorListTable({ donors }) {
                                         onChange={toggleSelectAll}
                                     />
                                 </th>
-                                <th className="p-4">Donor ID</th>
-                                <th className="p-4">Registration Date</th>
-                                <th className="p-4">Donor Name</th>
-                                <th className="p-4">Next Appointment</th>
-                                <th className="p-4">Aadhar Number</th>
-                                <th className="p-4">Donor Consent<br />Form Status</th>
-                                <th className="p-4">Affidavit Status</th>
-                                <th className="p-4">Follicular Scan<br />Status</th>
-                                <th className="p-4">Insurance Status</th>
-                                <th className="p-4">Action</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Donor ID</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Registration Date</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Donor Name</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Next Appointment</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Aadhar Number</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Consent Form</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Affidavit</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Scan Status</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Insurance</th>
+                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {donors.map((donor) => (
-                                <tr key={donor._id} className="hover:bg-gray-50">
+                                <tr key={donor._id} className="transition-colors hover:bg-purple-50/30">
                                     <td className="p-4">
                                         <input
                                             type="checkbox"
@@ -169,6 +211,12 @@ export default function DonorListTable({ donors }) {
                             ))}
                         </tbody>
                     </table>
+                    </div>
+                    <Pagination 
+                        currentPage={currentPage} 
+                        totalItems={totalItems} 
+                        itemsPerPage={itemsPerPage} 
+                    />
                 </div>
             )}
         </div>

@@ -191,7 +191,7 @@ const isDonorComplete = (donor) => {
  * Get all donors with optional filters
  */
 export const getAllDonorsController = async (filters = {}) => {
-    const { donorType, status, search } = filters;
+    const { donorType, status, search, skip = 0, limit } = filters;
 
     let query = {};
 
@@ -211,9 +211,17 @@ export const getAllDonorsController = async (filters = {}) => {
         ];
     }
 
-    const donors = await Donor.find(query)
+    const total = await Donor.countDocuments(query);
+
+    let donorQuery = Donor.find(query)
         .sort({ createdAt: -1 })
         .select("-__v");
+
+    if (limit) {
+        donorQuery = donorQuery.skip(skip).limit(limit);
+    }
+
+    const donors = await donorQuery;
 
     // Auto-update status based on completeness
     const updatedDonors = donors.map(donor => {
@@ -233,6 +241,7 @@ export const getAllDonorsController = async (filters = {}) => {
         success: true,
         donors: updatedDonors,
         count: updatedDonors.length,
+        total,
     };
 };
 
@@ -280,12 +289,16 @@ export const getDonorByIdController = async (donorId) => {
  * Update donor
  */
 export const updateDonorController = async (donorId, updates, userId) => {
+    const updateData = { ...updates };
+    
+    // Only add updatedBy if userId is provided and valid
+    if (userId) {
+        updateData.updatedBy = userId;
+    }
+    
     const donor = await Donor.findByIdAndUpdate(
         donorId,
-        {
-            ...updates,
-            updatedBy: userId,
-        },
+        updateData,
         { new: true, runValidators: true }
     );
 
