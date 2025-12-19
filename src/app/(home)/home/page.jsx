@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getUserRole, ROLES, isLaboratory } from "@/utils/roleUtils";
 import { toast } from "@/utils/toast";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
     MdDashboard,
     MdPersonAdd,
@@ -17,15 +18,9 @@ import {
 export default function HomePage() {
     const router = useRouter();
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [user, setUser] = useState(null);
+    const { user } = useCurrentUser();
 
     useEffect(() => {
-        // Get user from localStorage
-        const userData = localStorage.getItem("user");
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
-
         // Update time every minute
         const timer = setInterval(() => {
             setCurrentTime(new Date());
@@ -42,17 +37,7 @@ export default function HomePage() {
     const [role, setRole] = useState(null);
 
     useEffect(() => {
-        const userData = localStorage.getItem("user");
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
         setRole(getUserRole());
-
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 60000);
-
-        return () => clearInterval(timer);
     }, []);
 
     const getActionCards = () => {
@@ -146,11 +131,12 @@ export default function HomePage() {
                 <div className="mb-8 text-center">
                     <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-xl">
                         <Image
-                            src="/images/user/user-03.png"
+                            src={user?.profileImage || "/images/user/user-03.png"}
                             alt="Profile"
                             width={128}
                             height={128}
                             className="h-full w-full object-cover"
+                            key={user?.profileImage}
                         />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
