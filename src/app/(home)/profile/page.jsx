@@ -12,7 +12,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
+    email: "",      
     profileImage: "/images/user/user-03.png"
   });
   const [imageFile, setImageFile] = useState(null);
