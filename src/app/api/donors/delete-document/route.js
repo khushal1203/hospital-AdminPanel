@@ -1,33 +1,20 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import { Donor } from "@/modals/donorModal";
-import { uploadToCloudinary } from "@/lib/cloudinary";
 
-export async function POST(request) {
+export async function DELETE(request) {
     try {
         await connectDB();
 
-        const formData = await request.formData();
-        const file = formData.get("document");
-        const donorId = formData.get("donorId");
-        const sectionKey = formData.get("sectionKey");
-        const index = Number(formData.get("index"));
-        const reportName = formData.get("reportName");
+        const { donorId, sectionKey, index } = await request.json();
 
-        if (!file || !donorId || !sectionKey || Number.isNaN(index)) {
+        if (!donorId || !sectionKey || index === undefined) {
             return NextResponse.json(
                 { success: false, message: "Missing required fields" },
                 { status: 400 }
             );
         }
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        const result = await uploadToCloudinary(buffer, 'hospital-admin/documents');
-        const fileUrl = result.secure_url;
-
-        // DB update
         const donor = await Donor.findById(donorId);
         if (!donor) {
             return NextResponse.json(
@@ -48,38 +35,27 @@ export async function POST(request) {
             donor.documents[sectionKey] = [];
         }
 
-        while (donor.documents[sectionKey].length <= index) {
-            donor.documents[sectionKey].push({
-                reportName: "",
+        if (donor.documents[sectionKey][index]) {
+            donor.documents[sectionKey][index] = {
+                ...donor.documents[sectionKey][index],
                 documentName: null,
                 filePath: null,
                 uploadBy: null,
                 uploadDate: null,
                 hasFile: false,
                 isUploaded: false,
-            });
+            };
         }
-
-        donor.documents[sectionKey][index] = {
-            reportName,
-            documentName: file.name,
-            filePath: fileUrl,
-            uploadBy: "Current User",
-            uploadDate: new Date(),
-            hasFile: true,
-            isUploaded: true,
-        };
 
         donor.markModified("documents");
         await donor.save();
 
         return NextResponse.json({
             success: true,
-            filePath: fileUrl,
-            message: "Document uploaded successfully",
+            message: "Document deleted successfully",
         });
     } catch (error) {
-        console.error("Upload error:", error);
+        console.error("Delete error:", error);
         return NextResponse.json(
             { success: false, message: error.message },
             { status: 500 }

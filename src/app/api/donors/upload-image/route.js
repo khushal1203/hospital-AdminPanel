@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import { Donor } from "@/modals/donorModal";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export async function POST(request) {
     try {
@@ -19,12 +18,8 @@ export async function POST(request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const fileName = `donor-${donorId}-${Date.now()}.${file.name.split('.').pop()}`;
-        const filePath = path.join(process.cwd(), 'public/uploads/donors', fileName);
-        
-        await writeFile(filePath, buffer);
-        
-        const imageUrl = `/uploads/donors/${fileName}`;
+        const result = await uploadToCloudinary(buffer, 'hospital-admin/donors');
+        const imageUrl = result.secure_url;
         
         await Donor.findByIdAndUpdate(donorId, { donorImage: imageUrl });
 

@@ -18,9 +18,9 @@ const createToastContainer = () => {
     
     toastContainer = document.createElement('div');
     toastContainer.id = 'toast-container';
-    toastContainer.className = 'fixed right-4 z-[9999] space-y-2 pointer-events-none';
-    toastContainer.style.top = '80px'; // Position below top navigation
-    toastContainer.style.zIndex = '9999';
+    toastContainer.className = 'fixed right-4 z-[10001] space-y-2 pointer-events-none';
+    toastContainer.style.top = '100px'; // Position below top navigation
+    toastContainer.style.zIndex = '10001';
     document.body.appendChild(toastContainer);
     
     return toastContainer;
@@ -31,10 +31,10 @@ const createToastElement = (message, type = 'info') => {
     const toast = document.createElement('div');
     
     const typeStyles = {
-        success: 'bg-green-500 text-white',
-        error: 'bg-red-500 text-white',
-        warning: 'bg-yellow-500 text-white',
-        info: 'bg-blue-500 text-white'
+        success: 'bg-green-400 text-white',
+        error: 'bg-red-400 text-white',
+        warning: 'bg-yellow-400 text-black',
+        info: 'bg-blue-400 text-white'
     };
     
     toast.className = `
@@ -44,7 +44,7 @@ const createToastElement = (message, type = 'info') => {
         translate-x-full opacity-0
         max-w-sm pointer-events-auto
     `;
-    toast.style.zIndex = '10000';
+    toast.style.zIndex = '10002';
     
     toast.innerHTML = `
         <div class="flex items-center justify-between">

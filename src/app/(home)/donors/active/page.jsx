@@ -23,8 +23,9 @@ export default async function ActiveDonorsPage({ searchParams }) {
     });
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <div className="bg-white px-4 py-3 shadow-sm flex-shrink-0">
+        <div className="h-screen flex flex-col">
+            {/* Fixed Header with Toolbar */}
+            <div className="sticky top-0 z-10 bg-white px-4 py-4 shadow-sm border-b border-gray-200 flex-shrink-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Active Donors</h1>
                     <div className="w-full sm:w-auto">
@@ -32,8 +33,10 @@ export default async function ActiveDonorsPage({ searchParams }) {
                     </div>
                 </div>
             </div>
-            <div className="bg-gray-100 flex-1 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-auto p-3 sm:p-6">
+            
+            {/* Scrollable Table Content */}
+            <div className="flex-1 overflow-hidden bg-gray-50">
+                <div className="h-full overflow-auto p-4">
                     <DonorListTable 
                         donors={JSON.parse(JSON.stringify(donors))} 
                         currentPage={page}

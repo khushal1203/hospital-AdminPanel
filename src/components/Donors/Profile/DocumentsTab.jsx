@@ -1,6 +1,7 @@
-import { MdAdd, MdFileDownload, MdClose, MdUpload } from "react-icons/md";
+import { MdAdd, MdVisibility, MdClose, MdCloudUpload } from "react-icons/md";
 import dayjs from "dayjs";
 import { useState, useEffect, useRef } from "react";
+import { toast } from "@/utils/toast";
 
 export default function DocumentsTab({ donor }) {
     const [showModal, setShowModal] = useState(false);
@@ -109,31 +110,55 @@ export default function DocumentsTab({ donor }) {
     };
 
     const handleDelete = async (sectionKey, index) => {
-        const updatedDoc = {
-            reportName: documents[sectionKey][index].reportName,
-            documentName: null,
-            uploadBy: null,
-            uploadDate: null,
-            hasFile: false,
-            isUploaded: false
-        };
-        
-        // Update state
-        setDocuments(prev => ({
-            ...prev,
-            [sectionKey]: prev[sectionKey].map((doc, i) => 
-                i === index ? updatedDoc : doc
-            )
-        }));
-        
-        // Remove from localStorage
-        const uploadedDocs = JSON.parse(localStorage.getItem('uploadedDocs') || '{}');
-        const docKey = `${donor._id}-${sectionKey}-${index}`;
-        delete uploadedDocs[docKey];
-        localStorage.setItem('uploadedDocs', JSON.stringify(uploadedDocs));
-        
-        // TODO: Call API to delete document from server
-        console.log('Document deleted:', { sectionKey, index });
+        try {
+            const updatedDoc = {
+                reportName: documents[sectionKey][index].reportName,
+                documentName: null,
+                filePath: null,
+                uploadBy: null,
+                uploadDate: null,
+                hasFile: false,
+                isUploaded: false
+            };
+            
+            // Update state immediately
+            setDocuments(prev => ({
+                ...prev,
+                [sectionKey]: prev[sectionKey].map((doc, i) => 
+                    i === index ? updatedDoc : doc
+                )
+            }));
+            
+            // Remove from localStorage
+            const uploadedDocs = JSON.parse(localStorage.getItem('uploadedDocs') || '{}');
+            const docKey = `${donor._id}-${sectionKey}-${index}`;
+            delete uploadedDocs[docKey];
+            localStorage.setItem('uploadedDocs', JSON.stringify(uploadedDocs));
+            
+            // Call API to delete document from server
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/donors/delete-document', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    donorId: donor._id,
+                    sectionKey,
+                    index
+                })
+            });
+            
+            if (response.ok) {
+                toast.success('Document deleted successfully!');
+            } else {
+                toast.error('Failed to delete document from server');
+            }
+        } catch (error) {
+            console.error('Error deleting document:', error);
+            toast.error('Failed to delete document');
+        }
     };
 
     const handleUpload = async (sectionKey, index) => {
@@ -190,10 +215,14 @@ export default function DocumentsTab({ donor }) {
                             const docKey = `${donor._id}-${sectionKey}-${index}`;
                             uploadedDocs[docKey] = updatedDoc;
                             localStorage.setItem('uploadedDocs', JSON.stringify(uploadedDocs));
+                            
+                            // Show success toast
+                            toast.success(`${documents[sectionKey][index].reportName} uploaded successfully!`);
                         }
                     } catch (error) {
                         console.error('Error uploading document:', error);
                         console.error('Upload error details:', error.message);
+                        toast.error('Failed to upload document. Please try again.');
                     } finally {
                         setUploading(prev => ({ ...prev, [`${sectionKey}-${index}`]: false }));
                     }
@@ -254,21 +283,36 @@ export default function DocumentsTab({ donor }) {
                                 </td>
                                 <td className="p-3">
                                     {doc.isUploaded ? (
-                                        <button 
-                                            onClick={() => handleDelete(type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments', index)}
-                                            className="text-red-600 hover:text-red-800"
-                                        >
-                                            <MdClose className="h-4 w-4" />
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <button 
+                                                onClick={() => {
+                                                    if (doc.filePath) {
+                                                        window.open(doc.filePath, '_blank');
+                                                    }
+                                                }}
+                                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                                                title="View document"
+                                            >
+                                                <MdVisibility className="h-5 w-5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments', index)}
+                                                className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                                                title="Delete document"
+                                            >
+                                                <MdClose className="h-5 w-5" />
+                                            </button>
+                                        </div>
                                     ) : (
                                         <button 
                                             onClick={() => {
                                                 const sectionKey = type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments';
                                                 handleUpload(sectionKey, index);
                                             }}
-                                            className="text-purple-600 hover:text-purple-800"
+                                            className="p-1.5 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-md transition-colors"
+                                            title="Upload document"
                                         >
-                                            <MdUpload className="h-4 w-4" />
+                                            <MdCloudUpload className="h-5 w-5" />
                                         </button>
                                     )}
                                 </td>

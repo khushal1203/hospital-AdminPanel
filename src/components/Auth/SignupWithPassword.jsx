@@ -158,15 +158,19 @@ const SignupWithPassword = () => {
                 </Link>
             </div>
 
-            <div className="mb-4.5">
+            <div className="mb-6">
                 <button
                     type="submit"
                     disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-70"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 p-4 font-semibold text-white transition-all duration-200 hover:from-pink-700 hover:to-purple-700 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                    Sign Up
-                    {loading && (
-                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    {loading ? (
+                        <>
+                            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Creating Account...
+                        </>
+                    ) : (
+                        "Create Account"
                     )}
                 </button>
             </div>
