@@ -93,6 +93,12 @@ const LABORATORY_NAV = [
         items: [],
       },
       {
+        title: "Active Donors",
+        url: "/laboratory",
+        icon: MdPeople,
+        items: [],
+      },
+      {
         title: "Semen Storage",
         url: "/storage",
         icon: MdStorage,

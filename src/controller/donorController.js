@@ -66,49 +66,66 @@ export const createDonorController = async (body, userId) => {
     } = body;
 
     // Validate required fields
-    if (!donorType || !fullName || !dateOfBirth || !gender || !phoneNumber || !email) {
-        throw new Error("Required fields are missing");
-    }
-
-    // Validate donor type
-    if (!["oocyte", "semen"].includes(donorType)) {
-        throw new Error("Invalid donor type");
+    if (!fullName || !email || !phoneNumber || !dateOfBirth || !gender || !aadharNumber) {
+        throw new Error("Required fields are missing: fullName, email, phoneNumber, dateOfBirth, gender, aadharNumber");
     }
 
     // Generate donor ID
     const count = await Donor.countDocuments();
     const generatedDonorId = `#${String(count + 809776).padStart(6, "0")}`;
 
-    // Create donor
-    const donor = await Donor.create({
+    // Create donor data with only non-empty values
+    const donorData = {
         donorId: generatedDonorId,
-        donorType,
-        donorImage,
-        dateOfBirth,
-        age,
         fullName,
-        husbandName,
+        email,
+        contactNumber: phoneNumber,
+        dateOfBirth,
         gender,
         aadharNumber,
-        maritalStatus,
-        cast,
-        contactNumber: phoneNumber,
-        email,
-        referenceName,
-        referenceNumber,
-        address,
-        city,
-        state,
-        pincode,
-        placeOfBirth,
-        religion,
-        bloodGroup,
-        donorEducation,
-        donorOccupation,
-        monthlyIncome,
-        spouseEducation,
-        spouseOccupation,
-        follicularDetails: {
+        status: "active",
+        createdBy: userId,
+    };
+
+    // Add optional fields only if they have values
+    if (donorType) donorData.donorType = donorType;
+    if (donorImage) donorData.donorImage = donorImage;
+    if (age) donorData.age = age;
+    if (husbandName) donorData.husbandName = husbandName;
+    if (maritalStatus) donorData.maritalStatus = maritalStatus;
+    if (cast) donorData.cast = cast;
+    if (referenceName) donorData.referenceName = referenceName;
+    if (referenceNumber) donorData.referenceNumber = referenceNumber;
+    if (address) donorData.address = address;
+    if (city) donorData.city = city;
+    if (state) donorData.state = state;
+    if (pincode) donorData.pincode = pincode;
+    if (placeOfBirth) donorData.placeOfBirth = placeOfBirth;
+    if (religion) donorData.religion = religion;
+    if (bloodGroup && bloodGroup.trim()) donorData.bloodGroup = bloodGroup;
+    if (donorEducation) donorData.donorEducation = donorEducation;
+    if (donorOccupation) donorData.donorOccupation = donorOccupation;
+    if (monthlyIncome) donorData.monthlyIncome = monthlyIncome;
+    if (spouseEducation) donorData.spouseEducation = spouseEducation;
+    if (spouseOccupation) donorData.spouseOccupation = spouseOccupation;
+    if (height) donorData.height = height;
+    if (weight) donorData.weight = weight;
+    if (skinColor) donorData.skinColor = skinColor;
+    if (hairColor) donorData.hairColor = hairColor;
+    if (eyeColor) donorData.eyeColor = eyeColor;
+    if (menstrualHistory !== undefined) donorData.menstrualHistory = menstrualHistory;
+    if (contraceptives !== undefined) donorData.contraceptives = contraceptives;
+    if (medicalHistory !== undefined) donorData.medicalHistory = medicalHistory;
+    if (familyMedicalHistory !== undefined) donorData.familyMedicalHistory = familyMedicalHistory;
+    if (abnormalityInChild !== undefined) donorData.abnormalityInChild = abnormalityInChild;
+    if (bloodTransfusion !== undefined) donorData.bloodTransfusion = bloodTransfusion;
+    if (substanceAbuse !== undefined) donorData.substanceAbuse = substanceAbuse;
+    if (geneticAbnormality !== undefined) donorData.geneticAbnormality = geneticAbnormality;
+    if (documents) donorData.documents = documents;
+
+    // Add nested objects only if they have data
+    if (lmpDate || lmpDay || etValue || rightOvary || leftOvary || stimulationProcess || processStartDate) {
+        donorData.follicularDetails = {
             lmpDate,
             lmpDay,
             etValue,
@@ -116,26 +133,19 @@ export const createDonorController = async (body, userId) => {
             leftOvary,
             stimulationProcess,
             processStartDate,
-        },
-        height,
-        weight,
-        skinColor,
-        hairColor,
-        eyeColor,
-        obstetricHistory: {
+        };
+    }
+
+    if (numberOfDeliveries || numberOfAbortions || otherNotes) {
+        donorData.obstetricHistory = {
             numberOfDeliveries,
             numberOfAbortions,
             otherNotes,
-        },
-        menstrualHistory,
-        contraceptives,
-        medicalHistory,
-        familyMedicalHistory,
-        abnormalityInChild,
-        bloodTransfusion,
-        substanceAbuse,
-        geneticAbnormality,
-        physicalExamination: {
+        };
+    }
+
+    if (pulse || bp || temperature || respiratorySystem || cardiovascularSystem || abdominalExamination || otherSystems) {
+        donorData.physicalExamination = {
             pulse,
             bp,
             temperature,
@@ -143,11 +153,11 @@ export const createDonorController = async (body, userId) => {
             cardiovascularSystem,
             abdominalExamination,
             otherSystems,
-        },
-        documents,
-        status: status || "active",
-        createdBy: userId,
-    });
+        };
+    }
+
+    // Create donor
+    const donor = await Donor.create(donorData);
 
     return {
         success: true,
@@ -166,7 +176,7 @@ export const createDonorController = async (body, userId) => {
  */
 const isDonorComplete = (donor) => {
     const requiredFields = [
-        'fullName', 'dateOfBirth', 'gender', 'contactNumber', 'email'
+        'fullName', 'email', 'contactNumber', 'dateOfBirth', 'gender', 'aadharNumber'
     ];
     
     // Check basic required fields
@@ -181,7 +191,7 @@ const isDonorComplete = (donor) => {
  * Get all donors with optional filters
  */
 export const getAllDonorsController = async (filters = {}) => {
-    const { donorType, status, search } = filters;
+    const { donorType, status, search, skip = 0, limit } = filters;
 
     let query = {};
 
@@ -201,9 +211,17 @@ export const getAllDonorsController = async (filters = {}) => {
         ];
     }
 
-    const donors = await Donor.find(query)
+    const total = await Donor.countDocuments(query);
+
+    let donorQuery = Donor.find(query)
         .sort({ createdAt: -1 })
         .select("-__v");
+
+    if (limit) {
+        donorQuery = donorQuery.skip(skip).limit(limit);
+    }
+
+    const donors = await donorQuery;
 
     // Auto-update status based on completeness
     const updatedDonors = donors.map(donor => {
@@ -223,6 +241,7 @@ export const getAllDonorsController = async (filters = {}) => {
         success: true,
         donors: updatedDonors,
         count: updatedDonors.length,
+        total,
     };
 };
 
@@ -270,12 +289,16 @@ export const getDonorByIdController = async (donorId) => {
  * Update donor
  */
 export const updateDonorController = async (donorId, updates, userId) => {
+    const updateData = { ...updates };
+    
+    // Only add updatedBy if userId is provided and valid
+    if (userId) {
+        updateData.updatedBy = userId;
+    }
+    
     const donor = await Donor.findByIdAndUpdate(
         donorId,
-        {
-            ...updates,
-            updatedBy: userId,
-        },
+        updateData,
         { new: true, runValidators: true }
     );
 

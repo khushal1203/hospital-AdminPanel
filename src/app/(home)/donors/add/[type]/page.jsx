@@ -6,6 +6,7 @@ import { MdPerson, MdPhone, MdEmail, MdLocationOn, MdLocalHospital, MdDescriptio
 import ImageUpload from "@/components/FormElements/ImageUpload";
 import DatePicker from "@/components/FormElements/DatePicker";
 import SelectField from "@/components/FormElements/SelectField";
+import { toast } from "@/utils/toast";
 import "react-calendar/dist/Calendar.css";
 
 export default function DonorRegistrationForm({ params }) {
@@ -166,9 +167,11 @@ export default function DonorRegistrationForm({ params }) {
                     }));
                 }
             } else {
+                toast.error(result.message || "File upload failed");
                 setError(result.message);
             }
         } catch (error) {
+            toast.error('File upload failed');
             setError('File upload failed');
         }
     };
@@ -196,9 +199,11 @@ export default function DonorRegistrationForm({ params }) {
                             )
                         }));
                     } else {
+                        toast.error(result.message || "File upload failed");
                         setError(result.message);
                     }
                 } catch (error) {
+                    toast.error('File upload failed');
                     setError('File upload failed');
                 }
             } else {
@@ -299,14 +304,16 @@ export default function DonorRegistrationForm({ params }) {
             const data = await res.json();
 
             if (data.success) {
-                setSuccess("Donor added successfully!");
+                toast.success("Donor added successfully!");
                 setTimeout(() => {
                     router.push("/dashboard");
                 }, 2000);
             } else {
+                toast.error(data.message || "Failed to add donor");
                 setError(data.message);
             }
         } catch (err) {
+            toast.error("Failed to create donor");
             setError("Failed to create donor");
         } finally {
             setLoading(false);

@@ -25,10 +25,17 @@ export default async function DonorProfilePage({ params }) {
         }
 
         return (
-            <div className="mx-auto max-w-7xl">
-                <Breadcrumb pageName="Donor Profile" />
-
-                <DonorProfileView donor={JSON.parse(JSON.stringify(donor))} />
+            <div className="min-h-screen flex flex-col">
+                <div className="bg-white px-4 py-3 shadow-sm flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Donor Profile</h1>
+                    </div>
+                </div>
+                <div className="bg-gray-100 flex-1 flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-auto p-3 sm:p-6">
+                        <DonorProfileView donor={JSON.parse(JSON.stringify(donor))} />
+                    </div>
+                </div>
             </div>
         );
     } catch (error) {

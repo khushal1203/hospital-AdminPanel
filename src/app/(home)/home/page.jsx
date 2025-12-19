@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getUserRole, ROLES } from "@/utils/roleUtils";
+import { getUserRole, ROLES, isLaboratory } from "@/utils/roleUtils";
+import { toast } from "@/utils/toast";
 import {
     MdDashboard,
     MdPersonAdd,
@@ -55,44 +56,70 @@ export default function HomePage() {
     }, []);
 
     const getActionCards = () => {
-        const baseCards = [
+        return [
             {
                 title: "Dashboard",
                 description: "View analytics and system overview",
                 icon: MdDashboard,
                 color: "from-purple-500 to-purple-600",
                 route: "/dashboard",
+                allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
             },
             {
-                title: "Add New Donor",
+                title: "Add Donor",
                 description: "Register new donor (oocyte/semen)",
                 icon: MdPersonAdd,
                 color: "from-blue-500 to-blue-600",
                 route: "/donors/add",
+                allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR]
             },
             {
-                title: "Profile",
-                description: "View and edit your profile",
-                icon: MdHistory,
-                color: "from-orange-500 to-orange-600",
-                route: "/profile",
-            },
-        ];
-
-        if (role === ROLES.DOCTOR || role === ROLES.ADMIN) {
-            baseCards.push({
-                title: "User Management",
-                description: "Manage users and roles",
+                title: "Active Donor Cases",
+                description: "View all active donor cases",
                 icon: MdPeople,
                 color: "from-green-500 to-green-600",
-                route: "/users",
-            });
-        }
-
-        return baseCards;
+                route: "/donors/active",
+                allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
+            },
+            {
+                title: "Donor History",
+                description: "View donor history and records",
+                icon: MdHistory,
+                color: "from-orange-500 to-orange-600",
+                route: "/donors/history",
+                allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
+            },
+            {
+                title: "Semen Storage",
+                description: "Manage semen storage and inventory",
+                icon: MdStorage,
+                color: "from-teal-500 to-teal-600",
+                route: "/donors/semen",
+                allowedRoles: [ROLES.ADMIN, ROLES.LABORATORY]
+            },
+            {
+                title: "Notifications",
+                description: "View alerts and notifications",
+                icon: MdNotifications,
+                color: "from-red-500 to-red-600",
+                route: "/notifications",
+                allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
+            },
+        ];
     };
 
     const actionCards = getActionCards();
+
+    const handleCardClick = (card) => {
+        const userRole = getUserRole();
+        
+        if (!card.allowedRoles.includes(userRole)) {
+            toast.error("You don't have permission to access this feature.");
+            return;
+        }
+        
+        router.push(card.route);
+    };
 
     const formatTime = (date) => {
         return date.toLocaleTimeString("en-US", {
@@ -112,7 +139,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-gradient-to-br  via-blue-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
             {/* Main Content */}
             <div className="mx-auto max-w-6xl px-4 py-12">
                 {/* User Profile Section */}
@@ -155,7 +182,7 @@ export default function HomePage() {
                         return (
                             <button
                                 key={index}
-                                onClick={() => router.push(card.route)}
+                                onClick={() => handleCardClick(card)}
                                 className="group rounded-2xl bg-white p-6 shadow-lg transition-all hover:scale-105 hover:shadow-2xl dark:bg-gray-800"
                             >
                                 <div className={`mb-4 inline-flex rounded-xl bg-gradient-to-br ${card.color} p-4`}>

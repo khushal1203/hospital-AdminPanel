@@ -33,7 +33,7 @@ const TimelineItem = ({ title, status, date, isLast }) => {
                 <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
                     {status === 'pending' && ["Consent Form", "Affidavit Form", "Insurance Documents"].includes(title) && (
-                        <button class="rounded-lg bg-purple-600 px-3 py-1 text-[10px] font-medium text-white hover:bg-purple-700">
+                        <button className="rounded-lg bg-purple-600 px-3 py-1 text-[10px] font-medium text-white hover:bg-purple-700">
                             Upload
                         </button>
                     )}

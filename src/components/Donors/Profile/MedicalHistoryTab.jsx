@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { MdEdit, MdAdd } from "react-icons/md";
 import dayjs from "dayjs";
+import EditMedicalModal from "./EditMedicalModal";
 
 const Section = ({ title, onEdit, children, expanded = true }) => {
     return (
@@ -48,14 +50,48 @@ const BooleanItem = ({ label, value, reason }) => (
 
 
 export default function MedicalHistoryTab({ donor }) {
-    const follicular = donor.follicularDetails || {};
-    const obstetric = donor.obstetricHistory || {};
-    const physical = donor.physicalExamination || {};
+    const [donorData, setDonorData] = useState(donor);
+    const [editModal, setEditModal] = useState({ isOpen: false, section: "" });
+    
+    const follicular = donorData.follicularDetails || {};
+    const obstetric = donorData.obstetricHistory || {};
+    const physical = donorData.physicalExamination || {};
+
+    const handleEdit = (section) => {
+        setEditModal({ isOpen: true, section });
+    };
+
+    const handleSave = async (updatedData) => {
+        try {
+            const donorId = donorData._id || donorData.id;
+            
+            const { _id, __v, createdAt, updatedAt, updatedBy, createdBy, ...cleanData } = updatedData;
+            
+            const response = await fetch(`/api/donors/${donorId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(cleanData),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setDonorData(result.donor || updatedData);
+                alert('Medical history updated successfully!');
+            } else {
+                throw new Error('Failed to update medical history');
+            }
+        } catch (error) {
+            console.error('Error updating medical history:', error);
+            alert('Failed to update medical history. Please try again.');
+        }
+    };
 
     return (
         <div className="flex flex-col gap-6">
 
-            <Section title="Follicular Details" onEdit={() => { }}>
+            <Section title="Follicular Details" onEdit={() => handleEdit("Follicular Details")}>
                 {/* Hardcoded table structure for follicular details based on image if needed, or simple key-value */}
                 {/* The image shows a table for follicular details with Date, Day of LMP, ET, Right Ovary, Left Ovary */}
                 {/* Assuming single record for now based on data structure provided in controller */}
@@ -88,12 +124,12 @@ export default function MedicalHistoryTab({ donor }) {
                 </div>
             </Section>
 
-            <Section title="Menstrual & Contraceptive History" onEdit={() => { }}>
+            <Section title="Menstrual & Contraceptive History" onEdit={() => handleEdit("Menstrual & Contraceptive History")}>
                 <BooleanItem label="Menstrual history" value={false} reason="Stimulation process not stated yet due to pending prerequisite steps or documentation." />
                 <BooleanItem label="Use of contraceptives" value={donor.contraceptives === 'yes'} reason="Stimulation process not stated yet due to pending prerequisite steps or documentation." />
             </Section>
 
-            <Section title="Obstetric History" onEdit={() => { }}>
+            <Section title="Obstetric History" onEdit={() => handleEdit("Obstetric History")}>
                 <InfoItem label="Number of deliveries" value={obstetric.numberOfDeliveries} />
                 <InfoItem label="Number of abortions" value={obstetric.numberOfAbortions} />
                 <InfoItem label="Delivery 1 Type" value="Normal" /> {/* Placeholder */}
@@ -104,7 +140,7 @@ export default function MedicalHistoryTab({ donor }) {
                 </div>
             </Section>
 
-            <Section title="Medical & Family History" onEdit={() => { }}>
+            <Section title="Medical & Family History" onEdit={() => handleEdit("Medical & Family History")}>
                 <BooleanItem label="Medical history?" value={!!donor.medicalHistory} reason={donor.medicalHistory} />
                 <BooleanItem label="Family medical history?" value={!!donor.familyMedicalHistory} reason={donor.familyMedicalHistory} />
                 <BooleanItem label="Abnormality in child?" value={donor.abnormalityInChild === 'yes'} />
@@ -113,7 +149,7 @@ export default function MedicalHistoryTab({ donor }) {
                 <BooleanItem label="Genetic abnormality" value={donor.geneticAbnormality === 'yes'} />
             </Section>
 
-            <Section title="Physical Examination" onEdit={() => { }}>
+            <Section title="Physical Examination" onEdit={() => handleEdit("Physical Examination")}>
                 <InfoItem label="Pulse" value={physical.pulse ? `${physical.pulse} bpm` : "-"} />
                 <InfoItem label="Temperature" value={physical.temperature ? `${physical.temperature}°F` : "-"} />
                 <InfoItem label="BP" value={physical.bp ? `${physical.bp} mmHg` : "-"} />
@@ -125,6 +161,14 @@ export default function MedicalHistoryTab({ donor }) {
                 </div>
             </Section>
 
+            {/* Edit Modal */}
+            <EditMedicalModal
+                isOpen={editModal.isOpen}
+                onClose={() => setEditModal({ isOpen: false, section: "" })}
+                donor={donorData}
+                section={editModal.section}
+                onSave={handleSave}
+            />
         </div>
     );
 }

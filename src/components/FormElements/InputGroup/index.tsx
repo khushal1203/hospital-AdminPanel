@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { type HTMLInputTypeAttribute, useId, useState } from "react";
+import { type HTMLInputTypeAttribute, useState, useEffect } from "react";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 type InputGroupProps = {
@@ -32,15 +32,19 @@ const InputGroup: React.FC<InputGroupProps> = ({
   icon,
   ...props
 }) => {
-  const id = useId();
+  const [id, setId] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const isPasswordField = type === "password";
   const inputType = isPasswordField && showPassword ? "text" : type;
 
+  useEffect(() => {
+    setId(`input-${Math.random().toString(36).substr(2, 9)}`);
+  }, []);
+
   return (
     <div className={className}>
       <label
-        htmlFor={id}
+        htmlFor={id || undefined}
         className="text-body-sm font-medium text-dark dark:text-white"
       >
         {label}
@@ -56,7 +60,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
         )}
       >
         <input
-          id={id}
+          id={id || undefined}
           type={inputType}
           name={props.name}
           placeholder={placeholder}
