@@ -2,6 +2,7 @@ import { MdAdd, MdVisibility, MdClose, MdCloudUpload } from "react-icons/md";
 import dayjs from "dayjs";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "@/utils/toast";
+import { CompactLoader } from "@/components/ui/LoadingSpinner";
 
 export default function DocumentsTab({ donor }) {
     const [showModal, setShowModal] = useState(false);
@@ -267,7 +268,7 @@ export default function DocumentsTab({ donor }) {
                                         </span>
                                     ) : uploading[`${type === 'donor' ? 'donorDocuments' : type === 'reports' ? 'reports' : 'otherDocuments'}-${index}`] ? (
                                         <span className="text-blue-600 flex items-center gap-1">
-                                            <div className="h-3 w-3 animate-spin rounded-full border border-blue-600 border-t-transparent"></div>
+                                            <CompactLoader />
                                             Uploading...
                                         </span>
                                     ) : (

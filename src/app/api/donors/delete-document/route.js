@@ -36,8 +36,9 @@ export async function DELETE(request) {
         }
 
         if (donor.documents[sectionKey][index]) {
+            const existingReportName = donor.documents[sectionKey][index].reportName;
             donor.documents[sectionKey][index] = {
-                ...donor.documents[sectionKey][index],
+                reportName: existingReportName,
                 documentName: null,
                 filePath: null,
                 uploadBy: null,

@@ -4,6 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import InputGroup from "@/components/FormElements/InputGroup";
+import { ButtonLoader } from "@/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+
 function ResetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -129,9 +132,7 @@ function ResetPasswordForm() {
                                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-70"
                                 >
                                     Reset Password
-                                    {loading && (
-                                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                    )}
+                                    {loading && <ButtonLoader />}
                                 </button>
                             </div>
                             <div className="text-center">
@@ -181,7 +182,7 @@ function ResetPasswordForm() {
 }
 export default function ResetPassword() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div></div>}>
+        <Suspense fallback={<LoadingSpinner message="Loading reset form..." />}>
             <ResetPasswordForm />
         </Suspense>
     );

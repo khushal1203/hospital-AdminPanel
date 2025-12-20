@@ -13,6 +13,7 @@ import {
     MdNavigateBefore,
     MdNavigateNext
 } from "react-icons/md";
+import { useColumns } from "@/contexts/ColumnContext";
 
 const StatusBadge = ({ status, donor, documentType }) => {
     // Helper function to check if document has file uploaded
@@ -26,22 +27,21 @@ const StatusBadge = ({ status, donor, documentType }) => {
             ...(donor.documents.otherDocuments || [])
         ];
         
-        // Find specific document type
+        // Find specific document type by exact reportName match
         const doc = allDocs.find(d => {
-            if (!d.reportName && !d.documentName) return false;
+            if (!d.reportName) return false;
             
-            const name = (d.reportName || d.documentName || '').toLowerCase();
+            const reportName = d.reportName.toLowerCase();
             const searchTerm = docType.toLowerCase();
             
-            // Match specific document types
-            if (searchTerm === 'consent' && (name.includes('consent') || name.includes('form'))) return true;
-            if (searchTerm === 'affidavit' && name.includes('affidavit')) return true;
-            if (searchTerm === 'insurance' && name.includes('insurance')) return true;
-            if (searchTerm === 'scan' && (name.includes('scan') || name.includes('follicular'))) return true;
-            if (searchTerm === 'blood' && (name.includes('blood') || name.includes('report'))) return true;
-            if (searchTerm === 'opu' && (name.includes('opu') || name.includes('process'))) return true;
+            // Match specific document types by exact reportName
+            if (searchTerm === 'consent' && reportName === 'consent form') return true;
+            if (searchTerm === 'affidavit' && reportName === 'affidavit form') return true;
+            if (searchTerm === 'blood' && reportName === 'blood report') return true;
+            if (searchTerm === 'insurance' && reportName === 'life insurance document') return true;
+            if (searchTerm === 'opu' && reportName === 'opu process') return true;
             
-            return name.includes(searchTerm);
+            return false;
         });
         
         // Return uploaded only if specific document has hasFile true
@@ -49,7 +49,7 @@ const StatusBadge = ({ status, donor, documentType }) => {
             return 'uploaded';
         }
         
-        return status;
+        return 'pending';
     };
 
     const finalStatus = documentType ? getDocumentStatus(documentType) : status;
@@ -133,6 +133,7 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
 
 export default function DonorListTable({ donors, currentPage = 1, totalItems = 0, itemsPerPage = 10 }) {
     const [selectedDonors, setSelectedDonors] = useState([]);
+    const { visibleColumns } = useColumns();
 
     const toggleSelectAll = () => {
         if (selectedDonors.length === donors.length) {
@@ -170,16 +171,36 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                         onChange={toggleSelectAll}
                                     />
                                 </th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Donor ID</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Registration Date</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Donor Name</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Next Appointment</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Aadhar Number</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Consent Form</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Affidavit</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Blood Report</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Insurance</th>
-                                <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">OPU Process</th>
+                                {visibleColumns.donorId && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Donor ID</th>
+                                )}
+                                {visibleColumns.registrationDate && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Registration Date</th>
+                                )}
+                                {visibleColumns.donorName && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Donor Name</th>
+                                )}
+                                {visibleColumns.nextAppointment && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Next Appointment</th>
+                                )}
+                                {visibleColumns.aadharNumber && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Aadhar Number</th>
+                                )}
+                                {visibleColumns.consentForm && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Consent Form</th>
+                                )}
+                                {visibleColumns.affidavit && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Affidavit</th>
+                                )}
+                                {visibleColumns.bloodReport && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Blood Report</th>
+                                )}
+                                {visibleColumns.insurance && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Insurance</th>
+                                )}
+                                {visibleColumns.opuProcess && (
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">OPU Process</th>
+                                )}
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Action</th>
                             </tr>
                         </thead>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MdClose } from "react-icons/md";
 import { toast } from "@/utils/toast";
+import { ButtonLoader } from "@/components/ui/LoadingSpinner";
 
 const FormField = ({ label, name, value, onChange, type = "text", options = null }) => (
     <div className="flex flex-col gap-1">
@@ -336,9 +337,7 @@ export default function EditMedicalModal({ isOpen, onClose, donor, section, onSa
                             disabled={isLoading}
                             className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            {isLoading && (
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                            )}
+                            {isLoading && <ButtonLoader />}
                             {isLoading ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>

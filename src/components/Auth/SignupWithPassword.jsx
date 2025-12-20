@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
+import { ButtonLoader } from "../ui/LoadingSpinner";
 
 const SignupWithPassword = () => {
     const router = useRouter();
@@ -166,7 +167,7 @@ const SignupWithPassword = () => {
                 >
                     {loading ? (
                         <>
-                            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            <ButtonLoader />
                             Creating Account...
                         </>
                     ) : (

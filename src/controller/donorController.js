@@ -116,11 +116,32 @@ export const createDonorController = async (body, userId) => {
         bloodTransfusion: bloodTransfusion !== undefined ? bloodTransfusion : null,
         substanceAbuse: substanceAbuse !== undefined ? substanceAbuse : null,
         geneticAbnormality: geneticAbnormality !== undefined ? geneticAbnormality : null,
-        documents: documents || null,
         status: "active",
         bloodReportStatus: "pending",
         opuProcessStatus: "pending",
         createdBy: userId,
+        
+        // Predefined documents structure
+        documents: {
+            donorDocuments: [
+                { reportName: "Consent Form", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Affidavit Form", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false }
+            ],
+            reports: [
+                { reportName: "OvaCare Evaluation Report", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Lumine Report", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Blood Report", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "OPU Process", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false }
+            ],
+            otherDocuments: [
+                { reportName: "Aadhaar Card Front", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Aadhaar Card Back", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Husband/Nominee Aadhaar Card Front", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Husband/Nominee Aadhaar Card Back", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Health Insurance Document", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false },
+                { reportName: "Life Insurance Document", documentName: null, filePath: null, uploadBy: null, uploadDate: null, hasFile: false, isUploaded: false }
+            ]
+        },
         
         // Always include nested objects (even if empty)
         follicularDetails: {
@@ -328,9 +349,11 @@ export const deleteDonorController = async (donorId) => {
 /**
  * Get dashboard statistics
  */
-export const getDonorStatsController = async () => {
-    const today = new Date();
+export const getDonorStatsController = async (selectedDate) => {
+    const today = selectedDate ? new Date(selectedDate) : new Date();
     today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     const [
         totalDonors,
@@ -339,11 +362,12 @@ export const getDonorStatsController = async () => {
         pendingDocuments,
     ] = await Promise.all([
         Donor.countDocuments(),
+        // Today's registrations count
         Donor.countDocuments({
-            nextAppointment: {
-                $gte: today,
-                $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-            },
+            $or: [
+                { registrationDate: { $gte: today, $lt: tomorrow } },
+                { createdAt: { $gte: today, $lt: tomorrow } }
+            ]
         }),
         Donor.countDocuments({ status: "active" }),
         Donor.countDocuments({

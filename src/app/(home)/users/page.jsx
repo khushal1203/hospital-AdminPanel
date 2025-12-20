@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isAdmin } from "@/utils/roleUtils";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function UserManagement() {
     const router = useRouter();
@@ -81,11 +82,7 @@ export default function UserManagement() {
     };
 
     if (loading) {
-        return (
-            <div className="flex min-h-[400px] items-center justify-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            </div>
-        );
+        return <LoadingSpinner message="Loading users..." />;
     }
 
     return (

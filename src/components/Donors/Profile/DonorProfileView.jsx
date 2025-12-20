@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { MdEdit, MdMoreVert, MdPrint } from "react-icons/md";
 import { toast } from "@/utils/toast";
+import { ButtonLoader } from "@/components/ui/LoadingSpinner";
 
 import DonorTimeline from "./DonorTimeline";
 import OverviewTab from "./OverviewTab";
@@ -107,7 +108,7 @@ export default function DonorProfileView({ donor }) {
                                 {/* Loading Overlay */}
                                 {uploading && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                                        <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent"></div>
+                                        <ButtonLoader />
                                     </div>
                                 )}
                             </div>

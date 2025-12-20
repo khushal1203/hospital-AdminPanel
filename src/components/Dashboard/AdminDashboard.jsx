@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import StatsCard from "./StatsCard";
 import { MdPeople, MdFolder, MdDescription, MdPersonAdd } from "react-icons/md";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 /**
  * AdminDashboard - Dashboard for admin, doctor, and laboratory roles
@@ -14,7 +15,10 @@ export default function AdminDashboard() {
         pendingDocuments: 0,
         totalDonors: 0,
     });
-    const [donors, setDonors] = useState([]);
+    const [todayRegistrations, setTodayRegistrations] = useState([]);
+    const [activeDonors, setActiveDonors] = useState([]);
+    const [bloodReportPending, setBloodReportPending] = useState([]);
+    const [pendingDocuments, setPendingDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -24,7 +28,7 @@ export default function AdminDashboard() {
                 const token = localStorage.getItem("token");
                 if (!token) return;
 
-                // Fetch stats with date filter
+                // Fetch stats
                 const statsRes = await fetch(`/api/donors/stats?date=${selectedDate}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -33,13 +37,48 @@ export default function AdminDashboard() {
                     setStats(statsData.stats);
                 }
 
-                // Fetch donors with date filter
+                // Fetch all donors
                 const donorsRes = await fetch(`/api/donors/all?date=${selectedDate}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const donorsData = await donorsRes.json();
                 if (donorsData.success) {
-                    setDonors(donorsData.donors.slice(0, 10)); // Show only first 10
+                    const allDonors = donorsData.donors;
+                    const today = new Date(selectedDate);
+                    today.setHours(0, 0, 0, 0);
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+
+                    // Today's registrations
+                    const todayRegs = allDonors.filter(d => {
+                        const regDate = new Date(d.registrationDate || d.createdAt);
+                        return regDate >= today && regDate < tomorrow;
+                    });
+                    setTodayRegistrations(todayRegs.slice(0, 5));
+
+                    // Active donors
+                    const active = allDonors.filter(d => d.status === 'active');
+                    setActiveDonors(active.slice(0, 5));
+
+                    // Blood report pending
+                    const bloodPending = allDonors.filter(d => {
+                        const reports = d.documents?.reports || [];
+                        const bloodReport = reports.find(r => r.reportName === 'Blood Report');
+                        return bloodReport && !bloodReport.hasFile;
+                    });
+                    setBloodReportPending(bloodPending.slice(0, 5));
+
+                    // Pending documents
+                    const docsPending = allDonors.filter(d => {
+                        const docs = d.documents || {};
+                        const allDocs = [
+                            ...(docs.donorDocuments || []),
+                            ...(docs.reports || []),
+                            ...(docs.otherDocuments || [])
+                        ];
+                        return allDocs.some(doc => !doc.hasFile);
+                    });
+                    setPendingDocuments(docsPending.slice(0, 5));
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -52,11 +91,7 @@ export default function AdminDashboard() {
     }, [selectedDate]);
 
     if (loading) {
-        return (
-            <div className="flex min-h-[400px] items-center justify-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            </div>
-        );
+        return <LoadingSpinner message="Loading dashboard data..." />;
     }
 
     return (
@@ -117,32 +152,32 @@ export default function AdminDashboard() {
 
                     {/* Tables Grid */}
                     <div className="grid gap-6 lg:grid-cols-2 mb-6">
-                        {/* Active Donors Table */}
+                        {/* Today's Registrations */}
                         <DonorTable 
-                            title="Active Donors" 
-                            donors={donors.slice(0, 5)} 
+                            title="Today's Registrations" 
+                            donors={todayRegistrations} 
                         />
 
-                        {/* Recent Registrations Table */}
+                        {/* Active Donors */}
                         <DonorTable 
-                            title="Recent Registrations" 
-                            donors={donors.slice(0, 5)} 
+                            title="Active Donors" 
+                            donors={activeDonors} 
                         />
                     </div>
 
                     <div className="grid gap-6 lg:grid-cols-2">
-                        {/* Pending Documents Table */}
+                        {/* Blood Reports Pending */}
                         <DonorTable 
-                            title="Pending Documents" 
-                            donors={donors.slice(0, 5)} 
-                            showMissingFields
+                            title="Blood Reports Pending" 
+                            donors={bloodReportPending} 
+                            showBloodReport
                         />
 
-                        {/* Blood Reports Table */}
+                        {/* Pending Documents */}
                         <DonorTable 
-                            title="Blood Reports" 
-                            donors={donors.slice(0, 5)} 
-                            showBloodReport 
+                            title="Overdue/Pending Documents" 
+                            donors={pendingDocuments} 
+                            showMissingFields
                         />
                     </div>
                 </div>
@@ -205,57 +240,42 @@ function DonorTable({ title, donors, showBloodReport = false, showMissingFields 
                         {donors.length > 0 ? donors.map((donor, index) => (
                             <tr key={donor._id || index} className="border-b border-gray-100">
                                 <td className="py-3 text-sm font-medium text-gray-900">
-                                    #{donor._id?.slice(-6) || `D00${index + 1}`}
+                                    {donor.donorId}
+                                </td>
+                                <td className="py-3 text-sm text-gray-900">
+                                    {donor.fullName}
                                 </td>
                                 <td className="py-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-xs font-medium text-purple-600">
-                                            {donor.fullName?.charAt(0)?.toUpperCase() || 'D'}
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {donor.fullName || `Donor ${index + 1}`}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="py-3">
-                                    <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(donor.status || 'active')}`}>
-                                        {(donor.status || 'Active').toUpperCase()}
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        getStatusColor(donor.status)
+                                    }`}>
+                                        {donor.status || 'pending'}
                                     </span>
                                 </td>
                                 {showBloodReport && (
-                                    <td className="py-3 text-sm text-gray-900">
-                                        {donor.bloodGroup || 'O+'}
+                                    <td className="py-3 text-sm text-gray-600">
+                                        {donor.bloodGroup || '-'}
                                     </td>
                                 )}
                                 {showMissingFields && (
-                                    <td className="py-3">
-                                        <div className="flex flex-wrap gap-1">
-                                            {getMissingFields(donor).slice(0, 2).map((field, idx) => (
-                                                <span key={idx} className="inline-block rounded bg-red-100 px-2 py-1 text-xs text-red-800">
-                                                    {field}
-                                                </span>
-                                            ))}
-                                        </div>
+                                    <td className="py-3 text-sm text-gray-600">
+                                        {getMissingFields(donor).slice(0, 2).join(', ')}
                                     </td>
                                 )}
                                 <td className="py-3 text-right text-sm text-gray-600">
-                                    {new Date(donor.createdAt || Date.now()).toLocaleDateString()}
+                                    {new Date(donor.createdAt).toLocaleDateString()}
                                 </td>
                             </tr>
                         )) : (
                             <tr>
                                 <td colSpan="6" className="py-8 text-center text-gray-500">
-                                    No donors found
+                                    No data available
                                 </td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
-
-            <button className="mt-4 text-sm font-medium text-purple-600 hover:text-purple-800">
-                View all →
-            </button>
         </div>
     );
 }
