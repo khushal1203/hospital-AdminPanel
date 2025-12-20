@@ -6,11 +6,16 @@ import { Providers } from "./providers";
 
 export const metadata = {
   title: {
-    template: "%s | NextAdmin - Next.js Dashboard Kit",
-    default: "NextAdmin - Next.js Dashboard Kit",
+    template: "%s | Hospital Management",
+    default: "Hospital Management",
   },
   description:
-    "Next.js admin dashboard toolkit with 200+ templates, UI components, and integrations for fast dashboard development.",
+    "Hospital Management System for donor care and medical administration.",
+  icons: {
+    icon: '/images/icon/brand.svg',
+    shortcut: '/images/icon/brand.svg',
+    apple: '/images/icon/brand.svg',
+  },
 };
 
 export default function RootLayout({ children }) {

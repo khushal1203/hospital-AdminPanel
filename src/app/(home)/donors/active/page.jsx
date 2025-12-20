@@ -7,7 +7,7 @@ import { ColumnProvider } from "@/contexts/ColumnContext";
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: "Active Donors | Hospital Admin Panel",
+    title: "Active Donors | Hospital Management",
     description: "List of active donors",
 };
 
