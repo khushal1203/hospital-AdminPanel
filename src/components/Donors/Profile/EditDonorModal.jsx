@@ -166,7 +166,7 @@ export default function EditDonorModal({ isOpen, onClose, donor, section, onSave
                             className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isLoading && <ButtonLoader />}
-                            {isLoading ? 'Saving...' : 'Save Changes'}
+                            {isLoading ? 'Loading...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>

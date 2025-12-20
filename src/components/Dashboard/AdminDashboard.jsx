@@ -92,7 +92,7 @@ export default function AdminDashboard() {
     }, [selectedDate]);
 
     if (loading) {
-        return <LoadingSpinner message="Loading dashboard data..." />;
+        return <LoadingSpinner message="    " />;
     }
 
     return (

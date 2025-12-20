@@ -184,7 +184,7 @@ export default function AddUserPage() {
                             disabled={loading}
                             className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition hover:bg-opacity-90 disabled:opacity-70"
                         >
-                            {loading ? "Creating..." : "Create User"}
+                            {loading ? "Loading..." : "Create User"}
                         </button>
                     </div>
                 </div>
