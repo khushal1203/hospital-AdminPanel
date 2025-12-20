@@ -212,7 +212,7 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                             type="checkbox"
                                             className="h-4 w-4 rounded border-gray-300"
                                             checked={selectedDonors.includes(donor._id)}
-                                            onChange={() => toggleSelect(donor._id)}
+                                            onChange={() => toggleSelect(donor._id)}  
                                         />
                                     </td>
                                     <td className="p-4 font-medium text-gray-900">{donor.donorId}</td>
