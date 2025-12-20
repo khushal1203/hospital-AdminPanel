@@ -7,7 +7,7 @@ import { ColumnProvider } from "@/contexts/ColumnContext";
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: "Active Donors | Hospital Admin Panel",
+    title: "Active Donors | Hospital Management",
     description: "List of active donors",
 };
 
@@ -38,7 +38,7 @@ export default async function ActiveDonorsPage({ searchParams }) {
                             <DonorTableToolbar />
                         </div>
                     </div>
-                </div>
+                </div>  
                 
                 {/* Scrollable Table Content */}
                 <div className="flex-1 overflow-hidden bg-gray-50">
