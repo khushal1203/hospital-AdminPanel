@@ -164,7 +164,7 @@ const SignupWithPassword = () => {
                     disabled={loading}
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 p-4 font-semibold text-white transition-all duration-200 hover:from-pink-700 hover:to-purple-700 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                    {loading ? "Creating Account..." : "Create Account"}
+                    {loading ? "Loading..." : "Create Account"}
                 </button>
             </div>
         </form>

@@ -2,13 +2,13 @@ import Image from "next/image";
 
 export default function LoadingSpinner({ size = "default", message = "Loading..." }) {
     const sizeClasses = {
-        small: "h-16 w-16",
-        default: "h-24 w-24", 
-        large: "h-32 w-32"
+        small: "h-24 w-24",
+        default: "h-32 w-32", 
+        large: "h-40 w-40"
     };
 
     return (
-        <div className="flex min-h-[400px] items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center">
             <div className="flex flex-col items-center gap-6">
                 {/* Brand image with floating animation */}
                 <div className={`${sizeClasses[size]} relative animate-bounce`}>

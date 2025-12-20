@@ -6,7 +6,7 @@ import Image from "next/image";
 import { getUserRole, ROLES, isLaboratory } from "@/utils/roleUtils";
 import { toast } from "@/utils/toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { CompactLoader } from "@/components/ui/LoadingSpinner";
+import HomeSpinner from "@/components/ui/HomeSpinner";
 import {
     MdDashboard,
     MdPersonAdd,
@@ -132,7 +132,7 @@ export default function HomePage() {
                 <div className="mb-8 text-center">
                     <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-xl bg-gray-100 flex items-center justify-center">
                         {loading ? (
-                            <CompactLoader />
+                            <HomeSpinner />
                         ) : (
                             <Image
                                 src={user?.profileImage || "/images/user/user-03.png"}
@@ -146,14 +146,14 @@ export default function HomePage() {
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
                         {loading ? (
-                            <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto"></div>
+                            <HomeSpinner />
                         ) : (
                             user?.fullName || "User"
                         )}
                     </h1>
                     <div className="mt-1 text-gray-600 dark:text-gray-400">
                         {loading ? (
-                            <div className="h-4 bg-gray-200 rounded animate-pulse w-64 mx-auto"></div>
+                            <HomeSpinner />
                         ) : (
                             `${user?.email || ""} | ${user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Donor Care Executive"}`
                         )}

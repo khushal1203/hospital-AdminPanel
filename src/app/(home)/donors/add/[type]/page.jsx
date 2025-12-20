@@ -907,7 +907,7 @@ export default function DonorRegistrationForm({ params }) {
                                     className="flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                                 >
                                     <MdCheck className="h-5 w-5" />
-                                    <span>{loading ? "Submitting..." : "Submit Registration"}</span>
+                                    <span>{loading ? "Loading..." : "Submit Registration"}</span>
                                 </button>
                             </div>
                         </form>

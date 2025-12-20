@@ -155,7 +155,7 @@ const SigninWithPassword = () => {
           disabled={loading}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 p-4 font-semibold text-white transition-all duration-200 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {loading ? "Signing In..." : "Sign In"}
+          {loading ? "Loading..." : "Sign In"}
         </button>
       </div>
     </form>

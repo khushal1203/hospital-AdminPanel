@@ -29,7 +29,7 @@ export default function DashboardSwitcher() {
     }, [router]);
 
     if (loading) {
-        return <LoadingSpinner message="Loading dashboard..." />;
+        return <LoadingSpinner message="" />;
     }
 
     // All roles use the same admin dashboard
