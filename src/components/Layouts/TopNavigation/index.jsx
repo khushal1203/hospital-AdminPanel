@@ -5,18 +5,21 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import {
-    MdHome,
-    MdDashboard,
-    MdPeople,
-    MdHistory,
-    MdStorage,
-    MdPersonAdd,
-    MdNotifications
+    MdNotifications,
+    MdMenu,
+    MdClose
 } from "react-icons/md";
+import {
+    HiHome,
+    HiChartBar,
+    HiUsers,
+    HiClipboardList,
+    HiBeaker,
+    HiUserAdd
+} from "react-icons/hi";
 import { getUserRole, ROLES } from "@/utils/roleUtils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import NotificationDropdown from "./NotificationDropdown";
-import { MdMenu, MdClose } from "react-icons/md";
 
 export default function TopNavigation() {
     const pathname = usePathname();
@@ -47,20 +50,20 @@ export default function TopNavigation() {
     const getNavItems = () => {
         if (role === ROLES.LABORATORY) {
             return [
-                { name: "Home", href: "/home", icon: MdHome },
-                { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-                { name: "Active Donors", href: "/donors/active", icon: MdPeople },
-                { name: "Semen Storage", href: "/donors/semen", icon: MdStorage },
+                { name: "Home", href: "/home", icon: HiHome },
+                { name: "Dashboard", href: "/dashboard", icon: HiChartBar },
+                { name: "Active Donors", href: "/donors/active", icon: HiUsers },
+                { name: "Semen Storage", href: "/donors/semen", icon: HiBeaker },
             ];
         }
 
         return [
-            { name: "Home", href: "/home", icon: MdHome },
-            { name: "Dashboard", href: "/dashboard", icon: MdDashboard },
-            { name: "Active Donors", href: "/donors/active", icon: MdPeople },
-            { name: "Donors History", href: "/donors/history", icon: MdHistory },
-            { name: "Semen Storage", href: "/donors/semen", icon: MdStorage },
-            { name: "Add Donor", href: "/donors/add", icon: MdPersonAdd },
+            { name: "Home", href: "/home", icon: HiHome },
+            { name: "Dashboard", href: "/dashboard", icon: HiChartBar },
+            { name: "Active Donors", href: "/donors/active", icon: HiUsers },
+            { name: "Donors History", href: "/donors/history", icon: HiClipboardList },
+            { name: "Semen Storage", href: "/donors/semen", icon: HiBeaker },
+            { name: "Add Donor", href: "/donors/add", icon: HiUserAdd },
         ];
     };
 
@@ -71,7 +74,7 @@ export default function TopNavigation() {
         <nav className="sticky top-0 z-[10000] bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg border-b border-white/10">
             <div className="mx-auto px-4 sm:px-6">
                 <div className="flex h-20 items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-8">
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
@@ -188,8 +191,19 @@ export default function TopNavigation() {
                                     <div className="border-t border-gray-100 py-1">
                                         <button
                                             onClick={() => {
+                                                // Save remember me credentials before clearing
+                                                const rememberedEmail = localStorage.getItem("rememberedEmail");
+                                                const rememberedPassword = localStorage.getItem("rememberedPassword");
+                                                
                                                 localStorage.clear();
                                                 sessionStorage.clear();
+                                                
+                                                // Restore remember me credentials
+                                                if (rememberedEmail && rememberedPassword) {
+                                                    localStorage.setItem("rememberedEmail", rememberedEmail);
+                                                    localStorage.setItem("rememberedPassword", rememberedPassword);
+                                                }
+                                                
                                                 window.location.href = "/auth/sign-in";
                                             }}
                                             className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"

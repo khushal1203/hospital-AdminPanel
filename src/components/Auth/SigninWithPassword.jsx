@@ -2,10 +2,11 @@
 
 import { EmailIcon, PasswordIcon } from "@/assets/icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
+import { ButtonLoader } from "../ui/LoadingSpinner";
 
 const SigninWithPassword = () => {
   const router = useRouter();
@@ -18,6 +19,20 @@ const SigninWithPassword = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+    
+    if (savedEmail && savedPassword) {
+      setData({
+        email: savedEmail,
+        password: savedPassword,
+        remember: true,
+      });
+    }
+  }, []);
 
   const handleChange = (e) => {
     setData({
@@ -64,6 +79,15 @@ const SigninWithPassword = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
+      // ✅ SAVE CREDENTIALS IF REMEMBER ME IS CHECKED
+      if (data.remember) {
+        localStorage.setItem("rememberedEmail", data.email);
+        localStorage.setItem("rememberedPassword", data.password);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberedPassword");
+      }
+
       // ✅ REDIRECT TO ROOT ("/") AS REQUESTED
       router.push("/");
     } catch (err) {
@@ -95,7 +119,7 @@ const SigninWithPassword = () => {
       <InputGroup
         type="password"
         label="Password"
-        className="mb-5 [&_input]:py-[15px]"
+        className="mb-5 [&_input]:py-[15px] [&_input]:pr-1"
         placeholder="Enter your password"
         name="password"
         handleChange={handleChange}
@@ -109,6 +133,7 @@ const SigninWithPassword = () => {
           withIcon="check"
           minimal
           radius="md"
+          checked={data.remember}
           onChange={(e) =>
             setData({
               ...data,
@@ -133,7 +158,7 @@ const SigninWithPassword = () => {
         >
           {loading ? (
             <>
-              <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <ButtonLoader />
               Signing In...
             </>
           ) : (

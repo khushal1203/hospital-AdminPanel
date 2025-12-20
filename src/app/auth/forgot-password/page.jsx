@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { EmailIcon } from "@/assets/icons";
+import { ButtonLoader } from "@/components/ui/LoadingSpinner";
 
 export default function ForgotPassword() {
     const router = useRouter();
@@ -33,7 +34,6 @@ export default function ForgotPassword() {
 
             if (result.success) {
                 setMessage("Password reset instructions sent to your email");
-                // For development, show the reset URL
                 if (result.resetUrl) {
                     console.log("Reset URL:", result.resetUrl);
                 }
@@ -48,100 +48,109 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
-            <div className="flex flex-wrap items-center">
-                <div className="w-full xl:w-1/2">
-                    <div className="w-full p-4 sm:p-12.5 xl:p-15">
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-6">
-                                <h2 className="mb-2 text-2xl font-bold text-dark dark:text-white">
+        <div className="min-h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div className="flex flex-col xl:flex-row min-h-[600px]">
+                    {/* Left Side - Form */}
+                    <div className="w-full xl:w-1/2 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+                        <div className="max-w-md mx-auto w-full">
+                            <div className="text-center mb-8">
+                                <Link href="/" className="inline-block mb-6">
+                                    <Image
+                                        src="/images/icon/brand-black.svg"
+                                        alt="Logo"
+                                        width={160}
+                                        height={40}
+                                        className="mx-auto"
+                                    />
+                                </Link>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2">
                                     Forgot Password?
-                                </h2>
-                                <p className="text-body text-dark-4 dark:text-dark-6">
+                                </h1>
+                                <p className="text-gray-600">
                                     Enter your email address and we'll send you instructions to reset your password.
                                 </p>
                             </div>
 
-                            {error && (
-                                <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-600">
-                                    {error}
+                            <form onSubmit={handleSubmit}>
+                                {error && (
+                                    <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-600">
+                                        {error}
+                                    </div>
+                                )}
+
+                                {message && (
+                                    <div className="mb-4 rounded-md bg-green-100 p-3 text-sm text-green-600">
+                                        {message}
+                                    </div>
+                                )}
+
+                                <InputGroup
+                                    type="email"
+                                    label="Email"
+                                    className="mb-6 [&_input]:py-[15px]"
+                                    placeholder="Enter your email"
+                                    name="email"
+                                    handleChange={(e) => setEmail(e.target.value)}
+                                    value={email}
+                                    icon={<EmailIcon />}
+                                    required
+                                />
+
+                                <div className="mb-4.5">
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 p-4 font-medium text-white transition hover:from-purple-700 hover:to-pink-700 disabled:opacity-70"
+                                    >
+                                        Send Reset Instructions
+                                        {loading && <ButtonLoader />}
+                                    </button>
                                 </div>
-                            )}
 
-                            {message && (
-                                <div className="mb-4 rounded-md bg-green-100 p-3 text-sm text-green-600">
-                                    {message}
+                                <div className="text-center">
+                                    <Link
+                                        href="/auth/sign-in"
+                                        className="text-purple-600 hover:text-purple-700 hover:underline"
+                                    >
+                                        Back to Sign In
+                                    </Link>
                                 </div>
-                            )}
-
-                            <InputGroup
-                                type="email"
-                                label="Email"
-                                className="mb-6 [&_input]:py-[15px]"
-                                placeholder="Enter your email"
-                                name="email"
-                                handleChange={(e) => setEmail(e.target.value)}
-                                value={email}
-                                icon={<EmailIcon />}
-                                required
-                            />
-
-                            <div className="mb-4.5">
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-70"
-                                >
-                                    Send Reset Instructions
-                                    {loading && (
-                                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                    )}
-                                </button>
-                            </div>
-
-                            <div className="text-center">
-                                <Link
-                                    href="/auth/sign-in"
-                                    className="text-primary hover:underline"
-                                >
-                                    Back to Sign In
-                                </Link>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
-                </div>
 
-                <div className="hidden w-full p-7.5 xl:block xl:w-1/2">
-                    <div className="bg-gradient-to-br from-blue-600 to-purple-700 overflow-hidden rounded-2xl px-12.5 pt-12.5">
-                        <Link className="mb-10 inline-block" href="/">
-                            <Image
-                                src="/images/icon/brand.svg"
-                                alt="Logo"
-                                width={176}
-                                height={32}
-                            />
-                        </Link>
-
-                        <p className="mb-3 text-xl font-medium text-white">
-                            Reset your password
-                        </p>
-
-                        <h1 className="mb-4 text-2xl font-bold text-white sm:text-heading-3">
-                            We'll help you get back in
-                        </h1>
-
-                        <p className="w-full max-w-[375px] font-medium text-white/80">
-                            Enter your email address and we'll send you a secure link to reset your password
-                        </p>
-
-                        <div className="mt-31">
-                            <Image
-                                src="/images/grids/grid-02.svg"
-                                alt="Grid"
-                                width={405}
-                                height={325}
-                                className="mx-auto dark:opacity-30"
-                            />
+                    {/* Right Side - Illustration */}
+                    <div className="hidden xl:flex w-full xl:w-1/2 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-black/10"></div>
+                        <div className="relative z-10 p-12 flex flex-col justify-center text-white">
+                            <div className="mb-8">
+                                <h2 className="text-4xl font-bold mb-4">
+                                    Reset Your Password
+                                </h2>
+                                <p className="text-xl text-white/90 mb-6">
+                                    We'll help you get back into your hospital admin account securely and quickly.
+                                </p>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                        <span className="text-white/90">Secure Reset Process</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                        <span className="text-white/90">Email Verification</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                        <span className="text-white/90">Quick Access Restore</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Decorative Elements */}
+                            <div className="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+                            <div className="absolute bottom-10 left-10 w-24 h-24 bg-white/10 rounded-full blur-lg"></div>
+                            <div className="absolute top-1/2 right-20 w-16 h-16 bg-white/10 rounded-full blur-md"></div>
                         </div>
                     </div>
                 </div>

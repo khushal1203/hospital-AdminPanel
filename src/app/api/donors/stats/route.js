@@ -6,8 +6,12 @@ export async function GET(req) {
     try {
         await connectDB();
 
+        // Get date parameter from URL
+        const { searchParams } = new URL(req.url);
+        const selectedDate = searchParams.get('date');
+
         // Get dashboard statistics
-        const result = await getDonorStatsController();
+        const result = await getDonorStatsController(selectedDate);
 
         return NextResponse.json(result);
     } catch (error) {

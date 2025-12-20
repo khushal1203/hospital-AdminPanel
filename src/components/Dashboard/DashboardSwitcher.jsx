@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUserRole, ROLES } from "@/utils/roleUtils";
 import AdminDashboard from "./AdminDashboard";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 /**
  * DashboardSwitcher - Routes users to appropriate dashboard based on their role
@@ -28,11 +29,7 @@ export default function DashboardSwitcher() {
     }, [router]);
 
     if (loading) {
-        return (
-            <div className="flex min-h-[400px] items-center justify-center">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            </div>
-        );
+        return <LoadingSpinner message="Loading dashboard..." />;
     }
 
     // All roles use the same admin dashboard

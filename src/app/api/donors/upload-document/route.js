@@ -48,7 +48,16 @@ export async function POST(request) {
             donor.documents[sectionKey] = [];
         }
 
-        while (donor.documents[sectionKey].length <= index) {
+        // Find existing document by reportName or use index
+        let targetIndex = index;
+        if (reportName) {
+            const existingIndex = donor.documents[sectionKey].findIndex(doc => doc.reportName === reportName);
+            if (existingIndex !== -1) {
+                targetIndex = existingIndex;
+            }
+        }
+
+        while (donor.documents[sectionKey].length <= targetIndex) {
             donor.documents[sectionKey].push({
                 reportName: "",
                 documentName: null,
@@ -60,8 +69,12 @@ export async function POST(request) {
             });
         }
 
-        donor.documents[sectionKey][index] = {
-            reportName,
+        // Preserve existing reportName if it exists
+        const existingReportName = donor.documents[sectionKey][targetIndex]?.reportName;
+        const finalReportName = reportName || existingReportName || "";
+
+        donor.documents[sectionKey][targetIndex] = {
+            reportName: finalReportName,
             documentName: file.name,
             filePath: fileUrl,
             uploadBy: "Current User",
