@@ -38,7 +38,7 @@ export default async function ActiveDonorsPage({ searchParams }) {
                             <DonorTableToolbar />
                         </div>
                     </div>
-                </div>
+                </div>  
                 
                 {/* Scrollable Table Content */}
                 <div className="flex-1 overflow-hidden bg-gray-50">
