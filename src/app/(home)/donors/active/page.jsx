@@ -4,6 +4,8 @@ import { getAllDonorsController } from "@/controller/donorController";
 import { connectDB } from "@/lib/connectdb";
 import { ColumnProvider } from "@/contexts/ColumnContext";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: "Active Donors | Hospital Admin Panel",
     description: "List of active donors",
