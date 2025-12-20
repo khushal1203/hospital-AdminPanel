@@ -4,6 +4,8 @@ import { getAllDonorsController } from "@/controller/donorController";
 import { connectDB } from "@/lib/connectdb";
 import { ColumnProvider } from "@/contexts/ColumnContext";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: "Semen Storage | Hospital Admin Panel",
     description: "List of semen donors",
