@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
-import { ButtonLoader } from "../ui/LoadingSpinner";
 
 const SignupWithPassword = () => {
     const router = useRouter();
@@ -165,14 +164,7 @@ const SignupWithPassword = () => {
                     disabled={loading}
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 p-4 font-semibold text-white transition-all duration-200 hover:from-pink-700 hover:to-purple-700 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                    {loading ? (
-                        <>
-                            <ButtonLoader />
-                            Creating Account...
-                        </>
-                    ) : (
-                        "Create Account"
-                    )}
+                    {loading ? "Creating Account..." : "Create Account"}
                 </button>
             </div>
         </form>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { getUserRole, ROLES, isLaboratory } from "@/utils/roleUtils";
 import { toast } from "@/utils/toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { CompactLoader } from "@/components/ui/LoadingSpinner";
 import {
     MdDashboard,
     MdPersonAdd,
@@ -18,7 +19,7 @@ import {
 export default function HomePage() {
     const router = useRouter();
     const [currentTime, setCurrentTime] = useState(new Date());
-    const { user } = useCurrentUser();
+    const { user, loading } = useCurrentUser();
 
     useEffect(() => {
         // Update time every minute
@@ -129,22 +130,34 @@ export default function HomePage() {
             <div className="mx-auto max-w-6xl px-4 py-12">
                 {/* User Profile Section */}
                 <div className="mb-8 text-center">
-                    <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-xl">
-                        <Image
-                            src={user?.profileImage || "/images/user/user-03.png"}
-                            alt="Profile"
-                            width={128}
-                            height={128}
-                            className="h-full w-full object-cover"
-                            key={user?.profileImage}
-                        />
+                    <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-xl bg-gray-100 flex items-center justify-center">
+                        {loading ? (
+                            <CompactLoader />
+                        ) : (
+                            <Image
+                                src={user?.profileImage || "/images/user/user-03.png"}
+                                alt="Profile"
+                                width={128}
+                                height={128}
+                                className="h-full w-full object-cover"
+                                key={user?.profileImage}
+                            />
+                        )}
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-                        {user?.fullName || "User"}
+                        {loading ? (
+                            <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto"></div>
+                        ) : (
+                            user?.fullName || "User"
+                        )}
                     </h1>
-                    <p className="mt-1 text-gray-600 dark:text-gray-400">
-                        {user?.email || ""} | {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Donor Care Executive"}
-                    </p>
+                    <div className="mt-1 text-gray-600 dark:text-gray-400">
+                        {loading ? (
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-64 mx-auto"></div>
+                        ) : (
+                            `${user?.email || ""} | ${user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Donor Care Executive"}`
+                        )}
+                    </div>
 
                     {/* Time Display */}
                     <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 shadow-md dark:bg-gray-800">

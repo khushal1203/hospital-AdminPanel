@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import StatsCard from "./StatsCard";
-import { MdPeople, MdFolder, MdDescription, MdPersonAdd } from "react-icons/md";
+import { MdPeople, MdFolder, MdDescription, MdPersonAdd, MdChevronRight, MdMoreVert } from "react-icons/md";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import Link from "next/link";
 
 /**
  * AdminDashboard - Dashboard for admin, doctor, and laboratory roles
@@ -189,6 +190,21 @@ export default function AdminDashboard() {
 // Donor Table Component
 function DonorTable({ title, donors, showBloodReport = false, showMissingFields = false }) {
     
+    const getViewAllLink = (title) => {
+        switch(title) {
+            case "Today's Registrations":
+                return "/donors/active";
+            case "Active Donors":
+                return "/donors/active";
+            case "Blood Reports Pending":
+                return "/donors/active";
+            case "Overdue/Pending Documents":
+                return "/donors/active";
+            default:
+                return "/donors/active";
+        }
+    };
+    
     const getMissingFields = (donor) => {
         const missing = ['Consent Form', 'Blood Report', 'Medical History'];
         return missing;
@@ -232,25 +248,32 @@ function DonorTable({ title, donors, showBloodReport = false, showMissingFields 
                                 </th>
                             )}
                             <th className="pb-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                DATE
+                                ACTION
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         {donors.length > 0 ? donors.map((donor, index) => (
                             <tr key={donor._id || index} className="border-b border-gray-100">
-                                <td className="py-3 text-sm font-medium text-gray-900">
+                                <td className="py-3 text-sm font-bold text-gray-900">
                                     {donor.donorId}
                                 </td>
-                                <td className="py-3 text-sm text-gray-900">
+                                <td className="py-3 text-sm font-bold text-gray-900">
                                     {donor.fullName}
                                 </td>
                                 <td className="py-3">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                        getStatusColor(donor.status)
-                                    }`}>
-                                        {donor.status || 'pending'}
-                                    </span>
+                                    {(showBloodReport || showMissingFields) ? (
+                                        // Blood Reports Pending & Overdue/Pending Documents - show pending status
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                            pending
+                                        </span>
+                                    ) : (
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            getStatusColor(donor.status)
+                                        }`}>
+                                            {donor.status || 'pending'}
+                                        </span>
+                                    )}
                                 </td>
                                 {showBloodReport && (
                                     <td className="py-3 text-sm text-gray-600">
@@ -262,8 +285,18 @@ function DonorTable({ title, donors, showBloodReport = false, showMissingFields 
                                         {getMissingFields(donor).slice(0, 2).join(', ')}
                                     </td>
                                 )}
-                                <td className="py-3 text-right text-sm text-gray-600">
-                                    {new Date(donor.createdAt).toLocaleDateString()}
+                                <td className="py-3 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <Link
+                                            href={`/donors/${donor._id}`}
+                                            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-purple-600"
+                                        >
+                                            <MdChevronRight className="h-5 w-5" />
+                                        </Link>
+                                        <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-purple-600">
+                                            <MdMoreVert className="h-5 w-5" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         )) : (
@@ -275,6 +308,16 @@ function DonorTable({ title, donors, showBloodReport = false, showMissingFields 
                         )}
                     </tbody>
                 </table>
+            </div>
+            
+            {/* View All Button */}
+            <div className="mt-4">
+                <Link 
+                    href={getViewAllLink(title)}
+                    className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                >
+                    View All
+                </Link>
             </div>
         </div>
     );

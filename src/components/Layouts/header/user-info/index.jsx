@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
+import { CompactLoader } from "@/components/ui/LoadingSpinner";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +38,20 @@ export function UserInfo() {
 
     router.push("/auth/sign-in");
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 p-2 rounded-lg">
+        <div className="relative size-10 rounded-full border-2 border-purple-100 bg-gray-100 flex items-center justify-center">
+          <CompactLoader />
+        </div>
+        <div className="flex flex-col max-[1024px]:sr-only">
+          <div className="h-4 bg-gray-200 rounded animate-pulse w-20 mb-1"></div>
+          <div className="h-3 bg-gray-200 rounded animate-pulse w-24"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!USER) return null;
 
