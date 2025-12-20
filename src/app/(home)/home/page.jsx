@@ -22,6 +22,13 @@ export default function HomePage() {
     const { user, loading } = useCurrentUser();
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            router.push("/auth/sign-in");
+        }
+    }, [router]);
+
+    useEffect(() => {
         // Update time every minute
         const timer = setInterval(() => {
             setCurrentTime(new Date());
@@ -146,14 +153,14 @@ export default function HomePage() {
                     </div>
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
                         {loading ? (
-                            <HomeSpinner />
+                            <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto"></div>
                         ) : (
                             user?.fullName || "User"
                         )}
                     </h1>
                     <div className="mt-1 text-gray-600 dark:text-gray-400">
                         {loading ? (
-                            <HomeSpinner />
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-64 mx-auto"></div>
                         ) : (
                             `${user?.email || ""} | ${user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Donor Care Executive"}`
                         )}
