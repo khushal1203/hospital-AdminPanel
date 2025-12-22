@@ -17,6 +17,7 @@ import {
     MdDelete
 } from "react-icons/md";
 import { useColumns } from "@/contexts/ColumnContext";
+import { useFilter } from "@/contexts/FilterContext";
 import { getUserRole } from "@/utils/roleUtils";
 
 const StatusBadge = ({ status, donor, documentType }) => {
@@ -229,6 +230,46 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
     const [selectedDonors, setSelectedDonors] = useState([]);
     const [isLaboratory, setIsLaboratory] = useState(null);
     const { visibleColumns } = useColumns();
+    const { documentFilter } = useFilter();
+
+    // Filter donors based on document filter
+    const filteredDonors = donors.filter(donor => {
+        if (documentFilter === 'all') return true;
+        
+        const userRole = getUserRole();
+        
+        if (userRole === 'laboratory') {
+            // Laboratory: Only check blood report
+            const bloodReport = donor.documents?.reports?.find(r => 
+                r.reportName?.toLowerCase() === 'blood report'
+            );
+            
+            if (documentFilter === 'pending') {
+                return !bloodReport?.hasFile;
+            } else if (documentFilter === 'uploaded') {
+                return bloodReport?.hasFile;
+            }
+        } else {
+            // Doctor/Receptionist: Check specific documents
+            const targetDocs = [
+                donor.documents?.donorDocuments?.find(d => d.reportName?.toLowerCase() === 'consent form'),
+                donor.documents?.donorDocuments?.find(d => d.reportName?.toLowerCase() === 'affidavit form'),
+                donor.documents?.reports?.find(d => d.reportName?.toLowerCase() === 'blood report'),
+                donor.documents?.otherDocuments?.find(d => d.reportName?.toLowerCase() === 'life insurance document'),
+                donor.documents?.reports?.find(d => d.reportName?.toLowerCase() === 'opu process')
+            ].filter(Boolean); // Remove undefined documents
+            
+            if (documentFilter === 'pending') {
+                // Show if any of the target documents has hasFile: false
+                return targetDocs.some(doc => !doc.hasFile);
+            } else if (documentFilter === 'uploaded') {
+                // Show if any of the target documents has hasFile: true
+                return targetDocs.some(doc => doc.hasFile);
+            }
+        }
+        
+        return true;
+    });
 
     useEffect(() => {
         const userRole = getUserRole();
@@ -240,10 +281,10 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
     }
 
     const toggleSelectAll = () => {
-        if (selectedDonors.length === donors.length) {
+        if (selectedDonors.length === filteredDonors.length) {
             setSelectedDonors([]);
         } else {
-            setSelectedDonors(donors.map(d => d._id));
+            setSelectedDonors(filteredDonors.map(d => d._id));
         }
     };
 
@@ -257,7 +298,7 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
 
     return (
         <div className="flex flex-col h-full">
-            {(!donors || donors.length === 0) ? (
+            {(!filteredDonors || filteredDonors.length === 0) ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center shadow-md">
                     <p className="text-lg text-gray-500">No active donors found.</p>
                 </div>
@@ -271,7 +312,7 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                     <input
                                         type="checkbox"
                                         className="h-4 w-4 rounded border-gray-300"
-                                        checked={donors.length > 0 && selectedDonors.length === donors.length}
+                                        checked={filteredDonors.length > 0 && selectedDonors.length === filteredDonors.length}
                                         onChange={toggleSelectAll}
                                     />
                                 </th>
@@ -309,7 +350,7 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {donors.map((donor) => (
+                            {filteredDonors.map((donor) => (
                                 <tr key={donor._id} className="transition-colors hover:bg-purple-50/30">
                                     <td className="p-4">
                                         <input
