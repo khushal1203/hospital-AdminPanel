@@ -157,20 +157,22 @@ export default function DonorRegistrationForm({ params }) {
             
             if (result.success) {
                 if (field === 'donorImage') {
-                    setFormData(prev => ({ ...prev, donorImage: result.filePath }));
+                    setFormData(prev => ({ ...prev, donorImage: result.fileUrl }));
                 } else if (field.includes('Aadhar')) {
-                    setDocuments(prev => ({ ...prev, [field]: result.filePath }));
+                    setDocuments(prev => ({ ...prev, [field]: result.fileUrl }));
                 } else if (field === 'healthInsurance' || field === 'lifeInsurance') {
                     setDocuments(prev => ({
                         ...prev,
-                        [field]: { ...prev[field], file: result.filePath }
+                        [field]: { ...prev[field], file: result.fileUrl }
                     }));
                 }
+                toast.success('File uploaded successfully!');
             } else {
                 toast.error(result.message || "File upload failed");
                 setError(result.message);
             }
         } catch (error) {
+            console.error('Upload error:', error);
             toast.error('File upload failed');
             setError('File upload failed');
         }
@@ -195,14 +197,16 @@ export default function DonorRegistrationForm({ params }) {
                         setDocuments(prev => ({
                             ...prev,
                             medicalReports: prev.medicalReports.map((report, i) => 
-                                i === index ? { ...report, file: result.filePath } : report
+                                i === index ? { ...report, file: result.fileUrl } : report
                             )
                         }));
+                        toast.success('File uploaded successfully!');
                     } else {
                         toast.error(result.message || "File upload failed");
                         setError(result.message);
                     }
                 } catch (error) {
+                    console.error('Upload error:', error);
                     toast.error('File upload failed');
                     setError('File upload failed');
                 }

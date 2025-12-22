@@ -3,8 +3,9 @@
 import { MdSearch, MdCalendarToday, MdFilterList } from "react-icons/md";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useColumns } from "@/contexts/ColumnContext";
-import { useFilter } from "@/contexts/FilterContext";
+import { useSelector, useDispatch } from 'react-redux';
+import { setDocumentFilter } from '@/store/slices/filterSlice';
+import { toggleColumn } from '@/store/slices/columnSlice';
 
 export default function DonorTableToolbar() {
     const router = useRouter();
@@ -13,8 +14,9 @@ export default function DonorTableToolbar() {
     const [showFilter, setShowFilter] = useState(false);
     const [showColumns, setShowColumns] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
-    const { documentFilter, setDocumentFilter } = useFilter();
-    const { visibleColumns, setVisibleColumns } = useColumns();
+    const dispatch = useDispatch();
+    const documentFilter = useSelector((state) => state.filter.documentFilter);
+    const visibleColumns = useSelector((state) => state.column.visibleColumns);
 
     // Load search term from URL on mount
     useEffect(() => {
@@ -66,11 +68,8 @@ export default function DonorTableToolbar() {
         setShowFilter(false);
     };
 
-    const toggleColumn = (column) => {
-        setVisibleColumns(prev => ({
-            ...prev,
-            [column]: !prev[column]
-        }));
+    const handleToggleColumn = (column) => {
+        dispatch(toggleColumn(column));
     };
 
     return (
@@ -114,7 +113,7 @@ export default function DonorTableToolbar() {
                                 <div className="text-xs font-medium text-gray-500 mb-2">Document Status Filter</div>
                                 <button
                                     onClick={() => {
-                                        setDocumentFilter('all');
+                                        dispatch(setDocumentFilter('all'));
                                         setShowFilter(false);
                                     }}
                                     className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${documentFilter === 'all' ? 'bg-purple-50 text-purple-700' : ''}`}
@@ -123,7 +122,7 @@ export default function DonorTableToolbar() {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        setDocumentFilter('pending');
+                                        dispatch(setDocumentFilter('pending'));
                                         setShowFilter(false);
                                     }}
                                     className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${documentFilter === 'pending' ? 'bg-purple-50 text-purple-700' : ''}`}
@@ -132,7 +131,7 @@ export default function DonorTableToolbar() {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        setDocumentFilter('uploaded');
+                                        dispatch(setDocumentFilter('uploaded'));
                                         setShowFilter(false);
                                     }}
                                     className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${documentFilter === 'uploaded' ? 'bg-purple-50 text-purple-700' : ''}`}
@@ -165,7 +164,7 @@ export default function DonorTableToolbar() {
                                         <input
                                             type="checkbox"
                                             checked={visible}
-                                            onChange={() => toggleColumn(key)}
+                                            onChange={() => handleToggleColumn(key)}
                                             className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                                         />
                                         <span className="text-sm text-gray-700 capitalize">
