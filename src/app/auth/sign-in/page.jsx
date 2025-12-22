@@ -17,65 +17,44 @@ export default function SignIn() {
     }
   }, [router]);
   return (
-    <div className="min-h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div className="flex flex-col xl:flex-row min-h-[600px]">
+    <div className="h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl h-[calc(100vh-2rem)] bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="flex flex-col xl:flex-row h-full gap-[60px]">
           {/* Left Side - Form */}
-          <div className="w-full xl:w-1/2 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
-            <div className="max-w-md mx-auto w-full">
+          <div className="w-full xl:w-4/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+            <div className="max-w-lg mx-auto w-full">
               <div className="text-center mb-8">
-                <Link href="/" className="inline-block mb-6">
+                <Link href="/" className="inline-block mb-2">
                   <Image
-                    src="/images/icon/brand-black.svg"
+                    src="/images/logo/logosignin.svg"
                     alt="Logo"
-                    width={160}
+                    width={60}
                     height={40}
                     className="mx-auto"
+                    priority
                   />
                 </Link>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   Welcome Back
                 </h1>
                 <p className="text-gray-600">
-                  Sign in to access your hospital admin panel
+                 Sign in to Seamlessly Manage Patient Profiles, Sample Collections, Blood Tests, and Consent Forms
                 </p>
               </div>
               <Signin />
             </div>
           </div>
 
-          {/* Right Side - Illustration */}
-          <div className="hidden xl:flex w-full xl:w-1/2 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 relative overflow-hidden">
-            <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative z-10 p-12 flex flex-col justify-center text-white">
-              <div className="mb-8">
-                <h2 className="text-4xl font-bold mb-4">
-                  Hospital Admin Panel
-                </h2>
-                <p className="text-xl text-white/90 mb-6">
-                  Manage donors, track processes, and streamline your hospital operations with our comprehensive admin system.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <span className="text-white/90">Donor Management</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <span className="text-white/90">Document Tracking</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <span className="text-white/90">Process Monitoring</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Decorative Elements */}
-              <div className="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
-              <div className="absolute bottom-10 left-10 w-24 h-24 bg-white/10 rounded-full blur-lg"></div>
-              <div className="absolute top-1/2 right-20 w-16 h-16 bg-white/10 rounded-full blur-md"></div>
-            </div>
+          {/* Right Side - Image */}
+          <div className="xl:flex w-full xl:w-4/5 from-blue-50 to-indigo-100 items-center justify-center">
+            <Image
+              src="/images/cover/singinCover.svg"
+              alt="Sign In Cover"
+              width={450}
+              height={400}
+              className="object-contain max-w-full max-h-full"
+              priority
+            />
           </div>
         </div>
       </div>

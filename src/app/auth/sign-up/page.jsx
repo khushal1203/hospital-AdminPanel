@@ -18,9 +18,9 @@ export default function SignIn() {
                             <div className="text-center mb-8">
                                 <Link href="/" className="inline-block mb-6">
                                     <Image
-                                        src="/images/icon/brand-black.svg"
+                                        src="/images/logo/logosignin.svg"
                                         alt="Logo"
-                                        width={160}
+                                        width={60}
                                         height={40}
                                         className="mx-auto"
                                     />
