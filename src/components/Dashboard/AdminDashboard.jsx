@@ -9,7 +9,7 @@ import Link from "next/link";
 /**
  * AdminDashboard - Dashboard for admin, doctor, and laboratory roles
  */
-export default function AdminDashboard() {
+export default function AdminDashboard({ userRole }) {
     const [stats, setStats] = useState({
         todayFollowUps: 0,
         activeCases: 0,
@@ -125,18 +125,22 @@ export default function AdminDashboard() {
                 <div className="flex-1 overflow-auto p-3 sm:p-6">
                     {/* Stats Cards */}
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-                        <StatsCard
-                            title="Today's Follow-Ups"
-                            value={String(stats.todayFollowUps).padStart(2, "0")}
-                            icon={MdPeople}
-                            color="blue"
-                        />
-                        <StatsCard
-                            title="Active Donor Cases"
-                            value={String(stats.activeCases).padStart(2, "0")}
-                            icon={MdFolder}
-                            color="purple"
-                        />
+                        {userRole !== 'laboratory' && (
+                            <StatsCard
+                                title="Today's Follow-Ups"
+                                value={String(stats.todayFollowUps).padStart(2, "0")}
+                                icon={MdPeople}
+                                color="blue"
+                            />
+                        )}
+                        {userRole !== 'laboratory' && (
+                            <StatsCard
+                                title="Active Donor Cases"
+                                value={String(stats.activeCases).padStart(2, "0")}
+                                icon={MdFolder}
+                                color="purple"
+                            />
+                        )}
                         <StatsCard
                             title="Documents Pending Submission"
                             value={String(stats.pendingDocuments).padStart(2, "0")}
@@ -154,16 +158,20 @@ export default function AdminDashboard() {
                     {/* Tables Grid */}
                     <div className="grid gap-6 lg:grid-cols-2 mb-6">
                         {/* Today's Registrations */}
-                        <DonorTable 
-                            title="Today's Registrations" 
-                            donors={todayRegistrations} 
-                        />
+                        {userRole !== 'laboratory' && (
+                            <DonorTable 
+                                title="Today's Registrations" 
+                                donors={todayRegistrations} 
+                            />
+                        )}
 
                         {/* Active Donors */}
-                        <DonorTable 
-                            title="Active Donors" 
-                            donors={activeDonors} 
-                        />
+                        {userRole !== 'laboratory' && (
+                            <DonorTable 
+                                title="Active Donors" 
+                                donors={activeDonors} 
+                            />
+                        )}
                     </div>
 
                     <div className="grid gap-6 lg:grid-cols-2">

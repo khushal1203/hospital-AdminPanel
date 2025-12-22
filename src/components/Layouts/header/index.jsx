@@ -13,10 +13,10 @@ export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-stroke bg-white px-4 py-5 shadow-1 dark:border-stroke-dark dark:bg-gray-dark md:px-5 2xl:px-10">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-stroke px-4 py-5 shadow-1 dark:border-stroke-dark dark:bg-gray-dark md:px-5 2xl:px-10" style={{backgroundColor: '#402575'}}>
       <button
         onClick={toggleSidebar}
-        className="rounded-lg border px-1.5 py-1 dark:border-stroke-dark dark:bg-[#020D1A] hover:dark:bg-[#FFFFFF1A] lg:hidden"
+        className="rounded-lg border px-1.5 py-1 border-white/20 bg-white/10 hover:bg-white/20 lg:hidden"
       >
         <MenuIcon />
         <span className="sr-only">Toggle Sidebar</span>

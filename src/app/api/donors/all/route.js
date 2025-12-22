@@ -8,16 +8,26 @@ export async function GET(req) {
 
         // Get query parameters
         const { searchParams } = new URL(req.url);
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limit = parseInt(searchParams.get("limit")) || 10;
+        const skip = (page - 1) * limit;
+        
         const filters = {
             donorType: searchParams.get("donorType"),
             status: searchParams.get("status"),
             search: searchParams.get("search"),
+            skip,
+            limit
         };
 
         // Get all donors
         const result = await getAllDonorsController(filters);
 
-        return NextResponse.json(result);
+        return NextResponse.json({
+            success: true,
+            donors: result.donors,
+            total: result.total
+        });
     } catch (error) {
         return NextResponse.json(
             {

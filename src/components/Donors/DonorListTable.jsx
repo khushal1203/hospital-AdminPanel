@@ -1,40 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
+import { toast } from "@/utils/toast";
 import {
     MdCheckCircle,
     MdPending,
     MdChevronRight,
     MdMoreVert,
     MdNavigateBefore,
-    MdNavigateNext
+    MdNavigateNext,
+    MdUpload,
+    MdDelete
 } from "react-icons/md";
 import { useColumns } from "@/contexts/ColumnContext";
+import { getUserRole } from "@/utils/roleUtils";
 
 const StatusBadge = ({ status, donor, documentType }) => {
-    // Helper function to check if document has file uploaded
-    const getDocumentStatus = (docType) => {
-        if (!donor?.documents) return status;
+    const [currentStatus, setCurrentStatus] = useState(() => {
+        if (!donor?.documents || !documentType) return status;
         
-        // Check in all document arrays
         const allDocs = [
             ...(donor.documents.donorDocuments || []),
             ...(donor.documents.reports || []),
             ...(donor.documents.otherDocuments || [])
         ];
         
-        // Find specific document type by exact reportName match
         const doc = allDocs.find(d => {
             if (!d.reportName) return false;
-            
             const reportName = d.reportName.toLowerCase();
-            const searchTerm = docType.toLowerCase();
+            const searchTerm = documentType.toLowerCase();
             
-            // Match specific document types by exact reportName
             if (searchTerm === 'consent' && reportName === 'consent form') return true;
             if (searchTerm === 'affidavit' && reportName === 'affidavit form') return true;
             if (searchTerm === 'blood' && reportName === 'blood report') return true;
@@ -44,34 +43,129 @@ const StatusBadge = ({ status, donor, documentType }) => {
             return false;
         });
         
-        // Return uploaded only if specific document has hasFile true
-        if (doc && doc.hasFile === true) {
-            return 'uploaded';
-        }
-        
-        return 'pending';
-    };
+        return (doc && doc.hasFile === true) ? 'uploaded' : 'pending';
+    });
 
-    const finalStatus = documentType ? getDocumentStatus(documentType) : status;
-    const isCompleted = finalStatus === "signed" || finalStatus === "uploaded";
+    const isCompleted = currentStatus === "signed" || currentStatus === "uploaded";
 
     const getLabel = () => {
-        if (finalStatus === "signed") return "Signed";
-        if (finalStatus === "uploaded") return "Uploaded";
+        if (currentStatus === "signed") return "Signed";
+        if (currentStatus === "uploaded") return "Uploaded";
         return "Pending";
     };
 
+    const getDocumentMapping = (documentType) => {
+        const mappings = {
+            'consent': { sectionKey: 'donorDocuments', reportName: 'Consent Form', index: 0 },
+            'affidavit': { sectionKey: 'donorDocuments', reportName: 'Affidavit Form', index: 1 },
+            'blood': { sectionKey: 'reports', reportName: 'Blood Report', index: 2 },
+            'insurance': { sectionKey: 'otherDocuments', reportName: 'Life Insurance Document', index: 5 },
+            'opu': { sectionKey: 'reports', reportName: 'OPU Process', index: 3 }
+        };
+        return mappings[documentType] || { sectionKey: 'reports', reportName: documentType, index: 0 };
+    };
+
+    const handleUpload = async (donorId, documentType) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const mapping = getDocumentMapping(documentType);
+                const formData = new FormData();
+                formData.append('document', file);
+                formData.append('donorId', donorId);
+                formData.append('sectionKey', mapping.sectionKey);
+                formData.append('index', mapping.index);
+                formData.append('reportName', mapping.reportName);
+                
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch('/api/donors/upload-document', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        setCurrentStatus('uploaded');
+                        toast.success('Document uploaded successfully!');
+                    } else {
+                        toast.error('Failed to upload document');
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    toast.error('Error uploading document');
+                }
+            }
+        };
+        input.click();
+    };
+
+    const handleDelete = async (donorId, documentType) => {
+        try {
+            const mapping = getDocumentMapping(documentType);
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/donors/delete-document', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    donorId,
+                    sectionKey: mapping.sectionKey,
+                    index: mapping.index
+                })
+            });
+            
+            if (response.ok) {
+                setCurrentStatus('pending');
+                toast.success('Document deleted successfully!');
+            } else {
+                toast.error('Failed to delete document');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error('Error deleting document');
+        }
+    };
+
     return (
-        <div className={`flex w-fit items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${isCompleted
-            ? "bg-green-100 text-green-700"
-            : "bg-yellow-100 text-yellow-700"
+        <div className="flex items-center gap-2">
+            <div className={`flex w-20 items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
+                isCompleted
+                    ? "bg-green-100 text-green-700"
+                    : "bg-yellow-100 text-yellow-700"
             }`}>
-            {isCompleted ? (
-                <MdCheckCircle className="h-3 w-3" />
+                {isCompleted ? (
+                    <MdCheckCircle className="h-3 w-3" />
+                ) : (
+                    <MdPending className="h-3 w-3" />
+                )}
+                <span>{getLabel()}</span>
+            </div>
+            
+            {!isCompleted ? (
+                <button
+                    onClick={() => handleUpload(donor._id, documentType)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200"
+                    title="Upload Document"
+                >
+                    <MdUpload className="h-3 w-3" />
+                </button>
             ) : (
-                <MdPending className="h-3 w-3" />
+                <button
+                    onClick={() => handleDelete(donor._id, documentType)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                    title="Delete Document"
+                >
+                    <MdDelete className="h-3 w-3" />
+                </button>
             )}
-            <span>{getLabel()}</span>
         </div>
     );
 };
@@ -133,7 +227,17 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
 
 export default function DonorListTable({ donors, currentPage = 1, totalItems = 0, itemsPerPage = 10 }) {
     const [selectedDonors, setSelectedDonors] = useState([]);
+    const [isLaboratory, setIsLaboratory] = useState(null);
     const { visibleColumns } = useColumns();
+
+    useEffect(() => {
+        const userRole = getUserRole();
+        setIsLaboratory(userRole === 'laboratory');
+    }, []);
+
+    if (isLaboratory === null) {
+        return <div>Loading...</div>;
+    }
 
     const toggleSelectAll = () => {
         if (selectedDonors.length === donors.length) {
@@ -186,19 +290,19 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                 {visibleColumns.aadharNumber && (
                                     <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Aadhar Number</th>
                                 )}
-                                {visibleColumns.consentForm && (
+                                {visibleColumns.consentForm && !isLaboratory && (
                                     <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Consent Form</th>
                                 )}
-                                {visibleColumns.affidavit && (
+                                {visibleColumns.affidavit && !isLaboratory && (
                                     <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Affidavit</th>
                                 )}
                                 {visibleColumns.bloodReport && (
                                     <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Blood Report</th>
                                 )}
-                                {visibleColumns.insurance && (
+                                {visibleColumns.insurance && !isLaboratory && (
                                     <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Insurance</th>
                                 )}
-                                {visibleColumns.opuProcess && (
+                                {visibleColumns.opuProcess && !isLaboratory && (
                                     <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">OPU Process</th>
                                 )}
                                 <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">Action</th>
@@ -250,11 +354,21 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
                                         {donor.nextAppointment ? dayjs(donor.nextAppointment).format("DD MMM, YYYY") : "-"}
                                     </td>
                                     <td className="p-4 text-gray-600">{donor.aadharNumber || "-"}</td>
-                                    <td className="p-4"><StatusBadge status={donor.consentFormStatus} donor={donor} documentType="consent" /></td>
-                                    <td className="p-4"><StatusBadge status={donor.affidavitStatus} donor={donor} documentType="affidavit" /></td>
-                                    <td className="p-4"><StatusBadge status={donor.bloodReportStatus} donor={donor} documentType="blood" /></td>
-                                    <td className="p-4"><StatusBadge status={donor.insuranceStatus} donor={donor} documentType="insurance" /></td>
-                                    <td className="p-4"><StatusBadge status={donor.opuProcessStatus} donor={donor} documentType="opu" /></td>
+                                    {visibleColumns.consentForm && !isLaboratory && (
+                                        <td className="p-4"><StatusBadge status={donor.consentFormStatus} donor={donor} documentType="consent" /></td>
+                                    )}
+                                    {visibleColumns.affidavit && !isLaboratory && (
+                                        <td className="p-4"><StatusBadge status={donor.affidavitStatus} donor={donor} documentType="affidavit" /></td>
+                                    )}
+                                    {visibleColumns.bloodReport && (
+                                        <td className="p-4"><StatusBadge status={donor.bloodReportStatus} donor={donor} documentType="blood" /></td>
+                                    )}
+                                    {visibleColumns.insurance && !isLaboratory && (
+                                        <td className="p-4"><StatusBadge status={donor.insuranceStatus} donor={donor} documentType="insurance" /></td>
+                                    )}
+                                    {visibleColumns.opuProcess && !isLaboratory && (
+                                        <td className="p-4"><StatusBadge status={donor.opuProcessStatus} donor={donor} documentType="opu" /></td>
+                                    )}
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
                                             <Link
