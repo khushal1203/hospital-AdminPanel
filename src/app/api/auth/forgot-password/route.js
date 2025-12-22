@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import { User } from "@/modals/userModal";
+import { sendPasswordResetEmail } from "@/lib/nodemailer";
 import crypto from "crypto";
 
 export async function POST(req) {
@@ -25,21 +26,48 @@ export async function POST(req) {
             );
         }
 
+        // Check rate limiting (3 attempts per 24 hours)
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        
+        if (user.resetPasswordLastAttempt && user.resetPasswordLastAttempt > twentyFourHoursAgo) {
+            if (user.resetPasswordAttempts >= 3) {
+                return NextResponse.json(
+                    { success: false, message: "You have reset password multiple times. Please try later after 24 hours." },
+                    { status: 429 }
+                );
+            }
+        } else {
+            // Reset attempts if 24 hours have passed
+            user.resetPasswordAttempts = 0;
+        }
+
         // Generate reset token
         const resetToken = crypto.randomBytes(32).toString("hex");
         const resetTokenExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Save reset token to user
+        // Update user with reset token and increment attempts
         user.resetPasswordToken = resetToken;
         user.resetPasswordExpiry = resetTokenExpiry;
+        user.resetPasswordAttempts = (user.resetPasswordAttempts || 0) + 1;
+        user.resetPasswordLastAttempt = now;
         await user.save();
 
-        // For now, just return success (email functionality can be added later)
+        // Send password reset email
+        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
+        const emailResult = await sendPasswordResetEmail(email, user.fullName, resetUrl);
+
+        if (!emailResult.success) {
+            console.error("Failed to send reset email:", emailResult.error);
+            return NextResponse.json(
+                { success: false, message: "Failed to send reset email" },
+                { status: 500 }
+            );
+        }
+
         return NextResponse.json({
             success: true,
-            message: "Password reset token generated. Check console for reset link.",
-            resetToken, // Remove this in production
-            resetUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`
+            message: "Password reset email sent successfully"
         });
 
     } catch (error) {

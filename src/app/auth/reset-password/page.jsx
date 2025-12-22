@@ -6,6 +6,7 @@ import Link from "next/link";
 import InputGroup from "@/components/FormElements/InputGroup";
 import { ButtonLoader } from "@/components/ui/LoadingSpinner";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { PasswordIcon } from "@/assets/icons";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -18,31 +19,37 @@ function ResetPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+
     useEffect(() => {
         if (!token) {
             setError("Invalid reset link");
         }
     }, [token]);
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
+
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match");
             setLoading(false);
             return;
         }
+
         if (formData.password.length < 6) {
             setError("Password must be at least 6 characters long");
             setLoading(false);
             return;
         }
+
         try {
             const res = await fetch("/api/auth/reset-password", {
                 method: "POST",
@@ -54,12 +61,14 @@ function ResetPasswordForm() {
                     password: formData.password,
                 }),
             });
+
             const result = await res.json();
+
             if (result.success) {
                 setSuccess(true);
                 setTimeout(() => {
                     router.push("/auth/sign-in");
-                }, 2000);
+                }, 3000);
             } else {
                 setError(result.message);
             }
@@ -69,117 +78,146 @@ function ResetPasswordForm() {
             setLoading(false);
         }
     };
+
     if (success) {
         return (
-            <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
-                <div className="flex items-center justify-center p-12">
-                    <div className="text-center">
-                        <div className="mb-4 text-6xl">:white_check_mark:</div>
-                        <h2 className="mb-2 text-2xl font-bold text-dark dark:text-white">
-                            Password Reset Successful!
-                        </h2>
-                        <p className="text-body text-dark-4 dark:text-dark-6">
-                            Your password has been updated. Redirecting to sign in...
-                        </p>
+            <div className="h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+                <div className="w-full max-w-6xl h-[calc(100vh-2rem)] bg-white rounded-3xl shadow-2xl overflow-hidden">
+                    <div className="flex flex-col xl:flex-row h-full gap-[60px]">
+                        <div className="w-full xl:w-3/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+                            <div className="max-w-lg mx-auto w-full text-center">
+                                <Link href="/" className="inline-block mb-8">
+                                    <Image
+                                        src="/images/logo/logosignin.svg"
+                                        alt="Logo"
+                                        width={60}
+                                        height={40}
+                                        className="mx-auto"
+                                        priority
+                                    />
+                                </Link>
+                                <div className="mb-4 text-2xl">✓</div>
+                                <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                                    Password Updated!
+                                </h1>
+                                <p className="text-gray-600 mb-8">
+                                    Your password has been changed successfully.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="xl:flex w-full xl:w-3/5 from-blue-50 to-indigo-100 items-center justify-center">
+                            <Image
+                                src="/images/cover/singinCover.svg"
+                                alt="Success Cover"
+                                width={450}
+                                height={400}
+                                className="object-contain max-w-full max-h-full"
+                                priority
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
+
     return (
-        <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
-            <div className="flex flex-wrap items-center">
-                <div className="w-full xl:w-1/2">
-                    <div className="w-full p-4 sm:p-12.5 xl:p-15">
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-6">
-                                <h2 className="mb-2 text-2xl font-bold text-dark dark:text-white">
+        <div className="h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl h-[calc(100vh-2rem)] bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div className="flex flex-col xl:flex-row h-full gap-[60px]">
+                    {/* Left Side - Form */}
+                    <div className="w-full xl:w-3/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+                        <div className="max-w-lg mx-auto w-full">
+                            <div className="text-center mb-8">
+                                <Link href="/" className="inline-block mb-2">
+                                    <Image
+                                        src="/images/logo/logosignin.svg"
+                                        alt="Logo"
+                                        width={60}
+                                        height={40}
+                                        className="mx-auto"
+                                        priority
+                                    />
+                                </Link>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2">
                                     Reset Password
-                                </h2>
-                                <p className="text-body text-dark-4 dark:text-dark-6">
-                                    Enter your new password below.
+                                </h1>
+                                <p className="text-gray-600">
+                                    Sign in to Seamlessly Manage Patient Profiles, Sample Collections, Blood Tests, and Consent Forms.
                                 </p>
                             </div>
-                            {error && (
-                                <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-600">
-                                    {error}
+
+                            <form onSubmit={handleSubmit}>
+                                {error && (
+                                    <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-600">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <InputGroup
+                                    type="password"
+                                    label="New Password"
+                                    className="mb-4 [&_input]:py-[15px]"
+                                    placeholder="Enter new password"
+                                    name="password"
+                                    handleChange={handleChange}
+                                    value={formData.password}
+                                    icon={<PasswordIcon />}
+                                    required
+                                />
+
+                                <InputGroup
+                                    type="password"
+                                    label="Confirm Password"
+                                    className="mb-6 [&_input]:py-[15px]"
+                                    placeholder="Confirm new password"
+                                    name="confirmPassword"
+                                    handleChange={handleChange}
+                                    value={formData.confirmPassword}
+                                    icon={<PasswordIcon />}
+                                    required
+                                />
+
+                                <div className="mb-4.5">
+                                    <button
+                                        type="submit"
+                                        disabled={loading || !token}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 p-4 font-medium text-white transition hover:from-purple-700 hover:to-pink-700 disabled:opacity-70"
+                                    >
+                                        Reset Password
+                                        {loading && <ButtonLoader />}
+                                    </button>
                                 </div>
-                            )}
-                            <InputGroup
-                                type="password"
-                                label="New Password"
-                                className="mb-4 [&_input]:py-[15px]"
-                                placeholder="Enter new password"
-                                name="password"
-                                handleChange={handleChange}
-                                value={formData.password}
-                                required
-                            />
-                            <InputGroup
-                                type="password"
-                                label="Confirm Password"
-                                className="mb-6 [&_input]:py-[15px]"
-                                placeholder="Confirm new password"
-                                name="confirmPassword"
-                                handleChange={handleChange}
-                                value={formData.confirmPassword}
-                                required
-                            />
-                            <div className="mb-4.5">
-                                <button
-                                    type="submit"
-                                    disabled={loading || !token}
-                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-70"
-                                >
-                                    Reset Password
-                                    {loading && <ButtonLoader />}
-                                </button>
-                            </div>
-                            <div className="text-center">
-                                <Link
-                                    href="/auth/sign-in"
-                                    className="text-primary hover:underline"
-                                >
-                                    Back to Sign In
-                                </Link>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div className="hidden w-full p-7.5 xl:block xl:w-1/2">
-                    <div className="bg-gradient-to-br from-blue-600 to-purple-700 overflow-hidden rounded-2xl px-12.5 pt-12.5">
-                        <Link className="mb-10 inline-block" href="/">
-                            <Image
-                                src="/images/icon/brand.svg"
-                                alt="Logo"
-                                width={176}
-                                height={32}
-                            />
-                        </Link>
-                        <p className="mb-3 text-xl font-medium text-white">
-                            Almost there!
-                        </p>
-                        <h1 className="mb-4 text-2xl font-bold text-white sm:text-heading-3">
-                            Create New Password
-                        </h1>
-                        <p className="w-full max-w-[375px] font-medium text-white/80">
-                            Choose a strong password to secure your account
-                        </p>
-                        <div className="mt-31">
-                            <Image
-                                src="/images/grids/grid-02.svg"
-                                alt="Grid"
-                                width={405}
-                                height={325}
-                                className="mx-auto dark:opacity-30"
-                            />
+
+                                <div className="text-center">
+                                    <Link
+                                        href="/auth/sign-in"
+                                        className="text-purple-600 hover:text-purple-700 hover:underline"
+                                    >
+                                        Back to Sign In
+                                    </Link>
+                                </div>
+                            </form>
                         </div>
+                    </div>
+
+                    {/* Right Side - Image */}
+                    <div className="xl:flex w-full xl:w-3/5 from-blue-50 to-indigo-100 items-center justify-center">
+                        <Image
+                            src="/images/cover/singinCover.svg"
+                            alt="Reset Password Cover"
+                            width={450}
+                            height={400}
+                            className="object-contain max-w-full max-h-full"
+                            priority
+                        />
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+
 export default function ResetPassword() {
     return (
         <Suspense fallback={<LoadingSpinner message="Loading reset form..." />}>
@@ -187,10 +225,3 @@ export default function ResetPassword() {
         </Suspense>
     );
 }
-
-
-
-
-
-
-

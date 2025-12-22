@@ -56,13 +56,6 @@ export function CompactLoader({ message = "Loading..." }) {
 // Inline loader for buttons
 export function ButtonLoader() {
     return (
-        <div className="h-4 w-4 relative animate-pulse">
-            <Image
-                src="/images/icon/brand-black.svg"
-                alt="Loading"
-                fill
-                className="object-contain brightness-0 invert"
-            />
-        </div>
+        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
     );
 }

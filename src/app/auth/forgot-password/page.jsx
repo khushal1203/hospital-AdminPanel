@@ -33,10 +33,7 @@ export default function ForgotPassword() {
             const result = await res.json();
 
             if (result.success) {
-                setMessage("Password reset instructions sent to your email");
-                if (result.resetUrl) {
-                    console.log("Reset URL:", result.resetUrl);
-                }
+                router.push(`/auth/email-sent?email=${encodeURIComponent(email)}`);
             } else {
                 setError(result.message);
             }
@@ -48,27 +45,28 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="min-h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <div className="flex flex-col xl:flex-row min-h-[600px]">
+        <div className="h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl h-[calc(100vh-2rem)] bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div className="flex flex-col xl:flex-row h-full gap-[60px]">
                     {/* Left Side - Form */}
-                    <div className="w-full xl:w-1/2 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
-                        <div className="max-w-md mx-auto w-full">
+                    <div className="w-full xl:w-3/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+                        <div className="max-w-lg mx-auto w-full">
                             <div className="text-center mb-8">
-                                <Link href="/" className="inline-block mb-6">
+                                <Link href="/" className="inline-block mb-2">
                                     <Image
-                                        src="/images/icon/brand-black.svg"
+                                        src="/images/logo/logosignin.svg"
                                         alt="Logo"
-                                        width={160}
+                                        width={60}
                                         height={40}
                                         className="mx-auto"
+                                        priority
                                     />
                                 </Link>
                                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                                     Forgot Password?
                                 </h1>
                                 <p className="text-gray-600">
-                                    Enter your email address and we'll send you instructions to reset your password.
+                                    Enter the email address associated with your account, and we'll send you a link to reset your password.
                                 </p>
                             </div>
 
@@ -103,7 +101,7 @@ export default function ForgotPassword() {
                                         disabled={loading}
                                         className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 p-4 font-medium text-white transition hover:from-purple-700 hover:to-pink-700 disabled:opacity-70"
                                     >
-                                        Send Reset Instructions
+                                        Send Mail
                                         {loading && <ButtonLoader />}
                                     </button>
                                 </div>
@@ -120,38 +118,16 @@ export default function ForgotPassword() {
                         </div>
                     </div>
 
-                    {/* Right Side - Illustration */}
-                    <div className="hidden xl:flex w-full xl:w-1/2 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-black/10"></div>
-                        <div className="relative z-10 p-12 flex flex-col justify-center text-white">
-                            <div className="mb-8">
-                                <h2 className="text-4xl font-bold mb-4">
-                                    Reset Your Password
-                                </h2>
-                                <p className="text-xl text-white/90 mb-6">
-                                    We'll help you get back into your hospital admin account securely and quickly.
-                                </p>
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                                        <span className="text-white/90">Secure Reset Process</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                                        <span className="text-white/90">Email Verification</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                                        <span className="text-white/90">Quick Access Restore</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Decorative Elements */}
-                            <div className="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
-                            <div className="absolute bottom-10 left-10 w-24 h-24 bg-white/10 rounded-full blur-lg"></div>
-                            <div className="absolute top-1/2 right-20 w-16 h-16 bg-white/10 rounded-full blur-md"></div>
-                        </div>
+                    {/* Right Side - Image */}
+                    <div className="xl:flex w-full xl:w-3/5  from-blue-50 to-indigo-100 items-center justify-center">
+                        <Image
+                            src="/images/cover/singinCover.svg"
+                            alt="Forgot Password Cover"
+                            width={450}
+                            height={400}
+                            className="object-contain max-w-full max-h-full"
+                            priority
+                        />
                     </div>
                 </div>
             </div>
