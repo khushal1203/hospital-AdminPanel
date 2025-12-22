@@ -3,6 +3,7 @@ import "@/css/style.css";
 
 import NextTopLoader from "nextjs-toploader";
 import { Providers } from "./providers";
+import { ReduxProvider } from "@/components/ReduxProvider";
 
 export const metadata = {
   title: {
@@ -23,8 +24,10 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <NextTopLoader color="#5750F1" showSpinner={false} />
-          {children}
+          <ReduxProvider>
+            <NextTopLoader color="#5750F1" showSpinner={false} />
+            {children}
+          </ReduxProvider>
         </Providers>
       </body>
     </html>

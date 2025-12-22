@@ -17,7 +17,7 @@ import {
     MdDelete
 } from "react-icons/md";
 import { useColumns } from "@/contexts/ColumnContext";
-import { useFilter } from "@/contexts/FilterContext";
+import { useSelector } from 'react-redux';
 import { getUserRole } from "@/utils/roleUtils";
 
 const StatusBadge = ({ status, donor, documentType }) => {
@@ -230,7 +230,7 @@ export default function DonorListTable({ donors, currentPage = 1, totalItems = 0
     const [selectedDonors, setSelectedDonors] = useState([]);
     const [isLaboratory, setIsLaboratory] = useState(null);
     const { visibleColumns } = useColumns();
-    const { documentFilter } = useFilter();
+    const documentFilter = useSelector((state) => state.filter.documentFilter);
 
     // Filter donors based on document filter
     const filteredDonors = donors.filter(donor => {
