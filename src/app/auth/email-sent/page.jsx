@@ -1,12 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "@/utils/toast";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-export default function EmailSent() {
+function EmailSentContent() {
     const searchParams = useSearchParams();
     const email = searchParams.get("email") || "";
     const [loading, setLoading] = useState(false);
@@ -95,5 +96,13 @@ export default function EmailSent() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function EmailSent() {
+    return (
+        <Suspense fallback={<LoadingSpinner message="Loading..." />}>
+            <EmailSentContent />
+        </Suspense>
     );
 }
