@@ -16,6 +16,7 @@ export async function GET(req) {
             donorType: searchParams.get("donorType"),
             status: searchParams.get("status"),
             search: searchParams.get("search"),
+            docFilter: searchParams.get("docFilter"),
             skip,
             limit
         };

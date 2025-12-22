@@ -4,6 +4,7 @@ import { MdSearch, MdCalendarToday, MdFilterList } from "react-icons/md";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useColumns } from "@/contexts/ColumnContext";
+import { useFilter } from "@/contexts/FilterContext";
 
 export default function DonorTableToolbar() {
     const router = useRouter();
@@ -12,6 +13,7 @@ export default function DonorTableToolbar() {
     const [showFilter, setShowFilter] = useState(false);
     const [showColumns, setShowColumns] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
+    const { documentFilter, setDocumentFilter } = useFilter();
     const { visibleColumns, setVisibleColumns } = useColumns();
 
     // Load search term from URL on mount
@@ -21,6 +23,19 @@ export default function DonorTableToolbar() {
         setSearchTerm(search);
         setSelectedStatus(status);
     }, [searchParams]);
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.relative')) {
+                setShowFilter(false);
+                setShowColumns(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     const handleSearch = (value) => {
         setSearchTerm(value);
@@ -90,36 +105,39 @@ export default function DonorTableToolbar() {
                     >
                         <MdFilterList className="h-4 w-4 text-gray-500" />
                         <span>Filter</span>
-                        {selectedStatus && <span className="ml-1 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">{selectedStatus}</span>}
+                        {documentFilter !== 'all' && <span className="ml-1 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">{documentFilter}</span>}
                     </button>
                     
                     {showFilter && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                             <div className="p-2">
-                                <div className="text-xs font-medium text-gray-500 mb-2">Filter by Status</div>
+                                <div className="text-xs font-medium text-gray-500 mb-2">Document Status Filter</div>
                                 <button
-                                    onClick={() => handleStatusFilter('')}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${!selectedStatus ? 'bg-purple-50 text-purple-700' : ''}`}
+                                    onClick={() => {
+                                        setDocumentFilter('all');
+                                        setShowFilter(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${documentFilter === 'all' ? 'bg-purple-50 text-purple-700' : ''}`}
                                 >
-                                    All Status
+                                    All
                                 </button>
                                 <button
-                                    onClick={() => handleStatusFilter('active')}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${selectedStatus === 'active' ? 'bg-purple-50 text-purple-700' : ''}`}
-                                >
-                                    Active
-                                </button>
-                                <button
-                                    onClick={() => handleStatusFilter('pending')}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${selectedStatus === 'pending' ? 'bg-purple-50 text-purple-700' : ''}`}
+                                    onClick={() => {
+                                        setDocumentFilter('pending');
+                                        setShowFilter(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${documentFilter === 'pending' ? 'bg-purple-50 text-purple-700' : ''}`}
                                 >
                                     Pending
                                 </button>
                                 <button
-                                    onClick={() => handleStatusFilter('completed')}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${selectedStatus === 'completed' ? 'bg-purple-50 text-purple-700' : ''}`}
+                                    onClick={() => {
+                                        setDocumentFilter('uploaded');
+                                        setShowFilter(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 ${documentFilter === 'uploaded' ? 'bg-purple-50 text-purple-700' : ''}`}
                                 >
-                                    Completed
+                                    Uploaded
                                 </button>
                             </div>
                         </div>
