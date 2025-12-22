@@ -54,7 +54,7 @@ export async function POST(req) {
         await user.save();
 
         // Send password reset email
-        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}api/auth/reset-password?token=${resetToken}`;
         const emailResult = await sendPasswordResetEmail(email, user.fullName, resetUrl);
 
         if (!emailResult.success) {
