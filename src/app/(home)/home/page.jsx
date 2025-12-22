@@ -88,7 +88,7 @@ export default function HomePage() {
                 icon: MdStorage,
                 color: "from-teal-500 to-teal-600",
                 route: "/donors/semen",
-                allowedRoles: [ROLES.ADMIN, ROLES.LABORATORY]
+                allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
             },
             {
                 title: "Notifications",
@@ -183,7 +183,16 @@ export default function HomePage() {
 
                 {/* Action Cards */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {actionCards.map((card, index) => {
+                    {actionCards
+                        .filter(card => {
+                            const userRole = getUserRole();
+                            // Hide Add Donor card only for laboratory users
+                            if (card.title === "Add Donor" && userRole === ROLES.LABORATORY) {
+                                return false;
+                            }
+                            return card.allowedRoles.includes(userRole);
+                        })
+                        .map((card, index) => {
                         const Icon = card.icon;
                         return (
                             <button

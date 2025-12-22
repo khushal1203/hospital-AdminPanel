@@ -33,5 +33,5 @@ export default function DashboardSwitcher() {
     }
 
     // All roles use the same admin dashboard
-    return <AdminDashboard />;
+    return <AdminDashboard userRole={role} />;
 }

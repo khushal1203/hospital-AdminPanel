@@ -72,7 +72,7 @@ export default function TopNavigation() {
 
     return (
         <nav className="sticky top-0 z-[10000] bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg border-b border-white/10">
-            <div className="mx-auto px-4 sm:px-6">
+            <div className="mx-auto px-4 sm:px-6" style={{backgroundColor:"#402575"}}>
                 <div className="flex h-20 items-center justify-between">
                     <div className="flex items-center gap-8">
                         {/* Mobile Menu Button */}
