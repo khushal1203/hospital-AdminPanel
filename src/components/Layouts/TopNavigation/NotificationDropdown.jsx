@@ -83,7 +83,7 @@ export default function NotificationDropdown() {
         <div className="relative" ref={dropdownRef}>
             <button 
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative rounded-full p-2 text-white/80 transition-all duration-200 hover:bg-white/15 hover:text-white hover:scale-105"
+                className="relative rounded-full p-2 text-white transition-all duration-200 hover:bg-white/15 hover:text-white hover:scale-105"
             >
                 <MdNotifications className="h-6 w-6" />
                 {unreadCount > 0 && (

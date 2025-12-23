@@ -38,8 +38,8 @@ function EmailSentContent() {
     };
 
     return (
-        <div className="h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-6xl h-[calc(100vh-2rem)] bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="min-h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl min-h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
                 <div className="flex flex-col xl:flex-row h-full gap-[60px]">
                     {/* Left Side - Content */}
                     <div className="w-full xl:w-4/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
@@ -83,7 +83,7 @@ function EmailSentContent() {
                     </div>
 
                     {/* Right Side - Image */}
-                    <div className="xl:flex w-full xl:w-4/5 from-blue-50 to-indigo-100 items-center justify-center">
+                    <div className="hidden xl:flex w-full xl:w-3/5 from-blue-50 to-indigo-100 items-center justify-center">
                         <Image
                             src="/images/cover/singinCover.svg"
                             alt="Email Sent Cover"
