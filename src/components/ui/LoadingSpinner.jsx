@@ -5,8 +5,8 @@ export default function LoadingSpinner({
   message = "Loading...",
 }) {
   const sizeClasses = {
-    small: "h-24 w-24",
-    default: "h-32 w-32",
+    small: "h-40 w-40",
+    default: "h-40 w-40",
     large: "h-40 w-40",
   };
 
@@ -24,7 +24,7 @@ export default function LoadingSpinner({
         </div>
 
         {/* Animated dots */}
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <div
             className="h-3 w-3 animate-pulse rounded-full bg-purple-600"
             style={{ animationDelay: "0ms" }}
@@ -37,7 +37,7 @@ export default function LoadingSpinner({
             className="h-3 w-3 animate-pulse rounded-full bg-purple-600"
             style={{ animationDelay: "300ms" }}
           ></div>
-        </div>
+        </div> */}
 
         {/* Loading text */}
         <p className="text-sm font-medium text-gray-600">{message}</p>

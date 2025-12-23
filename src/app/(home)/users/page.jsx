@@ -28,7 +28,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/users/all", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -56,7 +56,7 @@ export default function UserManagement() {
   const confirmDelete = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/users/delete/${userToDelete}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/delete/${userToDelete}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
