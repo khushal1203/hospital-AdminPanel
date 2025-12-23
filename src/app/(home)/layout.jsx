@@ -7,7 +7,8 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const isDonorPage = pathname?.startsWith('/donors');
   const isDashboardPage = pathname === '/dashboard';
-  const isFullWidthPage = isDonorPage || isDashboardPage;
+  const isHomePage = pathname === '/home';
+  const isFullWidthPage = isDonorPage || isDashboardPage || isHomePage;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">

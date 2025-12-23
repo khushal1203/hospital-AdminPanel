@@ -40,7 +40,7 @@ export const signInController = async (body) => {
     if (!isMatch) throw new Error("Wrong password");
 
     const token = jwt.sign(
-        { userId: user._id, role: user.role },
+        { userId: user._id, role: user.role, isAdmin: user.isAdmin || false },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
     );
@@ -75,7 +75,7 @@ export const signUpController = async (body) => {
     });
 
     const token = jwt.sign(
-        { userId: user._id, role: user.role },
+        { userId: user._id, role: user.role, isAdmin: user.isAdmin || false },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
     );

@@ -16,12 +16,12 @@ export async function getUserController(userId) {
 }
 
 /**
- * Create a new user (Admin and Doctor only)
+ * Create a new user (Admin only)
  */
-export const createUserController = async (body, adminRole) => {
-    // Only admins and doctors can create users
-    if (adminRole !== "admin" && adminRole !== "doctor") {
-        throw new Error("Unauthorized: Only admins and doctors can create users");
+export const createUserController = async (body, adminRole, isAdminFlag) => {
+    // Only admins can create users
+    if (adminRole !== "admin" && !isAdminFlag) {
+        throw new Error("Unauthorized: Only administrators can create users");
     }
 
     const { fullName, email, password, role } = body;
@@ -46,13 +46,13 @@ export const createUserController = async (body, adminRole) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user - only admin role gets isAdmin: true
     const user = await User.create({
         fullName,
         email,
         password: hashedPassword,
         role,
-        isAdmin: role === "doctor",
+        isAdmin: role === "admin",
     });
 
     return {
@@ -69,12 +69,12 @@ export const createUserController = async (body, adminRole) => {
 };
 
 /**
- * Get all users (Admin and Doctor only)
+ * Get all users (Admin only)
  */
-export const getAllUsersController = async (adminRole) => {
-    // Only admins and doctors can view all users
-    if (adminRole !== "admin" && adminRole !== "doctor") {
-        throw new Error("Unauthorized: Only admins and doctors can view users");
+export const getAllUsersController = async (adminRole, isAdminFlag) => {
+    // Only admins can view all users
+    if (adminRole !== "admin" && !isAdminFlag) {
+        throw new Error("Unauthorized: Only administrators can view users");
     }
 
     const users = await User.find().select("-password").sort({ createdAt: -1 });
@@ -86,12 +86,12 @@ export const getAllUsersController = async (adminRole) => {
 };
 
 /**
- * Delete a user (Admin and Doctor only)
+ * Delete a user (Admin only)
  */
-export const deleteUserController = async (userId, adminRole) => {
-    // Only admins and doctors can delete users
-    if (adminRole !== "admin" && adminRole !== "doctor") {
-        throw new Error("Unauthorized: Only admins and doctors can delete users");
+export const deleteUserController = async (userId, adminRole, isAdminFlag) => {
+    // Only admins can delete users
+    if (adminRole !== "admin" && !isAdminFlag) {
+        throw new Error("Unauthorized: Only administrators can delete users");
     }
 
     const user = await User.findByIdAndDelete(userId);

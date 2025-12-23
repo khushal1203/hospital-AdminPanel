@@ -9,15 +9,7 @@ import {
     MdMenu,
     MdClose
 } from "react-icons/md";
-import {
-    HiHome,
-    HiChartBar,
-    HiUsers,
-    HiClipboardList,
-    HiBeaker,
-    HiUserAdd
-} from "react-icons/hi";
-import { getUserRole, ROLES } from "@/utils/roleUtils";
+import { getUserRole, ROLES, isAdmin } from "@/utils/roleUtils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import NotificationDropdown from "./NotificationDropdown";
 
@@ -26,12 +18,14 @@ export default function TopNavigation() {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [role, setRole] = useState(null);
+    const [adminStatus, setAdminStatus] = useState(false);
     const { user } = useCurrentUser();
     const dropdownRef = useRef(null);
     const mobileMenuRef = useRef(null);
 
     useEffect(() => {
         setRole(getUserRole());
+        setAdminStatus(isAdmin());
     }, []);
 
     useEffect(() => {
@@ -48,23 +42,32 @@ export default function TopNavigation() {
     }, []);
 
     const getNavItems = () => {
+        const baseItems = [
+            { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
+            { name: "Dashboard", href: "/dashboard", icon: "/images/icon/dashboard.svg" },
+        ];
+
         if (role === ROLES.LABORATORY) {
             return [
-                { name: "Home", href: "/home", icon: HiHome },
-                { name: "Dashboard", href: "/dashboard", icon: HiChartBar },
-                { name: "Active Donors", href: "/donors/active", icon: HiUsers },
-                { name: "Semen Storage", href: "/donors/semen", icon: HiBeaker },
+                ...baseItems,
+                { name: "Active Donors", href: "/donors/active", icon: "/images/icon/activeDonors.svg" },
+                { name: "Semen Storage", href: "/donors/semen", icon: "/images/icon/seemansDonor.svg" },
             ];
         }
 
-        return [
-            { name: "Home", href: "/home", icon: HiHome },
-            { name: "Dashboard", href: "/dashboard", icon: HiChartBar },
-            { name: "Active Donors", href: "/donors/active", icon: HiUsers },
-            { name: "Donors History", href: "/donors/history", icon: HiClipboardList },
-            { name: "Semen Storage", href: "/donors/semen", icon: HiBeaker },
-            { name: "Add Donor", href: "/donors/add", icon: HiUserAdd },
+        const donorItems = [
+            { name: "Active Donors", href: "/donors/active", icon: "/images/icon/activeDonors.svg" },
+            { name: "Donors History", href: "/donors/history", icon: "/images/icon/donorhistory.svg" },
+            { name: "Semen Storage", href: "/donors/semen", icon: "/images/icon/seemansDonor.svg" },
+            { name: "Add Donor", href: "/donors/add", icon: "/images/icon/addDonor.svg" },
         ];
+
+        // Only admins can see user management
+        const adminItems = adminStatus ? [
+            { name: "User Management", href: "/users", icon: "/images/icon/dashboard.svg" },
+        ] : [];
+
+        return [...baseItems, ...donorItems, ...adminItems];
     };
 
     const navItems = getNavItems();
@@ -95,7 +98,6 @@ export default function TopNavigation() {
 
                         <div className="hidden items-center gap-2 md:flex">
                             {navItems.map((item) => {
-                                const Icon = item.icon;
                                 return (
                                     <Link
                                         key={item.name}
@@ -106,7 +108,7 @@ export default function TopNavigation() {
                                                 : "text-white/80 hover:bg-white/15 hover:text-white hover:shadow-sm"
                                         }`}
                                     >
-                                        <Icon className="h-5 w-5" />
+                                        <Image src={item.icon} alt={item.name} width={20} height={20} className="h-5 w-5" />
                                         <span className="whitespace-nowrap">{item.name}</span>
                                     </Link>
                                 );
@@ -164,18 +166,7 @@ export default function TopNavigation() {
                                             </svg>
                                             Profile     
                                         </Link>
-                                        {/* <Link
-                                            href="/pages/settings"
-                                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                                            onClick={() => setShowUserMenu(false)}
-                                        >
-                                            <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            Settings
-                                        </Link> */}
-                                        {(role === ROLES.DOCTOR || role === ROLES.ADMIN) && (
+                                        {adminStatus && (
                                             <Link
                                                 href="/users"
                                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
@@ -191,20 +182,9 @@ export default function TopNavigation() {
                                     <div className="border-t border-gray-100 py-1">
                                         <button
                                             onClick={() => {
-                                                // Save remember me credentials before clearing
-                                                const rememberedEmail = localStorage.getItem("rememberedEmail");
-                                                const rememberedPassword = localStorage.getItem("rememberedPassword");
-                                                
-                                                localStorage.clear();
-                                                sessionStorage.clear();
-                                                
-                                                // Restore remember me credentials
-                                                if (rememberedEmail && rememberedPassword) {
-                                                    localStorage.setItem("rememberedEmail", rememberedEmail);
-                                                    localStorage.setItem("rememberedPassword", rememberedPassword);
-                                                }
-                                                
-                                                window.location.href = "/auth/sign-in";
+                                                localStorage.removeItem('token');
+                                                localStorage.removeItem('user');
+                                                window.location.href = '/auth/sign-in';
                                             }}
                                             className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
                                         >
@@ -225,7 +205,6 @@ export default function TopNavigation() {
                 <div ref={mobileMenuRef} className="absolute top-full left-0 right-0 md:hidden bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] border-t border-white/20 shadow-lg z-50">
                     <div className="px-4 py-6 space-y-3">
                         {navItems.map((item) => {
-                            const Icon = item.icon;
                             return (
                                 <Link
                                     key={item.name}
@@ -237,7 +216,7 @@ export default function TopNavigation() {
                                             : "text-white/90 hover:bg-white/20 hover:text-white"
                                     }`}
                                 >
-                                    <Icon className="h-5 w-5" />
+                                    <Image src={item.icon} alt={item.name} width={20} height={20} className="h-5 w-5" />
                                     <span>{item.name}</span>
                                 </Link>
                             );
