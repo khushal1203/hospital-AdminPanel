@@ -3,20 +3,20 @@ import { connectDB } from "../../../../lib/connectdb";
 import { signInController } from "@/controller/authcontroller";
 
 export async function POST(req) {
-    try {
-        await connectDB();
-        const body = await req.json();
+  try {
+    await connectDB();
+    const body = await req.json();
 
-        const data = await signInController(body);
+    const data = await signInController(body);
 
-        return NextResponse.json({
-            success: true,
-            data,
-        });
-    } catch (error) {
-        return NextResponse.json(
-            { success: false, message: error.message },
-            { status: 400 }
-        );
-    }
+    return NextResponse.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 400 },
+    );
+  }
 }

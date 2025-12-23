@@ -17,14 +17,14 @@ export default function SignIn() {
     }
   }, [router]);
   return (
-    <div className="min-h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl min-h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div className="flex flex-col xl:flex-row h-full gap-[60px]">
+    <div className="flex min-h-screen items-center justify-center from-purple-50 via-white to-pink-50 p-4">
+      <div className="min-h-[80vh] w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+        <div className="flex h-full flex-col gap-[60px] xl:flex-row">
           {/* Left Side - Form */}
-          <div className="w-full xl:w-4/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
-            <div className="max-w-lg mx-auto w-full">
-              <div className="text-center mb-8">
-                <Link href="/" className="inline-block mb-2">
+          <div className="flex w-full flex-col justify-center p-8 sm:p-12 xl:w-4/5 xl:p-16">
+            <div className="mx-auto w-full max-w-lg">
+              <div className="mb-8 text-center">
+                <Link href="/" className="mb-2 inline-block">
                   <Image
                     src="/images/logo/logosignin.svg"
                     alt="Logo"
@@ -34,11 +34,12 @@ export default function SignIn() {
                     priority
                   />
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="mb-2 text-3xl font-bold text-gray-900">
                   Welcome Back
                 </h1>
                 <p className="text-gray-600">
-                 Sign in to Seamlessly Manage Patient Profiles, Sample Collections, Blood Tests, and Consent Forms
+                  Sign in to Seamlessly Manage Patient Profiles, Sample
+                  Collections, Blood Tests, and Consent Forms
                 </p>
               </div>
               <Signin />
@@ -46,13 +47,13 @@ export default function SignIn() {
           </div>
 
           {/* Right Side - Image */}
-          <div className="hidden xl:flex w-full xl:w-3/5 from-blue-50 to-indigo-100 items-center justify-center">
+          <div className="hidden w-full items-center justify-center from-blue-50 to-indigo-100 xl:flex xl:w-3/5">
             <Image
               src="/images/cover/singinCover.svg"
               alt="Sign In Cover"
               width={450}
               height={400}
-              className="object-contain max-w-full max-h-full"
+              className="max-h-full max-w-full object-contain"
               priority
             />
           </div>

@@ -9,7 +9,10 @@ export async function PUT(request) {
 
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
     if (!token) {
-      return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "No token provided" },
+        { status: 401 },
+      );
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -18,17 +21,20 @@ export async function PUT(request) {
     // Check if user exists
     const user = await User.findById(id);
     if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 },
+      );
     }
 
     // Update user
     console.log("Updating user with profileImage:", profileImage);
-    
+
     user.fullName = fullName;
     user.email = email;
     user.profileImage = profileImage;
     await user.save();
-    
+
     const updatedUser = await User.findById(id).select("-password");
 
     return NextResponse.json({
@@ -40,7 +46,7 @@ export async function PUT(request) {
     console.error("Update profile error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
