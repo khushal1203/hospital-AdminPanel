@@ -24,7 +24,7 @@ export const createUserController = async (body, adminRole, isAdminFlag) => {
     throw new Error("Unauthorized: Only administrators can create users");
   }
 
-  const { fullName, email, password, role } = body;
+  const { fullName, email, password, role, contactNumber, isActive } = body;
 
   // Validate input
   if (!fullName || !email || !password || !role) {
@@ -52,6 +52,8 @@ export const createUserController = async (body, adminRole, isAdminFlag) => {
     email,
     password: hashedPassword,
     role,
+    contactNumber: contactNumber || "",
+    isActive: isActive !== undefined ? isActive : true,
     isAdmin: role === "admin",
   });
 
@@ -63,6 +65,8 @@ export const createUserController = async (body, adminRole, isAdminFlag) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      contactNumber: user.contactNumber,
+      isActive: user.isActive,
       isAdmin: user.isAdmin,
     },
   };
