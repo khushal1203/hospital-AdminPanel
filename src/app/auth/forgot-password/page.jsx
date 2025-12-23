@@ -45,11 +45,11 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-6xl h-[calc(100vh-2rem)] bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="min-h-screen from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl min-h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
                 <div className="flex flex-col xl:flex-row h-full gap-[60px]">
                     {/* Left Side - Form */}
-                    <div className="w-full xl:w-3/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
+                    <div className="w-full xl:w-4/5 p-8 sm:p-12 xl:p-16 flex flex-col justify-center">
                         <div className="max-w-lg mx-auto w-full">
                             <div className="text-center mb-8">
                                 <Link href="/" className="inline-block mb-2">
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
                     </div>
 
                     {/* Right Side - Image */}
-                    <div className="xl:flex w-full xl:w-3/5  from-blue-50 to-indigo-100 items-center justify-center">
+                    <div className="hidden xl:flex w-full xl:w-3/5  from-blue-50 to-indigo-100 items-center justify-center">
                         <Image
                             src="/images/cover/singinCover.svg"
                             alt="Forgot Password Cover"

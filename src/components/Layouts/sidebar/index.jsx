@@ -1,173 +1,136 @@
 "use client";
 
-import { Logo } from "@/components/logo";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getNavDataByRole } from "./data";
-import { getUserRole } from "@/utils/roleUtils";
-import { ArrowLeftIcon, ChevronUp } from "./icons";
-import { MenuItem } from "./menu-item";
-import { useSidebarContext } from "./sidebar-context";
+import { useState, useEffect } from "react";
+import { getUserRole, ROLES, isAdmin } from "@/utils/roleUtils";
 
-export function Sidebar() {
-  const pathname = usePathname();
-  const { setIsOpen, isOpen, isMobile, toggleSidebar } = useSidebarContext();
-  const [expandedItems, setExpandedItems] = useState([]);
-  const [navData, setNavData] = useState([]);
+export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) {
+    const pathname = usePathname();
+    const [role, setRole] = useState(null);
+    const [adminStatus, setAdminStatus] = useState(false);
 
-  // Load navigation data based on user role
-  useEffect(() => {
-    const role = getUserRole();
-    const roleNavData = getNavDataByRole(role);
-    setNavData(roleNavData);
-  }, []);
+    useEffect(() => {
+        setRole(getUserRole());
+        setAdminStatus(isAdmin());
+    }, []);
 
-  const toggleExpanded = (title) => {
-    setExpandedItems((prev) =>
-      prev.includes(title) ? [] : [title]
-    );
+    const getNavItems = () => {
+        const baseItems = [
+            { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
+            { name: "Dashboard", href: "/dashboard", icon: "/images/icon/dashboard.svg" },
+        ];
 
-    // For multiple open accordions:
-    // setExpandedItems((prev) =>
-    //   prev.includes(title)
-    //     ? prev.filter((t) => t !== title)
-    //     : [...prev, title]
-    // );
-  };
+        if (role === ROLES.LABORATORY) {
+            return [
+                ...baseItems,
+                { name: "Active Donors", href: "/donors/active", icon: "/images/icon/activeDonors.svg" },
+                { name: "Semen Storage", href: "/donors/semen", icon: "/images/icon/seemansDonor.svg" },
+            ];
+        }
 
-  useEffect(() => {
-    navData.some((section) =>
-      section.items.some((item) =>
-        item.items.some((subItem) => {
-          if (subItem.url === pathname) {
-            if (!expandedItems.includes(item.title)) {
-              toggleExpanded(item.title);
-            }
-            return true;
-          }
-          return false;
-        })
-      )
-    );
-  }, [pathname, navData]); // eslint-disable-line react-hooks/exhaustive-deps
+        const donorItems = [
+            { name: "Active Donors", href: "/donors/active", icon: "/images/icon/activeDonors.svg" },
+            { name: "Donors History", href: "/donors/history", icon: "/images/icon/donorhistory.svg" },
+            { name: "Semen Storage", href: "/donors/semen", icon: "/images/icon/seemansDonor.svg" },
+            { name: "Add Donor", href: "/donors/add", icon: "/images/icon/addDonor.svg" },
+        ];
 
-  return (
-    <>
-      {/* Mobile Overlay */}
-      {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+        const adminItems = adminStatus ? [
+            { name: "User Management", href: "/users", icon: "/images/icon/dashboard.svg" },
+        ] : [];
 
-      <aside
-        className={cn(
-          "max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark",
-          isMobile ? "fixed bottom-0 top-0 z-50" : "sticky top-0 h-screen",
-          isOpen ? "w-full" : "w-0"
-        )}
-        aria-label="Main navigation"
-        aria-hidden={!isOpen}
-      >
-        <div className="flex h-full flex-col py-10 pl-[25px] pr-[7px]">
-          <div className="relative pr-4.5">
-            <Link
-              href="/"
-              onClick={() => isMobile && toggleSidebar()}
-              className="px-0 py-2.5 min-[850px]:py-0"
-            >
-              <Logo />
-            </Link>
+        return [...baseItems, ...donorItems, ...adminItems];
+    };
 
-            {isMobile && (
-              <button
-                onClick={toggleSidebar}
-                className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
-              >
-                <span className="sr-only">Close Menu</span>
-                <ArrowLeftIcon className="ml-auto size-7" />
-              </button>
+    const navItems = getNavItems();
+    const isActive = (href) => pathname === href;
+
+    return (
+        <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
             )}
-          </div>
 
-          {/* Navigation */}
-          <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
-            {navData.map((section) => (
-              <div key={section.label} className="mb-6">
-                <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
-                  {section.label}
-                </h2>
+            {/* Sidebar */}
+            <div className={`fixed inset-y-0 left-0 z-50 bg-white lg:shadow-sm transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+                isOpen ? 'translate-x-0' : '-translate-x-full'
+            } ${isCollapsed ? 'w-16' : 'w-64'}`}>
+                <div className="flex flex-col h-full">
+                    {/* Logo */}
+                    <div className={`flex items-center h-20 bg-[#402575] border-b border-purple-600/20 transition-all duration-500 ${
+                        isCollapsed ? 'justify-center px-2' : 'justify-between px-6'
+                    }`}>
+                        <Link href="/dashboard" className="flex items-center">
+                            <Image
+                                src={isCollapsed ? "/images/icon/brandLogoOnly.svg" : "/images/icon/brand.svg"}
+                                alt="Logo"
+                                width={isCollapsed ? 32 : 120}
+                                height={32}
+                                className="transition-all duration-500"
+                            />
+                        </Link>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="lg:hidden text-white/80 hover:text-white"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
 
-                <nav aria-label={section.label}>
-                  <ul className="space-y-2">
-                    {section.items.map((item) => (
-                      <li key={item.title}>
-                        {item.items && item.items.length > 0 ? (
-                          <>
-                            <MenuItem
-                              isActive={item.items.some(
-                                (sub) => sub.url === pathname
-                              )}
-                              onClick={() => toggleExpanded(item.title)}
-                            >
-                              <item.icon className="size-6 shrink-0" />
-                              <span>{item.title}</span>
-                              <ChevronUp
-                                className={cn(
-                                  "ml-auto rotate-180 transition-transform duration-200",
-                                  expandedItems.includes(item.title) &&
-                                  "rotate-0"
+                    {/* Navigation */}
+                    <nav className="flex-1 px-2 py-6 space-y-2 overflow-y-auto">
+                        {navItems.map((item) => (
+                            <div key={item.name} className="relative group">
+                                <Link
+                                    href={item.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className={`flex items-center rounded-lg text-base font-medium transition-all duration-300 ${
+                                        isActive(item.href)
+                                            ? "bg-gradient-to-r from-[#402575] to-[#5B4B8A] text-white shadow-sm"
+                                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                    } ${
+                                        isCollapsed 
+                                            ? 'justify-center p-3 mx-1' 
+                                            : 'gap-3 px-4 py-3 mx-2'
+                                    }`}
+                                >
+                                    <div className="flex-shrink-0">
+                                        <Image 
+                                            src={item.icon} 
+                                            alt={item.name} 
+                                            width={20} 
+                                            height={20} 
+                                            className={`h-5 w-5 transition-all duration-300 ${
+                                                isActive(item.href) ? 'brightness-0 invert' : 'brightness-0'
+                                            }`}
+                                        />
+                                    </div>
+                                    <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                                        isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                                    }`}>
+                                        {item.name}
+                                    </span>
+                                </Link>
+                                {/* Tooltip for collapsed state */}
+                                {isCollapsed && (
+                                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                                        {item.name}
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                    </div>
                                 )}
-                              />
-                            </MenuItem>
-
-                            {expandedItems.includes(item.title) && (
-                              <ul className="ml-9 space-y-1.5 pb-[15px] pt-2">
-                                {item.items.map((subItem) => (
-                                  <li key={subItem.title}>
-                                    <MenuItem
-                                      as="link"
-                                      href={subItem.url}
-                                      isActive={pathname === subItem.url}
-                                    >
-                                      <span>{subItem.title}</span>
-                                    </MenuItem>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </>
-                        ) : (
-                          <MenuItem
-                            as="link"
-                            href={
-                              item.url ||
-                              "/" +
-                              item.title
-                                .toLowerCase()
-                                .split(" ")
-                                .join("-")
-                            }
-                            isActive={pathname === item.url}
-                            className="flex items-center gap-3 py-3"
-                          >
-                            <item.icon className="size-6 shrink-0" />
-                            <span>{item.title}</span>
-                          </MenuItem>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </div>
-            ))}
-          </div>
-        </div>
-      </aside>
-    </>
-  );
+                            </div>
+                        ))}
+                    </nav>
+                </div>
+            </div>
+        </>
+    );
 }
