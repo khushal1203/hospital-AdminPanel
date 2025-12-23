@@ -92,7 +92,7 @@ export default function UserManagement() {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading users..." />;
+    return <LoadingSpinner message="" />;
   }
 
   return (
