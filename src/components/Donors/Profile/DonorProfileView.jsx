@@ -68,7 +68,7 @@ export default function DonorProfileView({ donor }) {
     return (
         <div className="flex flex-col h-full">
             {/* Sticky Profile Header */}
-            <div className="bg-white sticky top-0 z-10 border-b border-gray-200">
+            <div className="bg-white sticky top-0 z-10 border-b border-gray-200 rounded-lg shadow-sm">
                 <div className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">

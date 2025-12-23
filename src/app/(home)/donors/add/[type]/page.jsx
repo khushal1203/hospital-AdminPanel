@@ -6,6 +6,7 @@ import { MdPerson, MdPhone, MdEmail, MdLocationOn, MdLocalHospital, MdDescriptio
 import ImageUpload from "@/components/FormElements/ImageUpload";
 import DatePicker from "@/components/FormElements/DatePicker";
 import SelectField from "@/components/FormElements/SelectField";
+import BackButton from "@/components/ui/BackButton";
 import { toast } from "@/utils/toast";
 import "react-calendar/dist/Calendar.css";
 
@@ -337,6 +338,9 @@ export default function DonorRegistrationForm({ params }) {
     return (
         <div className="min-h-screen bg-white  dark:bg-gray-900 p-6">
             <div className="mx-auto max-w-7xl">
+                <div className="mb-6">
+                    <BackButton href="/donors/add" label="Back to Donor Selection" />
+                </div>
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                         {donorType === "oocyte" ? "Oocyte" : "Semen"} Donor Registration
