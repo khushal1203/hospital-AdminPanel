@@ -9,7 +9,7 @@ export default function RootPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    
+
     if (!token) {
       router.push("/auth/sign-in");
       return;

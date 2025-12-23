@@ -5,10 +5,10 @@
 
 // Role constants
 export const ROLES = {
-    ADMIN: "admin",
-    RECEPTIONIST: "receptionist",
-    DOCTOR: "doctor",
-    LABORATORY: "laboratory",
+  ADMIN: "admin",
+  RECEPTIONIST: "receptionist",
+  DOCTOR: "doctor",
+  LABORATORY: "laboratory",
 };
 
 /**
@@ -16,18 +16,18 @@ export const ROLES = {
  * @returns {string|null} User role or null if not found
  */
 export const getUserRole = () => {
-    if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") return null;
 
-    try {
-        const userStr = localStorage.getItem("user");
-        if (!userStr) return null;
+  try {
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return null;
 
-        const user = JSON.parse(userStr);
-        return user?.role || null;
-    } catch (error) {
-        console.error("Error getting user role:", error);
-        return null;
-    }
+    const user = JSON.parse(userStr);
+    return user?.role || null;
+  } catch (error) {
+    console.error("Error getting user role:", error);
+    return null;
+  }
 };
 
 /**
@@ -35,17 +35,17 @@ export const getUserRole = () => {
  * @returns {object|null} User object or null if not found
  */
 export const getCurrentUser = () => {
-    if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") return null;
 
-    try {
-        const userStr = localStorage.getItem("user");
-        if (!userStr) return null;
+  try {
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return null;
 
-        return JSON.parse(userStr);
-    } catch (error) {
-        console.error("Error getting user data:", error);
-        return null;
-    }
+    return JSON.parse(userStr);
+  } catch (error) {
+    console.error("Error getting user data:", error);
+    return null;
+  }
 };
 
 /**
@@ -54,8 +54,8 @@ export const getCurrentUser = () => {
  * @returns {boolean} True if user has the required role
  */
 export const hasRole = (requiredRole) => {
-    const userRole = getUserRole();
-    return userRole === requiredRole;
+  const userRole = getUserRole();
+  return userRole === requiredRole;
 };
 
 /**
@@ -64,8 +64,8 @@ export const hasRole = (requiredRole) => {
  * @returns {boolean} True if user has any of the roles
  */
 export const hasAnyRole = (roles) => {
-    const userRole = getUserRole();
-    return roles.includes(userRole);
+  const userRole = getUserRole();
+  return roles.includes(userRole);
 };
 
 /**
@@ -73,8 +73,8 @@ export const hasAnyRole = (roles) => {
  * @returns {boolean} True if user is admin or has isAdmin flag
  */
 export const isAdmin = () => {
-    const user = getCurrentUser();
-    return user?.isAdmin === true || hasRole(ROLES.ADMIN);
+  const user = getCurrentUser();
+  return user?.isAdmin === true || hasRole(ROLES.ADMIN);
 };
 
 /**
@@ -82,7 +82,7 @@ export const isAdmin = () => {
  * @returns {boolean} True if user is receptionist
  */
 export const isReceptionist = () => {
-    return hasRole(ROLES.RECEPTIONIST);
+  return hasRole(ROLES.RECEPTIONIST);
 };
 
 /**
@@ -90,7 +90,7 @@ export const isReceptionist = () => {
  * @returns {boolean} True if user is doctor
  */
 export const isDoctor = () => {
-    return hasRole(ROLES.DOCTOR);
+  return hasRole(ROLES.DOCTOR);
 };
 
 /**
@@ -98,7 +98,7 @@ export const isDoctor = () => {
  * @returns {boolean} True if user is laboratory admin
  */
 export const isLaboratory = () => {
-    return hasRole(ROLES.LABORATORY);
+  return hasRole(ROLES.LABORATORY);
 };
 
 /**
@@ -107,12 +107,12 @@ export const isLaboratory = () => {
  * @returns {string} Display name for the role
  */
 export const getRoleDisplayName = (role) => {
-    const displayNames = {
-        [ROLES.ADMIN]: "Administrator",
-        [ROLES.RECEPTIONIST]: "Receptionist",
-        [ROLES.DOCTOR]: "Doctor",
-        [ROLES.LABORATORY]: "Laboratory Admin",
-    };
+  const displayNames = {
+    [ROLES.ADMIN]: "Administrator",
+    [ROLES.RECEPTIONIST]: "Receptionist",
+    [ROLES.DOCTOR]: "Doctor",
+    [ROLES.LABORATORY]: "Laboratory Admin",
+  };
 
-    return displayNames[role] || role;
+  return displayNames[role] || role;
 };

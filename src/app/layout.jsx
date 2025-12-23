@@ -13,9 +13,9 @@ export const metadata = {
   description:
     "Hospital Management System for donor care and medical administration.",
   icons: {
-    icon: '/images/icon/brand.svg',
-    shortcut: '/images/icon/brand.svg',
-    apple: '/images/icon/brand.svg',
+    icon: "/images/icon/brand.svg",
+    shortcut: "/images/icon/brand.svg",
+    apple: "/images/icon/brand.svg",
   },
 };
 

@@ -32,7 +32,10 @@ function Header({ onMenuClick, onToggleCollapse }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-purple-600/20 bg-[#402575] shadow-sm">
-      <div className="flex items-center justify-between px-4" style={{padding:"12px 11px 11px 11px"}}>
+      <div
+        className="flex items-center justify-between px-4"
+        style={{ padding: "12px 11px 11px 11px" }}
+      >
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleCollapse}
@@ -54,26 +57,26 @@ function Header({ onMenuClick, onToggleCollapse }) {
         </div>
         <div className="flex items-center gap-3">
           {/* Search Bar */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden items-center md:flex">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-64 pl-10 pr-12 py-2 bg-[#281156] border border-white/20 rounded-full text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-[#281156]/80 transition-all"
+                className="w-64 rounded-full border border-white/20 bg-[#281156] py-2 pl-10 pr-12 text-white placeholder-white/60 transition-all focus:bg-[#281156]/80 focus:outline-none focus:ring-2 focus:ring-white/30"
               />
               <img
                 src="/images/icon/searchIcon.svg"
                 alt="Search"
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60"
+                className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-white/60"
               />
               <img
                 src="/images/icon/searchbarRight.svg"
                 alt="Search Right"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 h-10 w-10 text-white/60"
+                className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 transform text-white/60"
               />
             </div>
           </div>
-          
+
           <NotificationDropdown />
           <div className="relative" ref={dropdownRef}>
             <button
@@ -102,7 +105,7 @@ function Header({ onMenuClick, onToggleCollapse }) {
                 alt="Dropdown Arrow"
                 width={8}
                 height={8}
-                className={`h-3 w-3 transition-transform duration-200 mt-1 ${showUserMenu ? "rotate-180" : ""}`}
+                className={`mt-1 h-3 w-3 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""}`}
               />
             </button>
             {showUserMenu && (
@@ -265,7 +268,9 @@ export default function DashboardLayout({ children }) {
             onMenuClick={() => setSidebarOpen(true)}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
           />
-          <main className={`flex-1 overflow-y-auto bg-white scrollbar-hide`}>{children}</main>
+          <main className={`scrollbar-hide flex-1 overflow-y-auto bg-white`}>
+            {children}
+          </main>
         </div>
       </div>
     </div>

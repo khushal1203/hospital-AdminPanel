@@ -23,7 +23,7 @@ const SigninWithPassword = () => {
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     const savedPassword = localStorage.getItem("rememberedPassword");
-    
+
     if (savedEmail && savedPassword) {
       setData({
         email: savedEmail,
@@ -57,7 +57,7 @@ const SigninWithPassword = () => {
             email: data.email,
             password: data.password,
           }),
-        }
+        },
       );
 
       const result = await res.json();
@@ -71,8 +71,9 @@ const SigninWithPassword = () => {
       const user = result.data.user;
 
       // ✅ STORE TOKEN IN COOKIE
-      document.cookie = `token=${token}; path=/; ${data.remember ? "max-age=2592000" : ""
-        }`;
+      document.cookie = `token=${token}; path=/; ${
+        data.remember ? "max-age=2592000" : ""
+      }`;
 
       // ✅ STORE USER DATA IN LOCALSTORAGE (including role)
       localStorage.setItem("token", token);
@@ -153,7 +154,7 @@ const SigninWithPassword = () => {
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 p-4 font-semibold text-white transition-all duration-200 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 p-4 font-semibold text-white transition-all duration-200 hover:from-purple-700 hover:to-pink-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading ? "Loading..." : "Sign In"}
         </button>

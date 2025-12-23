@@ -1,19 +1,19 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 export const sendWelcomeEmail = async (email, fullName, password) => {
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Welcome to Hospital Admin Panel - Account Created Successfully',
-        html: `
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Welcome to Hospital Admin Panel - Account Created Successfully",
+    html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -57,7 +57,7 @@ export const sendWelcomeEmail = async (email, fullName, password) => {
                     </ul>
                     
                     <div style="text-align: center;">
-                        <a href="${process.env.NEXT_PUBLIC_API_END_POINT?.replace('/api', '') || 'http://localhost:3000'}/auth/sign-in" class="button">Login to Your Account</a>
+                        <a href="${process.env.NEXT_PUBLIC_API_END_POINT?.replace("/api", "") || "http://localhost:3000"}/auth/sign-in" class="button">Login to Your Account</a>
                     </div>
                     
                     <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
@@ -73,25 +73,25 @@ export const sendWelcomeEmail = async (email, fullName, password) => {
             </div>
         </body>
         </html>
-        `
-    };
+        `,
+  };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('Welcome email sent successfully to:', email);
-        return { success: true };
-    } catch (error) {
-        console.error('Error sending welcome email:', error);
-        return { success: false, error: error.message };
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Welcome email sent successfully to:", email);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
+    return { success: false, error: error.message };
+  }
 };
 
 export const sendPasswordResetEmail = async (email, fullName, resetUrl) => {
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Password Reset Request - Hospital Admin Panel',
-        html: `
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Reset Request - Hospital Admin Panel",
+    html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -149,17 +149,17 @@ export const sendPasswordResetEmail = async (email, fullName, resetUrl) => {
             </div>
         </body>
         </html>
-        `
-    };
+        `,
+  };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('Password reset email sent successfully to:', email);
-        return { success: true };
-    } catch (error) {
-        console.error('Error sending password reset email:', error);
-        return { success: false, error: error.message };
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent successfully to:", email);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    return { success: false, error: error.message };
+  }
 };
 
 export default transporter;
