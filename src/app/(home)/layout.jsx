@@ -97,19 +97,13 @@ function Header({ onMenuClick, onToggleCollapse }) {
               <span className="hidden max-w-28 truncate text-base font-medium md:block">
                 {user?.fullName || "User"}
               </span>
-              <svg
-                className={`h-5 w-5 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+              <Image
+                src="/images/icon/profileSider.svg"
+                alt="Dropdown Arrow"
+                width={8}
+                height={8}
+                className={`h-3 w-3 transition-transform duration-200 mt-1 ${showUserMenu ? "rotate-180" : ""}`}
+              />
             </button>
             {showUserMenu && (
               <div className="animate-in slide-in-from-top-2 absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl ring-1 ring-black/5 duration-200">
