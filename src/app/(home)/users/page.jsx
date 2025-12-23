@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isAdmin } from "@/utils/roleUtils";
+import BackButton from "@/components/ui/BackButton";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function UserManagement() {
@@ -88,6 +89,9 @@ export default function UserManagement() {
     return (
         <div className="min-h-screen  py-8 bg-gray-100">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                    <BackButton href="/dashboard" label="Back to Dashboard" />
+                </div>
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import InputGroup from "@/components/FormElements/InputGroup";
 import SelectField from "@/components/FormElements/SelectField";
 import ImageUpload from "@/components/FormElements/ImageUpload";
+import BackButton from "@/components/ui/BackButton";
 import { EmailIcon, PasswordIcon } from "@/assets/icons";
 
 
@@ -71,17 +72,12 @@ export default function AddUserPage() {
     return (
         <div className="min-h-screen py-8">
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                    <BackButton href="/users" label="Back to Users" />
+                </div>
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">
-                        <button
-                            onClick={() => router.back()}
-                            className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                                 Add New User

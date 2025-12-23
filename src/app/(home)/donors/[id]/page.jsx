@@ -2,6 +2,7 @@ import DonorProfileView from "@/components/Donors/Profile/DonorProfileView";
 import { getDonorByIdController } from "@/controller/donorController";
 import { connectDB } from "@/lib/connectdb";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import BackButton from "@/components/ui/BackButton";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
@@ -26,9 +27,10 @@ export default async function DonorProfilePage({ params }) {
 
         return (
             <div className="min-h-screen flex flex-col">
-                <div className="bg-white px-4 py-3 shadow-sm flex-shrink-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-white px-4 py-4 shadow-sm flex-shrink-0">
+                    <div className="flex items-center justify-between gap-3">
                         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Donor Profile</h1>
+                        <BackButton href="/donors/active" label="Back to Donors" />
                     </div>
                 </div>
                 <div className="bg-gray-100 flex-1 flex flex-col overflow-hidden">

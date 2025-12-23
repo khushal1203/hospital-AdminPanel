@@ -32,7 +32,7 @@ function Header({ onMenuClick, onToggleCollapse }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-purple-600/20 bg-[#402575] shadow-sm">
-      <div className="flex items-center justify-between px-4" style={{padding:"11px 0px 12px 0px"}}>
+      <div className="flex items-center justify-between px-4" style={{padding:"12px 11px 11px 11px"}}>
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleCollapse}

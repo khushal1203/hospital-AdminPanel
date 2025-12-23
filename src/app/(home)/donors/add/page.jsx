@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import DonorTypeModal from "@/components/Donors/DonorTypeModal";
+import BackButton from "@/components/ui/BackButton";
 import { MdPersonAdd } from "react-icons/md";
 
 export default function AddDonorPage() {
@@ -17,7 +18,13 @@ export default function AddDonorPage() {
     };
 
     return (
-        <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="p-6">
+            {/* Back Button */}
+            <div className="mb-6">
+                <BackButton href="/donors/active" label="Back to Donors" />
+            </div>
+            
+            <div className="flex min-h-[60vh] items-center justify-center">
             {!showTypeModal && (
                 <div className="text-center">
                     <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
@@ -48,6 +55,7 @@ export default function AddDonorPage() {
                     onSelectType={handleSelectType}
                 />
             )}
+            </div>
         </div>
     );
 }

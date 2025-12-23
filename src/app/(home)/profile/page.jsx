@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import BackButton from "@/components/ui/BackButton";
 import { toast } from "@/utils/toast";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
@@ -148,6 +149,9 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <BackButton href="/dashboard" label="Back to Dashboard" />
+        </div>
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

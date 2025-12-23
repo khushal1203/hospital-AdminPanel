@@ -86,7 +86,7 @@ export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-2 py-6 space-y-2 scrollbar-hide   ">
+                    <nav className="flex-1 px-2 py-6 space-y-2 scrollbar-hide border-r border-gray-200">
                         {navItems.map((item) => (
                             <div key={item.name} className="relative group">
                                 <Link
