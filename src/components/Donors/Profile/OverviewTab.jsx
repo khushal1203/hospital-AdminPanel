@@ -51,7 +51,7 @@ export default function OverviewTab({ donor }) {
         ...cleanData
       } = updatedData;
 
-      const response = await fetch(`/api/donors/${donorId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

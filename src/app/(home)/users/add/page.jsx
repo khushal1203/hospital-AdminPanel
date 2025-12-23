@@ -44,7 +44,7 @@ export default function AddUserPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/users/create", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

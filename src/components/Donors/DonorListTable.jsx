@@ -107,7 +107,7 @@ const StatusBadge = ({ status, donor, documentType }) => {
 
         try {
           const token = localStorage.getItem("token");
-          const response = await fetch("/api/donors/upload-document", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/upload-document`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -135,7 +135,7 @@ const StatusBadge = ({ status, donor, documentType }) => {
     try {
       const mapping = getDocumentMapping(documentType);
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/donors/delete-document", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/delete-document`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

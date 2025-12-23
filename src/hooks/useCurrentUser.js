@@ -12,7 +12,7 @@ export function useCurrentUser() {
         return;
       }
 
-      const res = await fetch("/api/auth/getUserLocal", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/auth/getUserLocal`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -164,7 +164,7 @@ export default function DonorRegistrationForm({ params }) {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/upload", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -202,7 +202,7 @@ export default function DonorRegistrationForm({ params }) {
           const formData = new FormData();
           formData.append("file", value);
 
-          const response = await fetch("/api/upload", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/upload`, {
             method: "POST",
             body: formData,
           });
@@ -364,7 +364,7 @@ export default function DonorRegistrationForm({ params }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/donors/create", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
