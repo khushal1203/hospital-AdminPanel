@@ -24,15 +24,16 @@ export async function POST(req) {
 
         const token = authHeader.split(" ")[1];
 
-        // Verify token and get user role
+        // Verify token and get user data
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const adminRole = decoded.role;
+        const isAdminFlag = decoded.isAdmin;
 
         // Get request body
         const body = await req.json();
 
         // Create user
-        const result = await createUserController(body, adminRole);
+        const result = await createUserController(body, adminRole, isAdminFlag);
 
         return NextResponse.json(result, { status: 201 });
     } catch (error) {

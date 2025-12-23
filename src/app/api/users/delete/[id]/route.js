@@ -24,15 +24,16 @@ export async function DELETE(req, { params }) {
 
         const token = authHeader.split(" ")[1];
 
-        // Verify token and get user role
+        // Verify token and get user data
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const adminRole = decoded.role;
+        const isAdminFlag = decoded.isAdmin;
 
         // Get user ID from params
         const { id } = await params;
 
         // Delete user
-        const result = await deleteUserController(id, adminRole);
+        const result = await deleteUserController(id, adminRole, isAdminFlag);
 
         return NextResponse.json(result);
     } catch (error) {

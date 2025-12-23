@@ -7,14 +7,6 @@ import { getUserRole, ROLES, isLaboratory } from "@/utils/roleUtils";
 import { toast } from "@/utils/toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import HomeSpinner from "@/components/ui/HomeSpinner";
-import {
-    MdDashboard,
-    MdPersonAdd,
-    MdPeople,
-    MdHistory,
-    MdStorage,
-    MdNotifications,
-} from "react-icons/md";
 
 export default function HomePage() {
     const router = useRouter();
@@ -43,9 +35,20 @@ export default function HomePage() {
     };
 
     const [role, setRole] = useState(null);
+    const [filteredCards, setFilteredCards] = useState([]);
 
     useEffect(() => {
-        setRole(getUserRole());
+        const userRole = getUserRole();
+        setRole(userRole);
+        
+        const cards = getActionCards().filter(card => {
+            // Hide Add Donor card only for laboratory users
+            if (card.title === "Add Donor" && userRole === ROLES.LABORATORY) {
+                return false;
+            }
+            return card.allowedRoles.includes(userRole);
+        });
+        setFilteredCards(cards);
     }, []);
 
     const getActionCards = () => {
@@ -53,7 +56,7 @@ export default function HomePage() {
             {
                 title: "Dashboard",
                 description: "View analytics and system overview",
-                icon: MdDashboard,
+                icon: "/images/icon/dashboard.svg",
                 color: "from-purple-500 to-purple-600",
                 route: "/dashboard",
                 allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
@@ -61,7 +64,7 @@ export default function HomePage() {
             {
                 title: "Add Donor",
                 description: "Register new donor (oocyte/semen)",
-                icon: MdPersonAdd,
+                icon: "/images/icon/addDonor.svg",
                 color: "from-blue-500 to-blue-600",
                 route: "/donors/add",
                 allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR]
@@ -69,7 +72,7 @@ export default function HomePage() {
             {
                 title: "Active Donor Cases",
                 description: "View all active donor cases",
-                icon: MdPeople,
+                icon: "/images/icon/activeDonors.svg",
                 color: "from-green-500 to-green-600",
                 route: "/donors/active",
                 allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
@@ -77,7 +80,7 @@ export default function HomePage() {
             {
                 title: "Donor History",
                 description: "View donor history and records",
-                icon: MdHistory,
+                icon: "/images/icon/donorhistory.svg",
                 color: "from-orange-500 to-orange-600",
                 route: "/donors/history",
                 allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
@@ -85,7 +88,7 @@ export default function HomePage() {
             {
                 title: "Semen Storage",
                 description: "Manage semen storage and inventory",
-                icon: MdStorage,
+                icon: "/images/icon/seemansDonor.svg",
                 color: "from-teal-500 to-teal-600",
                 route: "/donors/semen",
                 allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
@@ -93,7 +96,7 @@ export default function HomePage() {
             {
                 title: "Notifications",
                 description: "View alerts and notifications",
-                icon: MdNotifications,
+                icon: "/images/icon/notifiction.svg",
                 color: "from-red-500 to-red-600",
                 route: "/notifications",
                 allowedRoles: [ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.LABORATORY]
@@ -132,9 +135,19 @@ export default function HomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br  via-blue-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen relative">
+            {/* Background Image with Overlay */}
+            <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{
+                    backgroundImage: "url('/images/cover/homeCover.svg')"
+                }}
+            >
+                <div className="absolute inset-0 bg-white/65 dark:bg-gray-700/70"></div>
+            </div>
+            
             {/* Main Content */}
-            <div className="mx-auto max-w-6xl px-4 py-12">
+            <div className="relative z-10 mx-auto max-w-6xl px-4 py-12">
                 {/* User Profile Section */}
                 <div className="mb-8 text-center">
                     <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-xl bg-gray-100 flex items-center justify-center">
@@ -183,17 +196,7 @@ export default function HomePage() {
 
                 {/* Action Cards */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {actionCards
-                        .filter(card => {
-                            const userRole = getUserRole();
-                            // Hide Add Donor card only for laboratory users
-                            if (card.title === "Add Donor" && userRole === ROLES.LABORATORY) {
-                                return false;
-                            }
-                            return card.allowedRoles.includes(userRole);
-                        })
-                        .map((card, index) => {
-                        const Icon = card.icon;
+                    {filteredCards.map((card, index) => {
                         return (
                             <button
                                 key={index}
@@ -201,7 +204,13 @@ export default function HomePage() {
                                 className="group rounded-2xl bg-white p-6 shadow-lg transition-all hover:scale-105 hover:shadow-2xl dark:bg-gray-800"
                             >
                                 <div className={`mb-4 inline-flex rounded-xl bg-gradient-to-br ${card.color} p-4`}>
-                                    <Icon className="h-8 w-8 text-white" />
+                                    <Image 
+                                        src={card.icon} 
+                                        alt={card.title}
+                                        width={32}
+                                        height={32}
+                                        className="h-8 w-8 filter brightness-0 invert" 
+                                    />
                                 </div>
                                 <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white">
                                     {card.title}
