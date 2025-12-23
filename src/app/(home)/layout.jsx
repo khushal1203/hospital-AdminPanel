@@ -84,48 +84,88 @@ function Header({ onMenuClick, onToggleCollapse }) {
                             </svg>
                         </button>
                         {showUserMenu && (
-                            <div className="absolute right-0 mt-3 w-56 rounded-xl bg-white py-2 shadow-2xl ring-1 ring-black/5 animate-in slide-in-from-top-2 duration-200">
-                                <div className="px-4 py-3 border-b border-gray-100">
-                                    <p className="text-sm font-medium text-gray-900 truncate">{user?.fullName || "User"}</p>
-                                    <p className="text-xs text-gray-500 truncate">{user?.email || "user@example.com"}</p>
+                            <div className="absolute right-3 mt-2 w-64 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 border border-gray-100 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                                {/* Header */}
+                                <div className="px-4 py-4 bg-gradient-to-r from-[#402575] to-[#5B4B8A]">
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative">
+                                            <Image
+                                                src={user?.profileImage || "/images/user/user-03.png"}
+                                                alt="User"
+                                                width={48}
+                                                height={48}
+                                                className="w-12 h-12 rounded-full ring-2 ring-white/30 object-cover"
+                                                onError={(e) => {
+                                                    e.target.src = "/images/user/user-03.png";
+                                                }}
+                                            />
+                                            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-400 ring-2 ring-white"></div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-white truncate">{user?.fullName || "User"}</p>
+                                            <p className="text-xs text-white/80 truncate">{user?.email || "user@example.com"}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="py-1">
+                                
+                                {/* Menu Items */}
+                                <div className="py-2">
                                     <Link
                                         href="/profile"
-                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 group"
                                         onClick={() => setShowUserMenu(false)}
                                     >
-                                        <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                        Profile     
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 mr-3 group-hover:bg-blue-200">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">Profile</p>
+                                            <p className="text-xs text-gray-500">View and edit profile</p>
+                                        </div>
                                     </Link>
                                     {adminStatus && (
                                         <Link
                                             href="/users"
-                                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                                            className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 group"
                                             onClick={() => setShowUserMenu(false)}
                                         >
-                                            <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                                            </svg>
-                                            User Management
+                                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 text-purple-600 mr-3 group-hover:bg-purple-200">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium">User Management</p>
+                                                <p className="text-xs text-gray-500">Manage system users</p>
+                                            </div>
                                         </Link>
                                     )}
                                 </div>
-                                <div className="border-t border-gray-100 py-1">
+                                
+                                {/* Divider */}
+                                <div className="border-t border-gray-100"></div>
+                                
+                                {/* Logout */}
+                                <div className="py-2">
                                     <button
                                         onClick={() => {
                                             localStorage.removeItem('token');
                                             localStorage.removeItem('user');
                                             window.location.href = '/auth/sign-in';
                                         }}
-                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                                        className="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 group"
                                     >
-                                        <svg className="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
-                                        Logout
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 mr-3 group-hover:bg-red-200">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">Sign Out</p>
+                                            <p className="text-xs text-gray-500">Logout from account</p>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
@@ -160,7 +200,7 @@ export default function DashboardLayout({ children }) {
             onMenuClick={() => setSidebarOpen(true)}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
           />
-          <main className={`flex-1 overflow-y-auto bg-white ${isFullWidthPage ? "" : "mx-auto w-full max-w-screen-2xl p-4 md:p-6 2xl:p-10"}`}>
+          <main className={`flex-1 overflow-y-auto bg-white`}>
             {children}
           </main>
         </div>
