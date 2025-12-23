@@ -83,9 +83,13 @@ export default function NotificationDropdown() {
         <div className="relative" ref={dropdownRef}>
             <button 
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative rounded-full p-2 text-white transition-all duration-200 hover:bg-white/15 hover:text-white hover:scale-105"
+                className="relative rounded-full p-3 bg-[#281156] text-white transition-all duration-200 hover:bg-[#281156]/80 hover:scale-105"
             >
-                <MdNotifications className="h-6 w-6" />
+                <img 
+                    src="/images/icon/notifiction.svg" 
+                    alt="Notifications" 
+                    className="h-5 w-5" 
+                />
                 {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-pink-500 text-xs font-bold text-white flex items-center justify-center animate-pulse">
                         {unreadCount}
