@@ -35,7 +35,7 @@ export default function EditUserPage({ params }) {
   const fetchUser = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/users/getUser/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/getUser/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -77,7 +77,7 @@ export default function EditUserPage({ params }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/users/update-profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/update-profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

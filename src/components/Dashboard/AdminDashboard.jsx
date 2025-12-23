@@ -39,7 +39,7 @@ export default function AdminDashboard({ userRole }) {
         if (!token) return;
 
         // Fetch stats
-        const statsRes = await fetch(`/api/donors/stats?date=${selectedDate}`, {
+        const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/stats?date=${selectedDate}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const statsData = await statsRes.json();
@@ -48,7 +48,7 @@ export default function AdminDashboard({ userRole }) {
         }
 
         // Fetch all donors
-        const donorsRes = await fetch(`/api/donors/all?date=${selectedDate}`, {
+        const donorsRes = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?date=${selectedDate}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const donorsData = await donorsRes.json();

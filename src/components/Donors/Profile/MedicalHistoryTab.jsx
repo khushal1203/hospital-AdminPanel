@@ -79,7 +79,7 @@ export default function MedicalHistoryTab({ donor }) {
         ...cleanData
       } = updatedData;
 
-      const response = await fetch(`/api/donors/${donorId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +103,7 @@ export default function MedicalHistoryTab({ donor }) {
       const donorId = donorData._id || donorData.id;
       const updatedScans = [...follicularScans, scanData];
 
-      const response = await fetch(`/api/donors/${donorId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export default function MedicalHistoryTab({ donor }) {
       const donorId = donorData._id || donorData.id;
       const updatedScans = follicularScans.filter((_, i) => i !== index);
 
-      const response = await fetch(`/api/donors/${donorId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

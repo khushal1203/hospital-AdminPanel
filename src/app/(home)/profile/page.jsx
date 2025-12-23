@@ -34,7 +34,7 @@ export default function ProfilePage() {
         return;
       }
 
-      const res = await fetch(`/api/auth/getUserLocal`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/auth/getUserLocal`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,7 +85,7 @@ export default function ProfilePage() {
         const imageFormData = new FormData();
         imageFormData.append("image", imageFile);
 
-        const imageRes = await fetch("/api/users/upload-image", {
+        const imageRes = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/upload-image`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,7 +102,7 @@ export default function ProfilePage() {
         }
       }
 
-      const res = await fetch(`/api/users/update-profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/update-profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -115,7 +115,7 @@ export default function DonorTimeline({ donor }) {
 
           try {
             const token = localStorage.getItem("token");
-            const response = await fetch("/api/donors/upload-document", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/upload-document`, {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${token}`,

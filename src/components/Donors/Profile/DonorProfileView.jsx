@@ -45,7 +45,7 @@ export default function DonorProfileView({ donor }) {
     formData.append("donorId", donor._id);
 
     try {
-      const response = await fetch("/api/donors/upload-image", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/upload-image`, {
         method: "POST",
         body: formData,
       });
