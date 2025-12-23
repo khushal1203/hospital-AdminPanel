@@ -58,12 +58,12 @@ export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed
             )}
 
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-50 bg-white lg:shadow-sm transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+            <div className={`fixed inset-y-0 left-0 z-50 bg-white lg:shadow-sm transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:translate-x-0 lg:static lg:inset-0 ${
                 isOpen ? 'translate-x-0' : '-translate-x-full'
             } ${isCollapsed ? 'w-16' : 'w-64'}`}>
                 <div className="flex flex-col h-full">
                     {/* Logo */}
-                    <div className={`flex items-center h-20 bg-[#402575] border-b border-purple-600/20 transition-all duration-500 ${
+                    <div className={`flex items-center h-20 bg-[#402575] border-b border-purple-600/20 transition-[padding] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                         isCollapsed ? 'justify-center px-2' : 'justify-between px-6'
                     }`}>
                         <Link href="/dashboard" className="flex items-center">
@@ -72,7 +72,7 @@ export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed
                                 alt="Logo"
                                 width={isCollapsed ? 32 : 120}
                                 height={32}
-                                className="transition-all duration-500"
+                                className="transition-all duration-200 ease-out"
                             />
                         </Link>
                         <button
@@ -86,7 +86,7 @@ export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-2 py-6 space-y-2 overflow-y-auto">
+                    <nav className="flex-1 px-2 py-6 space-y-2 scrollbar-hide   ">
                         {navItems.map((item) => (
                             <div key={item.name} className="relative group">
                                 <Link
@@ -113,7 +113,7 @@ export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed
                                             }`}
                                         />
                                     </div>
-                                    <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                                    <span className={`transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden whitespace-nowrap ${
                                         isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
                                     }`}>
                                         {item.name}
@@ -121,7 +121,7 @@ export default function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed
                                 </Link>
                                 {/* Tooltip for collapsed state */}
                                 {isCollapsed && (
-                                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out pointer-events-none whitespace-nowrap z-50 shadow-lg">
                                         {item.name}
                                         <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
                                     </div>
