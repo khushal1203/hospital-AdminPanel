@@ -16,7 +16,7 @@ export async function PUT(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { id, fullName, email, profileImage } = await request.json();
+    const { id, fullName, email, role, contactNumber, isActive, profileImage } = await request.json();
 
     // Check if user exists
     const user = await User.findById(id);
@@ -27,19 +27,25 @@ export async function PUT(request) {
       );
     }
 
-    // Update user
-    console.log("Updating user with profileImage:", profileImage);
-
+    // Update user fields
     user.fullName = fullName;
     user.email = email;
-    user.profileImage = profileImage;
+    if (role) {
+      user.role = role;
+      // Update isAdmin based on role
+      user.isAdmin = role === "admin";
+    }
+    if (contactNumber !== undefined) user.contactNumber = contactNumber;
+    if (isActive !== undefined) user.isActive = isActive;
+    if (profileImage) user.profileImage = profileImage;
+    
     await user.save();
 
     const updatedUser = await User.findById(id).select("-password");
 
     return NextResponse.json({
       success: true,
-      message: "Profile updated successfully",
+      message: "User updated successfully",
       user: updatedUser,
     });
   } catch (error) {
