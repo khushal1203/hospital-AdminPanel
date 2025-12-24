@@ -36,13 +36,14 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Find associated user by centre ID
-    const user = await UserModel.findOne({ centreId: id }).select("-password");
+    // Find all associated users by centre ID
+    const users = await UserModel.find({ centreId: id }).select("-password");
 
     return NextResponse.json({
       success: true,
       centre,
-      user,
+      users,
+      user: users[0] || null, // Keep backward compatibility
     });
   } catch (error) {
     console.error("Error fetching centre:", error);

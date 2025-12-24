@@ -107,7 +107,7 @@ export default function TopNavigation() {
   const isActive = (href) => pathname === href;
 
   return (
-    <nav className="sticky top-0 z-[10000] border-b border-white/10 bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg">
+    <nav className="sticky top-0 z-[9999999] border-b border-white/10 bg-gradient-to-r from-[#5B4B8A] to-[#6B5B9A] shadow-lg">
       <div
         className="mx-auto px-4 sm:px-6"
         style={{ backgroundColor: "#402575" }}

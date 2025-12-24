@@ -2,7 +2,7 @@
 
 import Select from "react-select";
 
-const SelectField = ({ label, options, error, className, ...props }) => {
+const SelectField = ({ label, options, error, className, styles, ...props }) => {
     const customStyles = {
         control: (provided, state) => ({
             ...provided,
@@ -15,6 +15,7 @@ const SelectField = ({ label, options, error, className, ...props }) => {
             '&:hover': {
                 borderColor: '#3C50E0',
             },
+            ...(styles?.control ? styles.control(provided, state) : {}),
         }),
         option: (provided, state) => ({
             ...provided,
@@ -23,14 +24,27 @@ const SelectField = ({ label, options, error, className, ...props }) => {
             '&:hover': {
                 backgroundColor: state.isSelected ? '#3C50E0' : '#F1F5F9',
             },
+            ...(styles?.option ? styles.option(provided, state) : {}),
         }),
         singleValue: (provided) => ({
             ...provided,
             color: '#1C2434',
+            ...(styles?.singleValue ? styles.singleValue(provided) : {}),
         }),
         placeholder: (provided) => ({
             ...provided,
             color: '#64748B',
+            ...(styles?.placeholder ? styles.placeholder(provided) : {}),
+        }),
+        menuPortal: (provided) => ({
+            ...provided,
+            zIndex: 99999,
+            ...(styles?.menuPortal ? styles.menuPortal(provided) : {}),
+        }),
+        menu: (provided) => ({
+            ...provided,
+            zIndex: 99999,
+            ...(styles?.menu ? styles.menu(provided) : {}),
         }),
     };
 

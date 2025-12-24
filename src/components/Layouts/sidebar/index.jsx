@@ -15,10 +15,12 @@ export default function Sidebar({
   const pathname = usePathname();
   const [role, setRole] = useState(null);
   const [adminStatus, setAdminStatus] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     setRole(getUserRole());
     setAdminStatus(isAdmin());
+    setIsLoaded(true);
   }, []);
 
   const getNavItems = () => {
@@ -35,8 +37,13 @@ export default function Sidebar({
               icon: "/images/icon/dashboard.svg",
             },
             {
-              name: "Donors/Patients",
+              name: "Today’s Visits",
               href: "/donors/active",
+              icon: "/images/icon/activeDonors.svg",
+            },
+            {
+              name: "Donors/Patients",
+              href: "/donors/history",
               icon: "/images/icon/donorPatines.svg",
             },
             {
@@ -144,6 +151,42 @@ export default function Sidebar({
 
   const navItems = getNavItems();
   const isActive = (href) => pathname === href;
+
+  // Don't render until role is loaded
+  if (!isLoaded) {
+    return (
+      <div
+        className={`fixed inset-y-0 left-0 z-50 bg-white transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:static lg:inset-0 lg:translate-x-0 lg:shadow-sm ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } ${isCollapsed ? "w-16" : "w-64"}`}
+      >
+        <div className="flex h-full flex-col">
+          <div
+            className={`flex h-20 items-center border-b border-purple-600/20 bg-[#402575] transition-[padding] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              isCollapsed ? "justify-center px-2" : "justify-between px-6"
+            }`}
+          >
+            <Link href="/dashboard" className="flex items-center">
+              <Image
+                src={
+                  isCollapsed
+                    ? "/images/icon/brandLogoOnly.svg"
+                    : "/images/icon/brand.svg"
+                }
+                alt="Logo"
+                width={isCollapsed ? 32 : 120}
+                height={32}
+                className="transition-all duration-200 ease-out"
+              />
+            </Link>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#402575]"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
