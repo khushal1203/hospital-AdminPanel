@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
+import { getAllDonorRequestsController } from "@/controller/donorRequestController";
 import { connectDB } from "@/lib/connectdb";
-import Centre from "@/modals/centreModal";
-import { User } from "@/modals/userModal";
 import jwt from "jsonwebtoken";
 
 export async function GET(request) {
@@ -18,28 +17,27 @@ export async function GET(request) {
       return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
     }
 
-    const centres = await Centre.find({}).sort({ createdAt: -1 });
-    
-    // Add doctor count for each centre
-    const centresWithDoctorCount = await Promise.all(
-      centres.map(async (centre) => {
-        const doctorCount = centre.doctorIds ? centre.doctorIds.length : 0;
-        return {
-          ...centre.toObject(),
-          doctorCount
-        };
-      })
-    );
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page")) || 1;
+    const search = searchParams.get("search") || "";
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const { requests, total } = await getAllDonorRequestsController({
+      search,
+      skip,
+      limit,
+    });
 
     return NextResponse.json({
       success: true,
-      centres: centresWithDoctorCount,
-      total: centresWithDoctorCount.length,
+      requests,
+      total,
     });
   } catch (error) {
-    console.error("Error fetching centres:", error);
+    console.error("Error fetching donor requests:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch centres" },
+      { success: false, message: "Failed to fetch donor requests" },
       { status: 500 }
     );
   }

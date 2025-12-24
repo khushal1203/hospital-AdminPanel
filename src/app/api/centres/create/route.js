@@ -5,6 +5,9 @@ import { User, UserModel } from "@/modals/userModal";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
+// Force schema refresh
+const forceSchemaRefresh = true;
+
 export async function POST(request) {
   try {
     await connectDB();
@@ -31,27 +34,22 @@ export async function POST(request) {
       city,
       state,
       pincode,
-      doctorImage,
-      doctorName,
-      doctorPhoneNumber,
-      doctorEmail,
-      medicalLicenseNumber,
-      userEmail,
-      userRole,
-      userPassword,
-      userStatus,
+      doctors = []
     } = body;
 
-    // Handle doctorImage - convert to string or null
-    const imageUrl = doctorImage && typeof doctorImage === 'string' ? doctorImage : null;
+    // Validate that at least one doctor is provided
+    if (!doctors || doctors.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "At least one doctor is required" },
+        { status: 400 }
+      );
+    }
 
     // Check if centre with same email or license already exists
     const existingCentre = await Centre.findOne({
       $or: [
         { email },
-        { hospitalLicenseNumber },
-        { doctorEmail },
-        { medicalLicenseNumber }
+        { hospitalLicenseNumber }
       ]
     });
 
@@ -62,8 +60,27 @@ export async function POST(request) {
       );
     }
 
-    // Check if user with same email already exists
-    const existingUser = await User.findOne({ email: userEmail });
+    // Check for duplicate doctor emails or licenses
+    const doctorEmails = doctors.map(d => d.doctorEmail).filter(Boolean);
+    const medicalLicenses = doctors.map(d => d.medicalLicenseNumber).filter(Boolean);
+    const userEmails = doctors.map(d => d.userEmail).filter(Boolean);
+
+    const existingDoctorCentre = await Centre.findOne({
+      $or: [
+        { doctorEmail: { $in: doctorEmails } },
+        { medicalLicenseNumber: { $in: medicalLicenses } }
+      ]
+    });
+
+    if (existingDoctorCentre) {
+      return NextResponse.json(
+        { success: false, message: "Doctor with this email or license already exists" },
+        { status: 400 }
+      );
+    }
+
+    // Check if any user email already exists
+    const existingUser = await User.findOne({ email: { $in: userEmails } });
     if (existingUser) {
       return NextResponse.json(
         { success: false, message: "User with this email already exists" },
@@ -71,6 +88,7 @@ export async function POST(request) {
       );
     }
 
+    // Create centre with only hospital details
     const newCentre = new Centre({
       hospitalName,
       phoneNumber,
@@ -80,61 +98,54 @@ export async function POST(request) {
       city,
       state,
       pincode,
-      doctorImage: imageUrl,
-      doctorName,
-      doctorPhoneNumber,
-      doctorEmail,
-      medicalLicenseNumber,
     });
 
     console.log("About to save centre:", newCentre);
     await newCentre.save();
     console.log("Centre saved successfully");
 
-    // Create user credentials
-    console.log("Centre ID to save:", newCentre._id);
-    const hashedPassword = await bcrypt.hash(userPassword, 10);
+    // Create users for all doctors
+    const createdUsers = [];
+    const doctorIds = [];
     
-    const userData = {
-      fullName: doctorName,
-      email: userEmail,
-      password: hashedPassword,
-      role: userRole,
-      isActive: userStatus === "active",
-      isAdmin: userRole === "admin",
-      centreId: newCentre._id,
-    };
-    
-    console.log("User data to save:", { ...userData, password: "[HIDDEN]" });
-    
-    const newUser = new UserModel(userData);
-    console.log("User object after creation:", { ...newUser.toObject(), password: "[HIDDEN]" });
-    
-    await newUser.save();
-    console.log("User saved successfully with ID:", newUser._id);
-    
-    // Update user with centreId if it wasn't saved initially
-    if (!newUser.centreId) {
-      console.log("CentreId not saved, updating user...");
-      await UserModel.findByIdAndUpdate(newUser._id, { centreId: newCentre._id });
-      console.log("User updated with centreId");
-    }
-
-    // Verify the user was saved with centreId
-    const savedUser = await User.findById(newUser._id);
-    console.log("Saved user centreId:", savedUser.centreId);
-
-    return NextResponse.json({
-      success: true,
-      message: "Centre and user created successfully",
-      centre: newCentre,
-      user: {
+    for (const doctor of doctors) {
+      const hashedPassword = await bcrypt.hash(doctor.userPassword, 10);
+      
+      const userData = {
+        fullName: doctor.doctorName,
+        email: doctor.userEmail,
+        phoneNumber: doctor.doctorPhoneNumber,
+        password: hashedPassword,
+        role: doctor.userRole,
+        isActive: doctor.userStatus === "active",
+        isAdmin: doctor.userRole === "admin",
+        centreId: newCentre._id,
+        medicalLicenseNumber: doctor.medicalLicenseNumber,
+        doctorImage: doctor.doctorImage,
+      };
+      
+      const newUser = new UserModel(userData);
+      await newUser.save();
+      
+      doctorIds.push(newUser._id);
+      
+      createdUsers.push({
         id: newUser._id,
         fullName: newUser.fullName,
         email: newUser.email,
         role: newUser.role,
         isActive: newUser.isActive,
-      },
+      });
+    }
+    
+    // Update centre with doctor IDs
+    await Centre.findByIdAndUpdate(newCentre._id, { doctorIds });
+
+    return NextResponse.json({
+      success: true,
+      message: `Centre and ${createdUsers.length} doctor(s) created successfully`,
+      centre: newCentre,
+      users: createdUsers,
     });
   } catch (error) {
     console.error("Error creating centre:", error);

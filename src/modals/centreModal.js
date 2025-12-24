@@ -45,31 +45,11 @@ const centreSchema = new mongoose.Schema(
       trim: true,
     },
     
-    // Doctor Details
-    doctorImage: {
-      type: String,
-      default: null,
-    },
-    doctorName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    doctorPhoneNumber: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    doctorEmail: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-    },
-    medicalLicenseNumber: {
-      type: String,
-      required: true,
-      trim: true,
+    // Doctor IDs array
+    doctorIds: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
     },
     
     // Status
@@ -85,4 +65,11 @@ const centreSchema = new mongoose.Schema(
 
 const Centre = mongoose.models.Centre || mongoose.model("Centre", centreSchema);
 
-export default Centre;
+// Clear the model cache to ensure schema changes are recognized
+if (mongoose.models.Centre) {
+  delete mongoose.models.Centre;
+}
+
+const CentreModel = mongoose.model("Centre", centreSchema);
+
+export default CentreModel;

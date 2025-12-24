@@ -1,4 +1,4 @@
-import { MdCheckCircle, MdBusiness, MdPerson, MdLocationOn, MdSecurity } from "react-icons/md";
+import { MdCheckCircle, MdLocalHospital, MdPerson, MdDateRange } from "react-icons/md";
 import dayjs from "dayjs";
 
 const TimelineItem = ({ title, status, date, isLast, description }) => {
@@ -40,20 +40,37 @@ const TimelineItem = ({ title, status, date, isLast, description }) => {
   );
 };
 
-export default function CentreTimeline({ centre, doctors = [] }) {
+export default function DonorRequestTimeline({ formData, donorRequest }) {
+  // Use formData for add page, donorRequest for details page
+  const data = formData || donorRequest;
+  
   // Helper function to check if section is completed
   const getSectionStatus = (section) => {
+    if (!data) return 'pending';
+    
     switch (section) {
       case 'hospital':
-        return centre?.hospitalName && centre?.phoneNumber && centre?.email && centre?.hospitalLicenseNumber ? 'completed' : 'pending';
-      case 'location':
-        return centre?.address && centre?.city && centre?.state && centre?.pincode ? 'completed' : 'pending';
-      case 'doctor':
-        return doctors.length > 0 && doctors.every(doctor => 
-          doctor.doctorName && doctor.doctorPhoneNumber && doctor.doctorEmail && doctor.medicalLicenseNumber
-        ) ? 'completed' : 'pending';
-      case 'verification':
-        return centre?.isActive ? 'completed' : 'pending';
+        // For details page, check nested objects
+        if (donorRequest) {
+          return (donorRequest.hospitalId && donorRequest.doctorId) ? 'completed' : 'pending';
+        }
+        // For add page, check direct IDs
+        return (data.hospitalId && data.doctorId) ? 'completed' : 'pending';
+        
+      case 'basic':
+        return (data.requiredByDate && data.gender && data.maritalStatus) ? 'completed' : 'pending';
+        
+      case 'preferences':
+        return (data.cast && data.bloodGroup && data.nationality) ? 'completed' : 'pending';
+        
+      case 'physical':
+        return (data.ageRange?.min && data.ageRange?.max && 
+               data.heightRange?.min && data.heightRange?.max &&
+               data.weightRange?.min && data.weightRange?.max) ? 'completed' : 'pending';
+               
+      case 'appearance':
+        return (data.skinColour && data.hairColour && data.eyeColour && data.donorEducation) ? 'completed' : 'pending';
+        
       default:
         return 'pending';
     }
@@ -61,34 +78,34 @@ export default function CentreTimeline({ centre, doctors = [] }) {
 
   const steps = [
     {
-      title: "Centre Registered",
-      status: "completed",
-      date: centre?.createdAt,
-      description: "Centre registration initiated"
-    },
-    {
-      title: "Hospital Information",
+      title: "Hospital & Doctor",
       status: getSectionStatus('hospital'),
-      date: centre?.updatedAt,
-      description: "Hospital name, contact, license"
+      date: new Date(),
+      description: "Select hospital and doctor"
     },
     {
-      title: "Location Details",
-      status: getSectionStatus('location'),
-      date: centre?.updatedAt,
-      description: "Address, city, state, pincode"
+      title: "Basic Requirements",
+      status: getSectionStatus('basic'),
+      date: new Date(),
+      description: "Date, gender, marital status"
     },
     {
-      title: "Doctor Information",
-      status: getSectionStatus('doctor'),
-      date: centre?.updatedAt,
-      description: `${doctors.length} doctor${doctors.length !== 1 ? 's' : ''} added`
+      title: "Personal Preferences",
+      status: getSectionStatus('preferences'),
+      date: new Date(),
+      description: "Cast, blood group, nationality"
     },
     {
-      title: "Verification Complete",
-      status: getSectionStatus('verification'),
-      date: centre?.updatedAt,
-      description: "Centre approved and activated"
+      title: "Physical Requirements",
+      status: getSectionStatus('physical'),
+      date: new Date(),
+      description: "Age, height, weight ranges"
+    },
+    {
+      title: "Appearance & Education",
+      status: getSectionStatus('appearance'),
+      date: new Date(),
+      description: "Colors, education level"
     }
   ];
 
@@ -100,7 +117,7 @@ export default function CentreTimeline({ centre, doctors = [] }) {
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900">
-          Centre Registration Timeline
+          Request Progress
         </h3>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 bg-gray-200 rounded-full h-2">

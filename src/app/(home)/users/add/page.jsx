@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import InputGroup from "@/components/FormElements/InputGroup";
+import SelectField from "@/components/FormElements/SelectField";
 import ImageUpload from "@/components/FormElements/ImageUpload";
 import { MdArrowBack, MdPerson, MdWork, MdSchool, MdDescription, MdSecurity } from "react-icons/md";
 import { toast } from "@/utils/toast";
@@ -175,7 +176,7 @@ export default function AddUserPage() {
   return (
     <div className="flex h-screen flex-col">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-10 flex-shrink-0 border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
+      <div className="sticky top-0 z-[999999] flex-shrink-0 border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <button
@@ -283,39 +284,35 @@ export default function AddUserPage() {
                     required
                   />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Gender
-                    </label>
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
+                  <div className="relative">
+                    <SelectField
+                      label="Gender"
+                      options={[
+                        { value: "male", label: "Male" },
+                        { value: "female", label: "Female" },
+                        { value: "other", label: "Other" }
+                      ]}
+                      value={formData.gender ? { value: formData.gender, label: formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1) } : null}
+                      onChange={(selectedOption) => handleChange({ target: { name: 'gender', value: selectedOption ? selectedOption.value : '' } })}
+                      placeholder="Select gender"
+                      menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Marital Status
-                    </label>
-                    <select
-                      name="maritalStatus"
-                      value={formData.maritalStatus}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    >
-                      <option value="">Select marital status</option>
-                      <option value="single">Single</option>
-                      <option value="married">Married</option>
-                      <option value="divorced">Divorced</option>
-                      <option value="widowed">Widowed</option>
-                    </select>
+                  <div className="relative">
+                    <SelectField
+                      label="Marital Status"
+                      options={[
+                        { value: "single", label: "Single" },
+                        { value: "married", label: "Married" },
+                        { value: "divorced", label: "Divorced" },
+                        { value: "widowed", label: "Widowed" }
+                      ]}
+                      value={formData.maritalStatus ? { value: formData.maritalStatus, label: formData.maritalStatus.charAt(0).toUpperCase() + formData.maritalStatus.slice(1) } : null}
+                      onChange={(selectedOption) => handleChange({ target: { name: 'maritalStatus', value: selectedOption ? selectedOption.value : '' } })}
+                      placeholder="Select marital status"
+                      menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    />
                   </div>
 
                   <InputGroup
@@ -405,22 +402,20 @@ export default function AddUserPage() {
 
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Role
-                    </label>
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                      required
-                    >
-                      <option value="receptionist">Receptionist</option>
-                      <option value="doctor">Doctor</option>
-                      <option value="laboratory">Laboratory</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                  <div className="relative">
+                    <SelectField
+                      label="Role"
+                      options={[
+                        { value: "admin", label: "Admin" },
+                        { value: "doctor", label: "Doctor" },
+                        { value: "receptionist", label: "Receptionist" },
+                        { value: "laboratory", label: "Laboratory" }
+                      ]}
+                      value={formData.role ? { value: formData.role, label: formData.role.charAt(0).toUpperCase() + formData.role.slice(1) } : null}
+                      onChange={(selectedOption) => handleChange({ target: { name: 'role', value: selectedOption ? selectedOption.value : '' } })}
+                      placeholder="Select role"
+                      menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    />
                   </div>
 
                   <InputGroup
@@ -587,20 +582,18 @@ export default function AddUserPage() {
                     required
                   />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Status
-                    </label>
-                    <select
-                      name="userStatus"
-                      value={formData.userStatus}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                      required
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                  <div className="relative">
+                    <SelectField
+                      label="Status"
+                      options={[
+                        { value: "active", label: "Active" },
+                        { value: "inactive", label: "Inactive" }
+                      ]}
+                      value={formData.userStatus ? { value: formData.userStatus, label: formData.userStatus.charAt(0).toUpperCase() + formData.userStatus.slice(1) } : null}
+                      onChange={(selectedOption) => handleChange({ target: { name: 'userStatus', value: selectedOption ? selectedOption.value : '' } })}
+                      placeholder="Select status"
+                      menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                    />
                   </div>
 
                   <InputGroup

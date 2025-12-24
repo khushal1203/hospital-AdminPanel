@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import InputGroup from "@/components/FormElements/InputGroup";
+import { MdArrowBack, MdBusiness, MdPerson, MdSecurity, MdAdd, MdDelete } from "react-icons/md";
+import SelectField from "@/components/FormElements/SelectField";
 import ImageUpload from "@/components/FormElements/ImageUpload";
-import { MdArrowBack, MdBusiness, MdPerson, MdSecurity } from "react-icons/md";
 import { toast } from "@/utils/toast";
 import CentreTimeline from "@/components/Centres/CentreTimeline";
 
@@ -23,20 +24,21 @@ export default function AddCentrePage() {
     city: "",
     state: "",
     pincode: "",
-    
-    // Doctor Details
-    doctorImage: null,
-    doctorName: "",
-    doctorPhoneNumber: "",
-    doctorEmail: "",
-    medicalLicenseNumber: "",
-    
-    // User Credentials
-    userEmail: "",
-    userRole: "doctor",
-    userPassword: "",
-    userStatus: "active",
   });
+
+  const [doctors, setDoctors] = useState([
+    {
+      doctorImage: null,
+      doctorName: "",
+      doctorPhoneNumber: "",
+      doctorEmail: "",
+      medicalLicenseNumber: "",
+      userEmail: "",
+      userRole: "doctor",
+      userPassword: "",
+      userStatus: "active",
+    }
+  ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,9 +48,15 @@ export default function AddCentrePage() {
     });
   };
 
-  const handleImageUpload = async (file) => {
+  const handleDoctorChange = (index, field, value) => {
+    const updatedDoctors = [...doctors];
+    updatedDoctors[index][field] = value;
+    setDoctors(updatedDoctors);
+  };
+
+  const handleImageUpload = async (file, doctorIndex) => {
     if (!file) {
-      setFormData({ ...formData, doctorImage: null });
+      handleDoctorChange(doctorIndex, 'doctorImage', null);
       return;
     }
 
@@ -64,7 +72,7 @@ export default function AddCentrePage() {
       const result = await response.json();
 
       if (result.success) {
-        setFormData({ ...formData, doctorImage: result.fileUrl });
+        handleDoctorChange(doctorIndex, 'doctorImage', result.fileUrl);
         toast.success("Image uploaded successfully!");
       } else {
         toast.error("Failed to upload image");
@@ -75,34 +83,68 @@ export default function AddCentrePage() {
     }
   };
 
+  const addDoctor = () => {
+    setDoctors([...doctors, {
+      doctorImage: null,
+      doctorName: "",
+      doctorPhoneNumber: "",
+      doctorEmail: "",
+      medicalLicenseNumber: "",
+      userEmail: "",
+      userRole: "doctor",
+      userPassword: "",
+      userStatus: "active",
+    }]);
+  };
+
+  const removeDoctor = (index) => {
+    if (doctors.length > 1) {
+      const updatedDoctors = doctors.filter((_, i) => i !== index);
+      setDoctors(updatedDoctors);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     // Basic validation
-    if (!formData.userEmail || !formData.userPassword) {
-      toast.error("User email and password are required");
-      setError("User email and password are required");
+    const invalidDoctor = doctors.find(doctor => 
+      !doctor.doctorName || 
+      !doctor.doctorPhoneNumber || 
+      !doctor.doctorEmail || 
+      !doctor.medicalLicenseNumber || 
+      !doctor.userEmail || 
+      !doctor.userPassword
+    );
+    if (invalidDoctor) {
+      toast.error("All doctor fields are required");
+      setError("All doctor fields are required");
       setLoading(false);
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
+      const payload = {
+        ...formData,
+        doctors: doctors
+      };
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/centres/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        toast.success("Centre and user created successfully!");
+        toast.success("Centre and doctors created successfully!");
         router.push("/centres");
       } else {
         toast.error(data.message || "Failed to add centre");
@@ -266,142 +308,155 @@ export default function AddCentrePage() {
             {/* Doctor Information */}
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
               <div className="border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <MdPerson className="h-6 w-6 text-green-600" />
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Doctor Information
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                      Enter the primary doctor details
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <MdPerson className="h-6 w-6 text-green-600" />
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        Doctor Information
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-600">
+                        Add doctors for this centre
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={addDoctor}
+                    className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                  >
+                    <MdAdd className="h-4 w-4" />
+                    Add More
+                  </button>
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="mb-6">
-                  <ImageUpload
-                    label="Doctor Photo"
-                    onImageChange={handleImageUpload}
-                  />
-                </div>
+              <div className="p-6 space-y-8">
+                {doctors.map((doctor, index) => (
+                  <div key={index} className="border border-gray-200 rounded-xl p-6 relative">
+                    {doctors.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeDoctor(index)}
+                        className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                      >
+                        <MdDelete className="h-5 w-5" />
+                      </button>
+                    )}
+                    
+                    <h3 className="text-md font-semibold text-gray-800 mb-4">
+                      Doctor {index + 1}
+                    </h3>
+                    
+                    <div className="mb-6">
+                      <ImageUpload
+                        label="Doctor Photo"
+                        onImageChange={(file) => handleImageUpload(file, index)}
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <InputGroup
-                    type="text"
-                    label="Doctor Name"
-                    placeholder="Enter doctor name"
-                    name="doctorName"
-                    value={formData.doctorName}
-                    handleChange={handleChange}
-                    required
-                  />
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                      <InputGroup
+                        type="text"
+                        label="Doctor Name"
+                        placeholder="Enter doctor name"
+                        name="doctorName"
+                        value={doctor.doctorName}
+                        handleChange={(e) => handleDoctorChange(index, 'doctorName', e.target.value)}
+                        required
+                      />
 
-                  <InputGroup
-                    type="tel"
-                    label="Doctor Phone Number"
-                    placeholder="Enter doctor phone"
-                    name="doctorPhoneNumber"
-                    value={formData.doctorPhoneNumber}
-                    handleChange={handleChange}
-                    required
-                  />
+                      <InputGroup
+                        type="tel"
+                        label="Doctor Phone Number"
+                        placeholder="Enter doctor phone"
+                        name="doctorPhoneNumber"
+                        value={doctor.doctorPhoneNumber}
+                        handleChange={(e) => handleDoctorChange(index, 'doctorPhoneNumber', e.target.value)}
+                        required
+                      />
 
-                  <InputGroup
-                    type="email"
-                    label="Doctor Email"
-                    placeholder="Enter doctor email"
-                    name="doctorEmail"
-                    value={formData.doctorEmail}
-                    handleChange={handleChange}
-                    required
-                  />
+                      <InputGroup
+                        type="email"
+                        label="Doctor Email"
+                        placeholder="Enter doctor email"
+                        name="doctorEmail"
+                        value={doctor.doctorEmail}
+                        handleChange={(e) => handleDoctorChange(index, 'doctorEmail', e.target.value)}
+                        required
+                      />
 
-                  <InputGroup
-                    type="text"
-                    label="Medical License Number"
-                    placeholder="Enter medical license"
-                    name="medicalLicenseNumber"
-                    value={formData.medicalLicenseNumber}
-                    handleChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+                      <InputGroup
+                        type="text"
+                        label="Medical License Number"
+                        placeholder="Enter medical license"
+                        name="medicalLicenseNumber"
+                        value={doctor.medicalLicenseNumber}
+                        handleChange={(e) => handleDoctorChange(index, 'medicalLicenseNumber', e.target.value)}
+                        required
+                      />
 
-            {/* User Credentials */}
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
-              <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-violet-50 px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <MdSecurity className="h-6 w-6 text-purple-600" />
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Create User Credential
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                      Create login credentials for the doctor
-                    </p>
+                      <InputGroup
+                        type="email"
+                        label="User Email"
+                        placeholder="Enter user email"
+                        name="userEmail"
+                        value={doctor.userEmail}
+                        handleChange={(e) => handleDoctorChange(index, 'userEmail', e.target.value)}
+                        required
+                      />
+
+                      <InputGroup
+                        type="password"
+                        label="Password"
+                        placeholder="Enter password"
+                        name="userPassword"
+                        value={doctor.userPassword}
+                        handleChange={(e) => handleDoctorChange(index, 'userPassword', e.target.value)}
+                        required
+                      />
+
+                      <div className="relative z-30">
+                        <SelectField
+                          label="Role"
+                          options={[
+                            { value: "doctor", label: "Doctor" },
+                            { value: "receptionist", label: "Receptionist" },
+                            { value: "laboratory", label: "Laboratory" }
+                          ]}
+                          value={{ value: doctor.userRole, label: doctor.userRole.charAt(0).toUpperCase() + doctor.userRole.slice(1) } || null}
+                          onChange={(selectedOption) => handleDoctorChange(index, 'userRole', selectedOption ? selectedOption.value : 'doctor')}
+                          placeholder="Select Role"
+                          required
+                          instanceId={`role-${index}`}
+                          menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                          styles={{
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                          }}
+                        />
+                      </div>
+
+                      <div className="relative z-20">
+                        <SelectField
+                          label="Status"
+                          options={[
+                            { value: "active", label: "Active" },
+                            { value: "inactive", label: "Inactive" }
+                          ]}
+                          value={{ value: doctor.userStatus, label: doctor.userStatus.charAt(0).toUpperCase() + doctor.userStatus.slice(1) } || null}
+                          onChange={(selectedOption) => handleDoctorChange(index, 'userStatus', selectedOption ? selectedOption.value : 'active')}
+                          placeholder="Select Status"
+                          required
+                          instanceId={`status-${index}`}
+                          menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                          styles={{
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <InputGroup
-                    type="email"
-                    label="User Email"
-                    placeholder="Enter user email"
-                    name="userEmail"
-                    value={formData.userEmail}
-                    handleChange={handleChange}
-                    required
-                  />
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Role
-                    </label>
-                    <select
-                      name="userRole"
-                      value={formData.userRole}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                      required
-                    >
-                      <option value="doctor">Doctor</option>
-                      <option value="receptionist">Receptionist</option>
-                      <option value="laboratory">Laboratory</option>
-                    </select>
-                  </div>
-
-                  <InputGroup
-                    type="password"
-                    label="Password"
-                    placeholder="Enter password"
-                    name="userPassword"
-                    value={formData.userPassword}
-                    handleChange={handleChange}
-                    required
-                  />
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Status
-                    </label>
-                    <select
-                      name="userStatus"
-                      value={formData.userStatus}
-                      onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                      required
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -428,7 +483,7 @@ export default function AddCentrePage() {
             </form>
             </div>
             <div className="hidden lg:col-span-3 lg:block">
-              <CentreTimeline centre={formData} />
+              <CentreTimeline centre={formData} doctors={doctors} />
             </div>
           </div>
         </div>

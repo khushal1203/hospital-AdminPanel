@@ -76,6 +76,16 @@ const UserSchema = new mongoose.Schema(
       trim: true,
     },
     
+    // Doctor-specific fields
+    medicalLicenseNumber: {
+      type: String,
+      trim: true,
+    },
+    doctorImage: {
+      type: String,
+      default: null,
+    },
+    
     // Educational Information
     qualification: {
       type: String,

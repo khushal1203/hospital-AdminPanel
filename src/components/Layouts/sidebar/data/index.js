@@ -1,5 +1,5 @@
 import { FiUser } from "react-icons/fi";
-import { MdStorage, MdDashboard, MdPeople } from "react-icons/md";
+import { MdStorage, MdDashboard, MdPeople, MdInfo } from "react-icons/md";
 import { FaPlus, FaUserMd, FaFlask, FaUsers } from "react-icons/fa";
 
 // Navigation data for Admin role
@@ -14,9 +14,21 @@ const ADMIN_NAV = [
         items: [],
       },
       {
+        title: "Request Information",
+        url: "/donors/requests",
+        icon: MdInfo,
+        items: [],
+      },
+      {
         title: "Active Donors",
         url: "/donors/active",
         icon: MdPeople,
+        items: [],
+      },
+      {
+        title: "Donors/Patients",
+        url: "/donors/patients",
+        icon: FiUser,
         items: [],
       },
       {

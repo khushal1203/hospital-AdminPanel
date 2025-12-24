@@ -241,24 +241,16 @@ export default function CentresPage() {
                         <td className="p-3">
                           <div className="flex items-center gap-3">
                             <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
-                              {centre.doctorImage ? (
-                                <img
-                                  src={centre.doctorImage}
-                                  alt={centre.doctorName}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-green-100 text-xs font-bold text-green-600">
-                                  {centre.doctorName?.charAt(0) || 'D'}
-                                </div>
-                              )}
+                              <div className="flex h-full w-full items-center justify-center bg-green-100 text-xs font-bold text-green-600">
+                                {centre.doctorCount > 0 ? centre.doctorCount : 'D'}
+                              </div>
                             </div>
                             <div className="flex flex-col">
                               <span className="font-medium text-gray-900 text-sm">
-                                {centre.doctorName || '-'}
+                                {centre.doctorCount > 0 ? `${centre.doctorCount} Doctor${centre.doctorCount > 1 ? 's' : ''}` : 'No Doctors'}
                               </span>
                               <span className="text-xs text-gray-500">
-                                Dr. {centre.doctorName?.split(' ')[0] || 'Doctor'}
+                                {centre.doctorCount > 1 ? 'Multiple doctors' : centre.doctorCount === 1 ? 'Single doctor' : 'No doctors assigned'}
                               </span>
                             </div>
                           </div>
@@ -282,7 +274,7 @@ export default function CentresPage() {
                         
                         {/* License */}
                         <td className="p-3 text-gray-600">
-                          {centre.hospitalLicenseNumber || centre.medicalLicenseNumber || '-'}
+                          {centre.hospitalLicenseNumber || '-'}
                         </td>
                         
                         {/* Status */}
