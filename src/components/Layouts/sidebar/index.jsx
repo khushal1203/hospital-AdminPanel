@@ -22,6 +22,71 @@ export default function Sidebar({
   }, []);
 
   const getNavItems = () => {
+    // Admin menu items with sections
+    if (adminStatus) {
+      return [
+        {
+          section: "MAIN MENU",
+          items: [
+            { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
+            {
+              name: "Dashboard",
+              href: "/dashboard",
+              icon: "/images/icon/dashboard.svg",
+            },
+            {
+              name: "Donors/Patients",
+              href: "/donors/active",
+              icon: "/images/icon/donorPatines.svg",
+            },
+            {
+              name: "Donors Requests",
+              href: "/donors/requests",
+              icon: "/images/icon/donorRequest.svg",
+            },
+            { name: "Alerts", href: "/alerts", icon: "/images/icon/alert.svg" },
+            {
+              name: "Centres/Doctors",
+              href: "/centres",
+              icon: "/images/icon/donorHospital.svg",
+            },
+            {
+              name: "User Management",
+              href: "/users",
+              icon: "/images/icon/donorhistory.svg",
+            },
+          ],
+        },
+        {
+          section: "SEMEN",
+          items: [
+            {
+              name: "Semen Storage",
+              href: "/storage",
+              icon: "/images/icon/seemansDonor.svg",
+            },
+          ],
+        },
+        {
+          section: "TOOLS",
+          items: [
+            { name: "Help", href: "/help", icon: "/images/icon/help.svg" },
+            {
+              name: "Settings",
+              href: "/settings",
+              icon: "/images/icon/setting.svg",
+            },
+            {
+              name: "Logout",
+              href: "/logout",
+              icon: "/images/icon/logOut.svg",
+            },
+          ],
+        },
+      ];
+    }
+
+    // Non-admin menu items (flat structure)
     const baseItems = [
       { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
       {
@@ -33,16 +98,20 @@ export default function Sidebar({
 
     if (role === ROLES.LABORATORY) {
       return [
-        ...baseItems,
         {
-          name: "Active Donors",
-          href: "/donors/active",
-          icon: "/images/icon/activeDonors.svg",
-        },
-        {
-          name: "Semen Storage",
-          href: "/donors/semen",
-          icon: "/images/icon/seemansDonor.svg",
+          items: [
+            ...baseItems,
+            {
+              name: "Active Donors",
+              href: "/donors/active",
+              icon: "/images/icon/activeDonors.svg",
+            },
+            {
+              name: "Semen Storage",
+              href: "/donors/semen",
+              icon: "/images/icon/seemansDonor.svg",
+            },
+          ],
         },
       ];
     }
@@ -70,17 +139,7 @@ export default function Sidebar({
       },
     ];
 
-    const adminItems = adminStatus
-      ? [
-          {
-            name: "User Management",
-            href: "/users",
-            icon: "/images/icon/dashboard.svg",
-          },
-        ]
-      : [];
-
-    return [...baseItems, ...donorItems, ...adminItems];
+    return [{ items: [...baseItems, ...donorItems] }];
   };
 
   const navItems = getNavItems();
@@ -143,50 +202,66 @@ export default function Sidebar({
           </div>
 
           {/* Navigation */}
-          <nav className="scrollbar-hide flex-1 space-y-2 border-r border-gray-200 px-2 py-6">
-            {navItems.map((item) => (
-              <div key={item.name} className="group relative">
-                <Link
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center rounded-lg text-base font-medium transition-all duration-300 ${
-                    isActive(item.href)
-                      ? "bg-gradient-to-r from-[#402575] to-[#5B4B8A] text-white shadow-sm"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  } ${
-                    isCollapsed
-                      ? "mx-1 justify-center p-3"
-                      : "mx-2 gap-3 px-4 py-3"
-                  }`}
-                >
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={item.icon}
-                      alt={item.name}
-                      width={20}
-                      height={20}
-                      className={`h-5 w-5 transition-all duration-300 ${
-                        isActive(item.href)
-                          ? "brightness-0 invert"
-                          : "brightness-0"
-                      }`}
-                    />
-                  </div>
-                  <span
-                    className={`overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                      isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                    }`}
-                  >
-                    {item.name}
-                  </span>
-                </Link>
-                {/* Tooltip for collapsed state */}
-                {isCollapsed && (
-                  <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-lg transition-all duration-200 ease-out group-hover:opacity-100">
-                    {item.name}
-                    <div className="absolute left-0 top-1/2 h-2 w-2 -translate-x-1 -translate-y-1/2 rotate-45 bg-gray-900"></div>
+          <nav className="flex-1 space-y-4 border-r border-gray-200 px-2 py-6 scrollbar-hide">
+            {navItems.map((section, sectionIndex) => (
+              <div key={sectionIndex}>
+                {/* Section Label */}
+                {section.section && !isCollapsed && (
+                  <div className="mb-3 px-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      {section.section}
+                    </h3>
                   </div>
                 )}
+
+                {/* Section Items */}
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <div key={item.name} className="group relative">
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex items-center rounded-lg text-sm font-medium transition-all duration-300 ${
+                          isActive(item.href)
+                            ? "bg-gradient-to-r from-[#402575] to-[#5B4B8A] text-white shadow-sm"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        } ${
+                          isCollapsed
+                            ? "mx-1 justify-center p-3"
+                            : "mx-2 gap-3 px-3 py-2.5"
+                        }`}
+                      >
+                        <div className="flex-shrink-0">
+                          <Image
+                            src={item.icon}
+                            alt={item.name}
+                            width={20}
+                            height={20}
+                            className={`h-5 w-5 transition-all duration-300 ${
+                              isActive(item.href)
+                                ? "brightness-0 invert"
+                                : "brightness-0"
+                            }`}
+                          />
+                        </div>
+                        <span
+                          className={`overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                            isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                          }`}
+                        >
+                          {item.name}
+                        </span>
+                      </Link>
+                      {/* Tooltip for collapsed state */}
+                      {isCollapsed && (
+                        <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-lg transition-all duration-200 ease-out group-hover:opacity-100">
+                          {item.name}
+                          <div className="absolute left-0 top-1/2 h-2 w-2 -translate-x-1 -translate-y-1/2 rotate-45 bg-gray-900"></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </nav>

@@ -33,7 +33,7 @@ export default async function ActiveDonorsPage({ searchParams }) {
       <FilterProvider>
         <div className="flex h-screen flex-col">
           {/* Fixed Header with Toolbar */}
-          <div className="sticky top-0 z-10 flex-shrink-0 border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
+          <div className="sticky top-0 z-30 flex-shrink-0 border-b border-gray-200 bg-white px-3 py-3 shadow-sm">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
                 Active Donors

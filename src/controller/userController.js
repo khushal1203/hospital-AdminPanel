@@ -1,4 +1,4 @@
-import { User } from "@/modals/userModal";
+import { User, UserModel } from "@/modals/userModal";
 import bcrypt from "bcryptjs";
 
 export async function getUserController(userId) {
@@ -24,11 +24,48 @@ export const createUserController = async (body, adminRole, isAdminFlag) => {
     throw new Error("Unauthorized: Only administrators can create users");
   }
 
-  const { fullName, email, password, role, contactNumber, isActive } = body;
+  const { 
+    // Basic Information
+    profileImage,
+    fullName, 
+    aadharCardNumber,
+    phoneNumber,
+    email, 
+    gender,
+    maritalStatus,
+    dateOfBirth,
+    
+    // Address Information
+    address,
+    city,
+    state,
+    pincode,
+    
+    // Professional Information
+    role,
+    department,
+    employeeId,
+    experience,
+    
+    // Educational Information
+    qualification,
+    fieldOfStudy,
+    instituteName,
+    passingYear,
+    
+    // Documents
+    documents,
+    
+    // User Credentials
+    userEmail,
+    userStatus,
+    password, 
+    isActive 
+  } = body;
 
   // Validate input
   if (!fullName || !email || !password || !role) {
-    throw new Error("All fields are required");
+    throw new Error("Full name, email, password, and role are required");
   }
 
   // Validate role
@@ -46,14 +83,42 @@ export const createUserController = async (body, adminRole, isAdminFlag) => {
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Create user - only admin role gets isAdmin: true
-  const user = await User.create({
+  // Create user with all fields
+  const user = await UserModel.create({
+    // Basic Information
+    profileImage: profileImage || "/images/user/user-03.png",
     fullName,
+    aadharCardNumber,
+    phoneNumber,
     email,
-    password: hashedPassword,
+    gender,
+    maritalStatus,
+    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+    
+    // Address Information
+    address,
+    city,
+    state,
+    pincode,
+    
+    // Professional Information
     role,
-    contactNumber: contactNumber || "",
-    isActive: isActive !== undefined ? isActive : true,
+    department,
+    employeeId,
+    experience,
+    
+    // Educational Information
+    qualification,
+    fieldOfStudy,
+    instituteName,
+    passingYear,
+    
+    // Documents
+    documents: documents || [],
+    
+    // User Credentials
+    password: hashedPassword,
+    isActive: userStatus === "active" || isActive !== undefined ? isActive : true,
     isAdmin: role === "admin",
   });
 
@@ -65,7 +130,7 @@ export const createUserController = async (body, adminRole, isAdminFlag) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      contactNumber: user.contactNumber,
+      department: user.department,
       isActive: user.isActive,
       isAdmin: user.isAdmin,
     },
