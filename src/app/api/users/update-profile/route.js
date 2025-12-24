@@ -35,8 +35,8 @@ export async function PUT(request) {
     if (city !== undefined) user.city = city;
     if (state !== undefined) user.state = state;
     if (pincode !== undefined) user.pincode = pincode;
-    if (gender !== undefined) user.gender = gender;
-    if (maritalStatus !== undefined) user.maritalStatus = maritalStatus;
+    if (gender !== undefined) user.gender = gender || null;
+    if (maritalStatus !== undefined) user.maritalStatus = maritalStatus || null;
     if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
     if (aadharCardNumber !== undefined) user.aadharCardNumber = aadharCardNumber;
     if (department !== undefined) user.department = department;
