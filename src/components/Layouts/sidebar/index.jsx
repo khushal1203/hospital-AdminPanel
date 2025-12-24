@@ -200,9 +200,9 @@ export default function Sidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:static lg:inset-0 lg:translate-x-0 lg:shadow-sm ${
+        className={`fixed inset-y-0 left-0 z-50 bg-white transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:static lg:inset-0 lg:translate-x-0 lg:shadow-sm ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } ${isCollapsed ? "w-16" : "w-64"}`}
+        } ${isCollapsed ? "lg:w-16" : "lg:w-64"} w-80 sm:w-64`}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
@@ -245,8 +245,9 @@ export default function Sidebar({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-4 border-r border-gray-200 px-2 py-6 scrollbar-hide">
-            {navItems.map((section, sectionIndex) => (
+          <nav className="flex-1 overflow-y-auto px-2 py-6">
+            <div className="space-y-4">
+              {navItems.map((section, sectionIndex) => (
               <div key={sectionIndex}>
                 {/* Section Label */}
                 {section.section && !isCollapsed && (
@@ -297,7 +298,7 @@ export default function Sidebar({
                       </Link>
                       {/* Tooltip for collapsed state */}
                       {isCollapsed && (
-                        <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-lg transition-all duration-200 ease-out group-hover:opacity-100">
+                        <div className="pointer-events-none absolute left-full top-1/2 z-[9999] ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-lg transition-all duration-200 ease-out group-hover:opacity-100 hidden lg:block">
                           {item.name}
                           <div className="absolute left-0 top-1/2 h-2 w-2 -translate-x-1 -translate-y-1/2 rotate-45 bg-gray-900"></div>
                         </div>
@@ -307,6 +308,7 @@ export default function Sidebar({
                 </div>
               </div>
             ))}
+            </div>
           </nav>
         </div>
       </div>

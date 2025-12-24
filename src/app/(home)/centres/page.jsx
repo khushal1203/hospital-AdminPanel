@@ -37,7 +37,29 @@ export default function CentresPage() {
       const data = await res.json();
 
       if (data.success) {
-        setCentres(data.centres);
+        // Fetch doctor details for each centre
+        const centresWithDoctors = await Promise.all(
+          data.centres.map(async (centre) => {
+            if (centre.doctorIds && centre.doctorIds.length > 0) {
+              try {
+                const doctorPromises = centre.doctorIds.map(async (doctorId) => {
+                  const doctorRes = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/users/getUser/${doctorId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  const doctorData = await doctorRes.json();
+                  return doctorData.success ? doctorData.user : null;
+                });
+                const doctors = await Promise.all(doctorPromises);
+                return { ...centre, doctors: doctors.filter(Boolean) };
+              } catch (error) {
+                console.error('Error fetching doctors for centre:', centre._id, error);
+                return { ...centre, doctors: [] };
+              }
+            }
+            return { ...centre, doctors: [] };
+          })
+        );
+        setCentres(centresWithDoctors);
       } else {
         setError(data.message);
       }
@@ -246,12 +268,24 @@ export default function CentresPage() {
                               </div>
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-medium text-gray-900 text-sm">
-                                {centre.doctorCount > 0 ? `${centre.doctorCount} Doctor${centre.doctorCount > 1 ? 's' : ''}` : 'No Doctors'}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {centre.doctorCount > 1 ? 'Multiple doctors' : centre.doctorCount === 1 ? 'Single doctor' : 'No doctors assigned'}
-                              </span>
+                              {centre.doctors && centre.doctors.length > 0 ? (
+                                <>
+                                  <span className="font-medium text-gray-900 text-sm">
+                                    {centre.doctors.map(d => `Dr. ${d.fullName}`).join(', ')}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {centre.doctors.length === 1 
+                                      ? centre.doctors[0].role || 'Doctor'
+                                      : `${centre.doctors.length} doctors assigned`
+                                    }
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="font-medium text-gray-900 text-sm">No Doctors</span>
+                                  <span className="text-xs text-gray-500">No doctors assigned</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </td>
