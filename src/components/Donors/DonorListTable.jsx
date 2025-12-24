@@ -222,6 +222,8 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = currentPage * itemsPerPage;
 
   const handlePageChange = (page) => {
     const params = new URLSearchParams(searchParams);
@@ -232,13 +234,10 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
   return (
     <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-3 py-3 sm:flex-row sm:px-4">
       <div className="text-xs text-gray-700 sm:text-sm">
-        Showing{" "}
-        <span className="font-medium">
-          {(currentPage - 1) * itemsPerPage + 1}
-        </span>{" "}
+        Showing <span className="font-medium">{startIndex + 1}</span>{" "}
         to{" "}
         <span className="font-medium">
-          {Math.min(currentPage * itemsPerPage, totalItems)}
+          {Math.min(endIndex, totalItems)}
         </span>{" "}
         of <span className="font-medium">{totalItems}</span> results
       </div>
@@ -356,12 +355,29 @@ export default function DonorListTable({
           <p className="text-lg text-gray-500">No active donors found.</p>
         </div>
       ) : (
-        <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
-          <div className="flex-1 overflow-auto">
-            <table className="w-full min-w-[1600px] table-auto text-left text-xs sm:min-w-[1200px] sm:text-sm">
-              <thead className="bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
+          <div className="custom-scrollbar flex-1 overflow-auto">
+            <style jsx>{`
+              .custom-scrollbar::-webkit-scrollbar {
+                height: 6px;
+                width: 6px;
+              }
+              .custom-scrollbar::-webkit-scrollbar-track {
+                background: #f1f5f9;
+                border-radius: 3px;
+              }
+              .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+                border-radius: 3px;
+              }
+              .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #94a3b8, #cbd5e1);
+              }
+            `}</style>
+            <table className="w-full min-w-[2800px] table-auto text-left text-sm">
+              <thead className="sticky top-0 z-20 bg-gradient-to-r from-purple-50 to-pink-50">
                 <tr className="border-b border-gray-200">
-                  <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[50px]">
                     <input
                       type="checkbox"
                       className="h-4 w-4 rounded border-gray-300"
@@ -372,58 +388,61 @@ export default function DonorListTable({
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  {visibleColumns.donorId && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                      Donor ID
-                    </th>
-                  )}
-                  {visibleColumns.registrationDate && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                      Registration Date
-                    </th>
-                  )}
-                  {visibleColumns.donorName && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                      Donor Name
-                    </th>
-                  )}
-                  {visibleColumns.nextAppointment && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                      Next Appointment
-                    </th>
-                  )}
-                  {visibleColumns.aadharNumber && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                      Aadhar Number
-                    </th>
-                  )}
-                  {visibleColumns.consentForm && !isLaboratory && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[180px]">
+                    Donor
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                    Donor ID
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
+                    Registration Date
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
+                    Next Appointment
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
+                    Aadhar Number
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                    Phone
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
+                    Age
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
+                    Blood Group
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[200px]">
+                    Address
+                  </th>
+                  {!isLaboratory && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       Consent Form
                     </th>
                   )}
-                  {visibleColumns.affidavit && !isLaboratory && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  {!isLaboratory && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       Affidavit
                     </th>
                   )}
-                  {visibleColumns.bloodReport && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                      Blood Report
-                    </th>
-                  )}
-                  {visibleColumns.insurance && !isLaboratory && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                    Blood Report
+                  </th>
+                  {!isLaboratory && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       Insurance
                     </th>
                   )}
-                  {visibleColumns.opuProcess && !isLaboratory && (
-                    <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  {!isLaboratory && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       OPU Process
                     </th>
                   )}
-                  <th className="p-4 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                    Action
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
+                    Status
+                  </th>
+                  <th className="sticky right-0 top-0 z-30 bg-gradient-to-r from-purple-50 to-pink-50 p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 shadow-sm min-w-[120px]">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -433,7 +452,7 @@ export default function DonorListTable({
                     key={donor._id}
                     className="transition-colors hover:bg-purple-50/30"
                   >
-                    <td className="p-4">
+                    <td className="p-3">
                       <input
                         type="checkbox"
                         className="h-4 w-4 rounded border-gray-300"
@@ -441,15 +460,9 @@ export default function DonorListTable({
                         onChange={() => toggleSelect(donor._id)}
                       />
                     </td>
-                    <td className="p-4 font-medium text-gray-900">
-                      {donor.donorId}
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {donor.createdAt
-                        ? dayjs(donor.createdAt).format("MMM DD, YYYY")
-                        : "-"}
-                    </td>
-                    <td className="p-4">
+                    
+                    {/* Donor Info */}
+                    <td className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
                           {donor.donorImage ? (
@@ -467,27 +480,51 @@ export default function DonorListTable({
                           )}
                         </div>
                         <div className="flex flex-col">
-                          <span className="flex items-center font-medium text-gray-900">
-                            {donor.fullName}
+                          <span className="font-medium text-gray-900 text-sm">
+                            {donor.fullName || '-'}
                             {donor.tag && (
                               <Tag text={donor.tag} type={donor.tagType} />
                             )}
-                            {/* Show ALLOTTED tag only when isAllotted is true */}
                             {donor.isAllotted && <Tag text="ALLOTTED" />}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {donor._id.slice(-8)}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 text-gray-600">
-                      {donor.nextAppointment
-                        ? dayjs(donor.nextAppointment).format("DD MMM, YYYY")
-                        : "-"}
+                    
+                    {/* Donor ID */}
+                    <td className="p-3 text-gray-900">{donor.donorId || '-'}</td>
+                    
+                    {/* Registration Date */}
+                    <td className="p-3 text-gray-600">
+                      {donor.createdAt ? dayjs(donor.createdAt).format("DD/MM/YYYY") : '-'}
                     </td>
-                    <td className="p-4 text-gray-600">
-                      {donor.aadharNumber || "-"}
+                    
+                    {/* Next Appointment */}
+                    <td className="p-3 text-gray-600">
+                      {donor.nextAppointment ? dayjs(donor.nextAppointment).format("DD/MM/YYYY") : '-'}
                     </td>
-                    {visibleColumns.consentForm && !isLaboratory && (
-                      <td className="p-4">
+                    
+                    {/* Aadhar Number */}
+                    <td className="p-3 text-gray-600">{donor.aadharNumber || '-'}</td>
+                    
+                    {/* Phone */}
+                    <td className="p-3 text-gray-600">{donor.phoneNumber || '-'}</td>
+                    
+                    {/* Age */}
+                    <td className="p-3 text-gray-600">{donor.age || '-'}</td>
+                    
+                    {/* Blood Group */}
+                    <td className="p-3 text-gray-600">{donor.bloodGroup || '-'}</td>
+                    
+                    {/* Address */}
+                    <td className="p-3 text-gray-600">{donor.address || '-'}</td>
+                    
+                    {/* Consent Form */}
+                    {!isLaboratory && (
+                      <td className="p-3">
                         <StatusBadge
                           status={donor.consentFormStatus}
                           donor={donor}
@@ -495,8 +532,10 @@ export default function DonorListTable({
                         />
                       </td>
                     )}
-                    {visibleColumns.affidavit && !isLaboratory && (
-                      <td className="p-4">
+                    
+                    {/* Affidavit */}
+                    {!isLaboratory && (
+                      <td className="p-3">
                         <StatusBadge
                           status={donor.affidavitStatus}
                           donor={donor}
@@ -504,17 +543,19 @@ export default function DonorListTable({
                         />
                       </td>
                     )}
-                    {visibleColumns.bloodReport && (
-                      <td className="p-4">
-                        <StatusBadge
-                          status={donor.bloodReportStatus}
-                          donor={donor}
-                          documentType="blood"
-                        />
-                      </td>
-                    )}
-                    {visibleColumns.insurance && !isLaboratory && (
-                      <td className="p-4">
+                    
+                    {/* Blood Report */}
+                    <td className="p-3">
+                      <StatusBadge
+                        status={donor.bloodReportStatus}
+                        donor={donor}
+                        documentType="blood"
+                      />
+                    </td>
+                    
+                    {/* Insurance */}
+                    {!isLaboratory && (
+                      <td className="p-3">
                         <StatusBadge
                           status={donor.insuranceStatus}
                           donor={donor}
@@ -522,8 +563,10 @@ export default function DonorListTable({
                         />
                       </td>
                     )}
-                    {visibleColumns.opuProcess && !isLaboratory && (
-                      <td className="p-4">
+                    
+                    {/* OPU Process */}
+                    {!isLaboratory && (
+                      <td className="p-3">
                         <StatusBadge
                           status={donor.opuProcessStatus}
                           donor={donor}
@@ -531,7 +574,16 @@ export default function DonorListTable({
                         />
                       </td>
                     )}
-                    <td className="p-4">
+                    
+                    {/* Status */}
+                    <td className="p-3">
+                      <span className="rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-700">
+                        Active
+                      </span>
+                    </td>
+                    
+                    {/* Actions - Sticky Right */}
+                    <td className="sticky right-0 z-20 bg-white p-3 shadow-sm">
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/donors/${donor._id}`}

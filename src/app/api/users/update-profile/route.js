@@ -16,7 +16,7 @@ export async function PUT(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { id, fullName, email, role, contactNumber, isActive, profileImage } = await request.json();
+    const { id, fullName, email, role, contactNumber, isActive, profileImage, phoneNumber, address, city, state, pincode, gender, maritalStatus, dateOfBirth, aadharCardNumber, department, employeeId, experience, qualification, fieldOfStudy, instituteName, passingYear, documents } = await request.json();
 
     // Check if user exists
     const user = await User.findById(id);
@@ -28,16 +28,32 @@ export async function PUT(request) {
     }
 
     // Update user fields
-    user.fullName = fullName;
-    user.email = email;
-    if (role) {
+    if (fullName !== undefined) user.fullName = fullName;
+    if (email !== undefined) user.email = email;
+    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+    if (address !== undefined) user.address = address;
+    if (city !== undefined) user.city = city;
+    if (state !== undefined) user.state = state;
+    if (pincode !== undefined) user.pincode = pincode;
+    if (gender !== undefined) user.gender = gender;
+    if (maritalStatus !== undefined) user.maritalStatus = maritalStatus;
+    if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
+    if (aadharCardNumber !== undefined) user.aadharCardNumber = aadharCardNumber;
+    if (department !== undefined) user.department = department;
+    if (employeeId !== undefined) user.employeeId = employeeId;
+    if (experience !== undefined) user.experience = experience;
+    if (qualification !== undefined) user.qualification = qualification;
+    if (fieldOfStudy !== undefined) user.fieldOfStudy = fieldOfStudy;
+    if (instituteName !== undefined) user.instituteName = instituteName;
+    if (passingYear !== undefined) user.passingYear = passingYear;
+    if (role !== undefined) {
       user.role = role;
-      // Update isAdmin based on role
       user.isAdmin = role === "admin";
     }
     if (contactNumber !== undefined) user.contactNumber = contactNumber;
     if (isActive !== undefined) user.isActive = isActive;
-    if (profileImage) user.profileImage = profileImage;
+    if (profileImage !== undefined) user.profileImage = profileImage;
+    if (documents !== undefined) user.documents = documents;
     
     await user.save();
 
