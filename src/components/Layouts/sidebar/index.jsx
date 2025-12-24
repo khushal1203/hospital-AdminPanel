@@ -87,6 +87,7 @@ export default function Sidebar({
               name: "Logout",
               href: "/logout",
               icon: "/images/icon/logOut.svg",
+              onClick: handleLogout,
             },
           ],
         },
@@ -147,6 +148,12 @@ export default function Sidebar({
     ];
 
     return [{ items: [...baseItems, ...donorItems] }];
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/auth/sign-in";
   };
 
   const navItems = getNavItems();
@@ -262,6 +269,33 @@ export default function Sidebar({
                 <div className="space-y-1">
                   {section.items.map((item) => (
                     <div key={item.name} className="group relative">
+                      {item.onClick ? (
+                        <button
+                          onClick={() => { item.onClick(); setIsOpen(false); }}
+                          className={`flex w-full items-center rounded-lg text-sm font-medium transition-all duration-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 ${
+                            isCollapsed
+                              ? "mx-1 justify-center p-3"
+                              : "mx-2 gap-3 px-3 py-2.5"
+                          }`}
+                        >
+                          <div className="flex-shrink-0">
+                            <Image
+                              src={item.icon}
+                              alt={item.name}
+                              width={24}
+                              height={24}
+                              className="h-6 w-6 transition-all duration-300 brightness-0"
+                            />
+                          </div>
+                          <span
+                            className={`overflow-hidden whitespace-nowrap transition-[width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                            }`}
+                          >
+                            {item.name}
+                          </span>
+                        </button>
+                      ) : (
                       <Link
                         href={item.href}
                         onClick={() => setIsOpen(false)}
@@ -279,9 +313,9 @@ export default function Sidebar({
                           <Image
                             src={item.icon}
                             alt={item.name}
-                            width={20}
-                            height={20}
-                            className={`h-5 w-5 transition-all duration-300 ${
+                            width={24}
+                            height={24}
+                            className={`h-6 w-6 transition-all duration-300 ${
                               isActive(item.href)
                                 ? "brightness-0 invert"
                                 : "brightness-0"
@@ -296,6 +330,7 @@ export default function Sidebar({
                           {item.name}
                         </span>
                       </Link>
+                      )}
                       {/* Tooltip for collapsed state */}
                       {isCollapsed && (
                         <div className="pointer-events-none absolute left-full top-1/2 z-[9999] ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-lg transition-all duration-200 ease-out group-hover:opacity-100 hidden lg:block">
