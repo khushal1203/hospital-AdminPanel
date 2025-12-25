@@ -334,7 +334,7 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                           {(() => {
                             const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("user") || "{}") : {};
                             const isAdmin = user.isAdmin;
-                            const isRequestCreator = (request.createdBy?._id || request.createdBy) === (user._id || user.id);s
+                            const isRequestCreator = (request.createdBy?._id || request.createdBy) === (user._id || user.id);
                             // For request creators (doctors)
                             if (isRequestCreator) {
                               if (request.isAlloted) {
