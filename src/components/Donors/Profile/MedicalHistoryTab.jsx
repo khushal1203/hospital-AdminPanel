@@ -59,7 +59,22 @@ export default function MedicalHistoryTab({ donor }) {
   const follicular = donorData.follicularDetails || {};
   const obstetric = donorData.obstetricHistory || {};
   const physical = donorData.physicalExamination || {};
-  const follicularScans = donorData.follicularScans || [];
+  const follicularScans = donorData.follicularDetails?.scans || [];
+  
+  // Check if we have individual follicular fields from the add form
+  const hasIndividualFollicularData = donorData.follicularDetails?.lmpDate || donorData.follicularDetails?.lmpDay || donorData.follicularDetails?.etValue || donorData.follicularDetails?.rightOvary || donorData.follicularDetails?.leftOvary;
+  
+  // Create a combined follicular data array
+  const combinedFollicularData = [...follicularScans];
+  if (hasIndividualFollicularData) {
+    combinedFollicularData.unshift({
+      scanDate: donorData.follicularDetails?.lmpDate,
+      lmpDay: donorData.follicularDetails?.lmpDay,
+      etValue: donorData.follicularDetails?.etValue,
+      rightOvary: donorData.follicularDetails?.rightOvary,
+      leftOvary: donorData.follicularDetails?.leftOvary
+    });
+  }
 
   const handleEdit = (section) => {
     setEditModal({ isOpen: true, section });
@@ -79,16 +94,41 @@ export default function MedicalHistoryTab({ donor }) {
         ...cleanData
       } = updatedData;
 
+      // If editing Follicular Details, merge with existing follicularDetails
+      let dataToSave;
+      if (editModal.section === "Follicular Details") {
+        dataToSave = {
+          follicularDetails: {
+            ...donorData.follicularDetails,
+            ...cleanData,
+            // Always preserve the scans array
+            scans: donorData.follicularDetails?.scans || []
+          }
+        };
+      } else {
+        // For other sections, preserve follicularDetails
+        dataToSave = {
+          ...cleanData,
+          follicularDetails: donorData.follicularDetails || {}
+        };
+      }
+
+      console.log("🔄 Updating section:", editModal.section);
+      console.log("📤 Data being sent to API:", JSON.stringify(dataToSave, null, 2));
+
+      const token = localStorage.getItem("token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(cleanData),
+        body: JSON.stringify(dataToSave),
       });
 
       if (response.ok) {
         const result = await response.json();
+        console.log("📥 API Response:", JSON.stringify(result, null, 2));
         setDonorData(result.donor || updatedData);
       } else {
         throw new Error("Failed to update medical history");
@@ -101,18 +141,33 @@ export default function MedicalHistoryTab({ donor }) {
   const handleAddScan = async (scanData) => {
     try {
       const donorId = donorData._id || donorData.id;
-      const updatedScans = [...follicularScans, scanData];
+      const currentFollicularDetails = donorData.follicularDetails || {};
+      const currentScans = currentFollicularDetails.scans || [];
+      const updatedScans = [...currentScans, scanData];
 
+      const dataToSend = { 
+        follicularDetails: {
+          ...currentFollicularDetails,
+          scans: updatedScans
+        }
+      };
+
+      console.log("➕ Adding new follicular scan:", JSON.stringify(scanData, null, 2));
+      console.log("📤 Data being sent to API:", JSON.stringify(dataToSend, null, 2));
+
+      const token = localStorage.getItem("token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ follicularScans: updatedScans }),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
         const result = await response.json();
+        console.log("📥 API Response:", JSON.stringify(result, null, 2));
         setDonorData(result.donor);
       } else {
         throw new Error("Failed to add scan");
@@ -125,18 +180,33 @@ export default function MedicalHistoryTab({ donor }) {
   const handleDeleteScan = async (index) => {
     try {
       const donorId = donorData._id || donorData.id;
-      const updatedScans = follicularScans.filter((_, i) => i !== index);
+      const currentFollicularDetails = donorData.follicularDetails || {};
+      const currentScans = currentFollicularDetails.scans || [];
+      const updatedScans = currentScans.filter((_, i) => i !== index);
 
+      const dataToSend = { 
+        follicularDetails: {
+          ...currentFollicularDetails,
+          scans: updatedScans
+        }
+      };
+
+      console.log("❌ Deleting follicular scan at index:", index);
+      console.log("📤 Data being sent to API:", JSON.stringify(dataToSend, null, 2));
+
+      const token = localStorage.getItem("token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ follicularScans: updatedScans }),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
         const result = await response.json();
+        console.log("📥 API Response:", JSON.stringify(result, null, 2));
         setDonorData(result.donor);
       } else {
         throw new Error("Failed to delete scan");
@@ -165,8 +235,8 @@ export default function MedicalHistoryTab({ donor }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {follicularScans.length > 0 ? (
-                follicularScans.map((scan, index) => (
+              {combinedFollicularData.length > 0 ? (
+                combinedFollicularData.map((scan, index) => (
                   <tr key={index}>
                     <td className="p-3 text-gray-900">
                       {scan.scanDate
@@ -182,12 +252,16 @@ export default function MedicalHistoryTab({ donor }) {
                       {scan.leftOvary || "-"}
                     </td>
                     <td className="p-3">
-                      <button
-                        onClick={() => handleDeleteScan(index)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <MdDelete className="h-4 w-4" />
-                      </button>
+                      {index > 0 || !hasIndividualFollicularData ? (
+                        <button
+                          onClick={() => handleDeleteScan(index - (hasIndividualFollicularData ? 1 : 0))}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <MdDelete className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
                   </tr>
                 ))

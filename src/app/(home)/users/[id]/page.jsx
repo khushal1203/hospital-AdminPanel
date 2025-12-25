@@ -12,6 +12,7 @@ export default function UserDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const [user, setUser] = useState(null);
+  const [hospitalName, setHospitalName] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(null);
@@ -36,6 +37,23 @@ export default function UserDetailsPage() {
 
       if (data.success) {
         setUser(data.user);
+        
+        // Fetch hospital name if user has centreId
+        if (data.user.centreId) {
+          try {
+            const centreRes = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/centres/${data.user.centreId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            const centreData = await centreRes.json();
+            if (centreData.success) {
+              setHospitalName(centreData.centre.hospitalName);
+            }
+          } catch (error) {
+            console.error('Error fetching hospital name:', error);
+          }
+        }
       } else {
         setError(data.message);
       }
@@ -60,7 +78,7 @@ export default function UserDetailsPage() {
         maritalStatus: user?.maritalStatus || '',
         dateOfBirth: user?.dateOfBirth ? dayjs(user.dateOfBirth).format('YYYY-MM-DD') : '',
         aadharCardNumber: user?.aadharCardNumber || '',
-        profileImage: user?.profileImage || null
+        profileImage: user?.doctorImage || user?.profileImage || null
       });
     } else if (section === 'professional') {
       setEditData({
@@ -238,7 +256,7 @@ export default function UserDetailsPage() {
                         Profile Information
                       </h2>
                       <p className="mt-1 text-sm text-gray-600">
-                        Personal details and contact information
+                        {hospitalName || "Independent healthcare professional"}
                       </p>
                     </div>
                   </div>
@@ -256,9 +274,9 @@ export default function UserDetailsPage() {
               <div className="p-6">
                 <div className="mb-6 flex items-center gap-4">
                   <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
-                    {user?.profileImage ? (
+                    {user?.doctorImage || user?.profileImage ? (
                       <img
-                        src={user.profileImage}
+                        src={user.doctorImage || user.profileImage}
                         alt={user.fullName}
                         className="h-full w-full object-cover"
                       />

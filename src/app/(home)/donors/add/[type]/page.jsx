@@ -14,11 +14,11 @@ import {
   MdUpload,
   MdDelete,
   MdAdd,
+  MdArrowBack,
 } from "react-icons/md";
 import ImageUpload from "@/components/FormElements/ImageUpload";
 import DatePicker from "@/components/FormElements/DatePicker";
 import SelectField from "@/components/FormElements/SelectField";
-import BackButton from "@/components/ui/BackButton";
 import { toast } from "@/utils/toast";
 import "react-calendar/dist/Calendar.css";
 
@@ -413,22 +413,33 @@ export default function DonorRegistrationForm({ params }) {
   const totalProgress = getTotalProgress();
 
   return (
-    <div className="min-h-screen bg-white p-6 dark:bg-gray-900">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-6">
-          <BackButton href="/donors/add" label="Back to Donor Selection" />
+    <div className="flex h-screen flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-10 flex-shrink-0 border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/donors/add')}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-purple-600"
+          >
+            <MdArrowBack className="h-4 w-4" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
+              {donorType === "oocyte" ? "Oocyte" : "Semen"} Donor Registration
+            </h1>
+            <p className="text-xs text-gray-600">
+              Complete comprehensive donor registration form
+            </p>
+          </div>
         </div>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {donorType === "oocyte" ? "Oocyte" : "Semen"} Donor Registration
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Complete comprehensive donor registration form
-          </p>
-        </div>
+      </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <div className="lg:col-span-3">
+      {/* Content */}
+      <div className="flex-1 overflow-hidden bg-gray-50">
+        <div className="h-full overflow-auto p-4">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+              <div className="lg:col-span-3">
             {error && (
               <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
                 <p className="text-red-700 dark:text-red-300">{error}</p>
@@ -1584,40 +1595,39 @@ export default function DonorRegistrationForm({ params }) {
 
           {/* Progress Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-20 mt-4 max-h-[calc(100vh-3rem)] overflow-y-auto">
-              <div
-                className="rounded-lg border border-gray-300 p-6 shadow-sm dark:bg-gray-800"
-                style={{ backgroundColor: "#F9FAFB" }}
-              >
-                <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="sticky top-6 mt-2 max-h-[calc(100vh-2rem)] overflow-y-auto">
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <h3 className="mb-3 text-base font-semibold text-gray-900">
                   Form Progress
                 </h3>
 
                 {/* Overall Progress */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-xs font-medium text-gray-700">
                       Overall Completion
                     </span>
-                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    <span className="text-xs font-medium text-purple-600">
                       {totalProgress.percentage}%
                     </span>
                   </div>
-                  <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                  <div className="h-2 w-full rounded-full bg-gray-200">
                     <div
-                      className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
-                      style={{ width: `${totalProgress.percentage}%` }}
+                      className="h-2 rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${totalProgress.percentage}%`,
+                        backgroundColor: '#402575'
+                      }}
                     ></div>
                   </div>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {totalProgress.filled} of {totalProgress.total} fields
-                    completed
+                  <p className="mt-1 text-xs text-gray-500">
+                    {totalProgress.filled} of {totalProgress.total} fields completed
                   </p>
                 </div>
 
                 {/* Step Progress */}
                 <div className="space-y-1">
-                  <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <h4 className="mb-2 text-xs font-medium text-gray-700">
                     Form Steps
                   </h4>
                   {getFormSections().map((section, index) => {
@@ -1735,6 +1745,8 @@ export default function DonorRegistrationForm({ params }) {
                     );
                   })}
                 </div>
+              </div>
+            </div>
               </div>
             </div>
           </div>

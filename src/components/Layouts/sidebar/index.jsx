@@ -30,14 +30,14 @@ export default function Sidebar({
         {
           section: "MAIN MENU",
           items: [
-            { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
+            // { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
             {
               name: "Dashboard",
               href: "/dashboard",
               icon: "/images/icon/dashboard.svg",
             },
             {
-              name: "Today’s Visits",
+              name: "Active Donors",
               href: "/donors/active",
               icon: "/images/icon/activeDonors.svg",
             },
@@ -58,9 +58,14 @@ export default function Sidebar({
               icon: "/images/icon/donorHospital.svg",
             },
             {
-              name: "User Management",
+              name: "Staff Management",
               href: "/users",
               icon: "/images/icon/donorhistory.svg",
+            },
+            {
+              name: "Consent Forms",
+              href: "/consent-forms",
+              icon: "/images/icon/consentForms.svg",
             },
           ],
         },
@@ -80,7 +85,7 @@ export default function Sidebar({
             { name: "Help", href: "/help", icon: "/images/icon/help.svg" },
             {
               name: "Settings",
-              href: "/settings",
+              href: "/profile",
               icon: "/images/icon/setting.svg",
             },
             {
@@ -96,7 +101,6 @@ export default function Sidebar({
 
     // Non-admin menu items (flat structure)
     const baseItems = [
-      { name: "Home", href: "/home", icon: "/images/icon/home.svg" },
       {
         name: "Dashboard",
         href: "/dashboard",

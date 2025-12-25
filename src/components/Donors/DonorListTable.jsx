@@ -9,12 +9,11 @@ import { toast } from "@/utils/toast";
 import {
   MdCheckCircle,
   MdPending,
-  MdChevronRight,
-  MdMoreVert,
+  MdVisibility,
+  MdDelete,
   MdNavigateBefore,
   MdNavigateNext,
   MdUpload,
-  MdDelete,
 } from "react-icons/md";
 import { useColumns } from "@/contexts/ColumnContext";
 import { useSelector } from "react-redux";
@@ -272,6 +271,7 @@ export default function DonorListTable({
   const [selectedDonors, setSelectedDonors] = useState([]);
   const [isLaboratory, setIsLaboratory] = useState(null);
   const { visibleColumns } = useColumns();
+  const visibleColumnsRedux = useSelector((state) => state.column.visibleColumns);
   const documentFilter = useSelector((state) => state.filter.documentFilter);
 
   // Filter donors based on document filter
@@ -391,18 +391,26 @@ export default function DonorListTable({
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[180px]">
                     Donor
                   </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Donor ID
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
-                    Registration Date
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
-                    Next Appointment
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
-                    Aadhar Number
-                  </th>
+                  {visibleColumnsRedux.donorId && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                      Donor ID
+                    </th>
+                  )}
+                  {visibleColumnsRedux.registrationDate && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
+                      Registration Date
+                    </th>
+                  )}
+                  {visibleColumnsRedux.nextAppointment && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
+                      Next Appointment
+                    </th>
+                  )}
+                  {visibleColumnsRedux.aadharNumber && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[140px]">
+                      Aadhar Number
+                    </th>
+                  )}
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                     Phone
                   </th>
@@ -415,25 +423,27 @@ export default function DonorListTable({
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[200px]">
                     Address
                   </th>
-                  {!isLaboratory && (
+                  {!isLaboratory && visibleColumnsRedux.consentForm && (
                     <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       Consent Form
                     </th>
                   )}
-                  {!isLaboratory && (
+                  {!isLaboratory && visibleColumnsRedux.affidavit && (
                     <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       Affidavit
                     </th>
                   )}
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Blood Report
-                  </th>
-                  {!isLaboratory && (
+                  {visibleColumnsRedux.bloodReport && (
+                    <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                      Blood Report
+                    </th>
+                  )}
+                  {!isLaboratory && visibleColumnsRedux.insurance && (
                     <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       Insurance
                     </th>
                   )}
-                  {!isLaboratory && (
+                  {!isLaboratory && visibleColumnsRedux.opuProcess && (
                     <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
                       OPU Process
                     </th>
@@ -495,20 +505,28 @@ export default function DonorListTable({
                     </td>
                     
                     {/* Donor ID */}
-                    <td className="p-3 text-gray-900">{donor.donorId || '-'}</td>
+                    {visibleColumnsRedux.donorId && (
+                      <td className="p-3 text-gray-900">{donor.donorId || '-'}</td>
+                    )}
                     
                     {/* Registration Date */}
-                    <td className="p-3 text-gray-600">
-                      {donor.createdAt ? dayjs(donor.createdAt).format("DD/MM/YYYY") : '-'}
-                    </td>
+                    {visibleColumnsRedux.registrationDate && (
+                      <td className="p-3 text-gray-600">
+                        {donor.createdAt ? dayjs(donor.createdAt).format("DD/MM/YYYY") : '-'}
+                      </td>
+                    )}
                     
                     {/* Next Appointment */}
-                    <td className="p-3 text-gray-600">
-                      {donor.nextAppointment ? dayjs(donor.nextAppointment).format("DD/MM/YYYY") : '-'}
-                    </td>
+                    {visibleColumnsRedux.nextAppointment && (
+                      <td className="p-3 text-gray-600">
+                        {donor.nextAppointment ? dayjs(donor.nextAppointment).format("DD/MM/YYYY") : '-'}
+                      </td>
+                    )}
                     
                     {/* Aadhar Number */}
-                    <td className="p-3 text-gray-600">{donor.aadharNumber || '-'}</td>
+                    {visibleColumnsRedux.aadharNumber && (
+                      <td className="p-3 text-gray-600">{donor.aadharNumber || '-'}</td>
+                    )}
                     
                     {/* Phone */}
                     <td className="p-3 text-gray-600">{donor.phoneNumber || '-'}</td>
@@ -523,7 +541,7 @@ export default function DonorListTable({
                     <td className="p-3 text-gray-600">{donor.address || '-'}</td>
                     
                     {/* Consent Form */}
-                    {!isLaboratory && (
+                    {!isLaboratory && visibleColumnsRedux.consentForm && (
                       <td className="p-3">
                         <StatusBadge
                           status={donor.consentFormStatus}
@@ -534,7 +552,7 @@ export default function DonorListTable({
                     )}
                     
                     {/* Affidavit */}
-                    {!isLaboratory && (
+                    {!isLaboratory && visibleColumnsRedux.affidavit && (
                       <td className="p-3">
                         <StatusBadge
                           status={donor.affidavitStatus}
@@ -545,16 +563,18 @@ export default function DonorListTable({
                     )}
                     
                     {/* Blood Report */}
-                    <td className="p-3">
-                      <StatusBadge
-                        status={donor.bloodReportStatus}
-                        donor={donor}
-                        documentType="blood"
-                      />
-                    </td>
+                    {visibleColumnsRedux.bloodReport && (
+                      <td className="p-3">
+                        <StatusBadge
+                          status={donor.bloodReportStatus}
+                          donor={donor}
+                          documentType="blood"
+                        />
+                      </td>
+                    )}
                     
                     {/* Insurance */}
-                    {!isLaboratory && (
+                    {!isLaboratory && visibleColumnsRedux.insurance && (
                       <td className="p-3">
                         <StatusBadge
                           status={donor.insuranceStatus}
@@ -565,7 +585,7 @@ export default function DonorListTable({
                     )}
                     
                     {/* OPU Process */}
-                    {!isLaboratory && (
+                    {!isLaboratory && visibleColumnsRedux.opuProcess && (
                       <td className="p-3">
                         <StatusBadge
                           status={donor.opuProcessStatus}
@@ -587,12 +607,12 @@ export default function DonorListTable({
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/donors/${donor._id}`}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-purple-600"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-blue-600"
                         >
-                          <MdChevronRight className="h-5 w-5" />
+                          <MdVisibility className="h-5 w-5" />
                         </Link>
-                        <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-purple-600">
-                          <MdMoreVert className="h-5 w-5" />
+                        <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-600">
+                          <MdDelete className="h-5 w-5" />
                         </button>
                       </div>
                     </td>

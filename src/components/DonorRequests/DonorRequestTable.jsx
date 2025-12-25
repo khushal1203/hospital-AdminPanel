@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MdChevronRight, MdMoreVert, MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
-import DoctorSelectionModal from "./DoctorSelectionModal";
+import DonorSelectionModal from "./DonorSelectionModal";
 import { toast } from "@/utils/toast";
 
 const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
@@ -52,25 +52,79 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
   );
 };
 
-export default function DonorRequestTable({ requests, currentPage, totalItems, itemsPerPage, hideActions = false }) {
+export default function DonorRequestTable({ requests, currentPage, totalItems, itemsPerPage, hideActions = false, onDataUpdate }) {
   const [selectedRequests, setSelectedRequests] = useState([]);
-  const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [showDonorModal, setShowDonorModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const router = useRouter();
 
   const handleDecline = (requestId, e) => {
     e.stopPropagation();
-    // Add decline logic here
     console.log('Declining request:', requestId);
+  };
+
+  const handleWithdrawRequest = async (requestId, e) => {
+    e.stopPropagation();
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/${requestId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Request withdrawn successfully");
+        if (onDataUpdate) {
+          onDataUpdate();
+        } else {
+          window.location.reload();
+        }
+      } else {
+        toast.error(data.message || "Failed to withdraw request");
+      }
+    } catch (error) {
+      toast.error("Failed to withdraw request");
+    }
+  };
+
+  const handleCancelAllotment = async (requestId, e) => {
+    e.stopPropagation();
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/${requestId}/cancel-allotment`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Allotment cancelled successfully");
+        if (onDataUpdate) {
+          onDataUpdate();
+        } else {
+          window.location.reload();
+        }
+      } else {
+        toast.error(data.message || "Failed to cancel allotment");
+      }
+    } catch (error) {
+      toast.error("Failed to cancel allotment");
+    }
   };
 
   const handleAllot = (requestId, e) => {
     e.stopPropagation();
     setSelectedRequestId(requestId);
-    setShowDoctorModal(true);
+    setShowDonorModal(true);
   };
 
-  const handleDoctorSelect = async (requestId, doctor) => {
+  const handleDonorSelect = async (requestId, donor) => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/${requestId}/allot`, {
@@ -79,14 +133,18 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ doctorId: doctor._id }),
+        body: JSON.stringify({ donorId: donor._id }),
       });
 
       const data = await res.json();
       if (data.success) {
-        toast.success(`Request allotted to Dr. ${doctor.fullName}`);
-        // Refresh the page or update the state
-        window.location.reload();
+        toast.success(`Request allotted to ${donor.fullName}`);
+        // Call the data update function instead of page reload
+        if (onDataUpdate) {
+          onDataUpdate();
+        } else {
+          window.location.reload();
+        }
       } else {
         toast.error(data.message || "Failed to allot request");
       }
@@ -158,7 +216,7 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                 background: linear-gradient(135deg, #94a3b8, #cbd5e1);
               }
             `}</style>
-            <table className="w-full min-w-[2200px] table-auto text-left text-sm">
+            <table className="w-full min-w-[1200px] table-auto text-left text-sm">
               <thead className="sticky top-0 z-20 bg-gradient-to-r from-purple-50 to-pink-50">
                 <tr className="border-b border-gray-200">
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[50px]">
@@ -169,53 +227,26 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[200px]">
-                    Hospital Name
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                    Request Date
                   </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[150px]">
-                    Doctor Name
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[250px]">
+                    Hospital/Doctor
                   </th>
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Required By
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Gender
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Marital Status
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Blood Group
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Cast
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Nationality
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Age Range
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Height Range
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Weight Range
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Skin Colour
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Hair Colour
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
-                    Eye Colour
-                  </th>
-                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
-                    Education
+                    Required By Date
                   </th>
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
                     Status
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[150px]">
+                    Request Added by
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[120px]">
+                    Allotted Date
+                  </th>
+                  <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
+                    Age Range
                   </th>
                   {!hideActions && (
                     <th className="sticky right-0 top-0 z-30 bg-gradient-to-r from-purple-50 to-pink-50 p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 shadow-sm min-w-[120px]">
@@ -240,48 +271,56 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                       />
                     </td>
                     
-                    {/* Hospital Name */}
-                    <td className="p-3">
-                      <span className="font-medium text-gray-900 text-sm">
-                        {request.hospitalId?.hospitalName || 'N/A'}
-                      </span>
+                    {/* Request Date */}
+                    <td className="p-3 text-gray-600">
+                      {request.createdAt ? dayjs(request.createdAt).format("DD/MM/YYYY") : '-'}
                     </td>
                     
-                    {/* Doctor Name */}
+                    {/* Hospital/Doctor */}
                     <td className="p-3">
-                      <span className="text-sm text-gray-900">
-                        {request.doctorId?.fullName ? `Dr. ${request.doctorId.fullName}` : 'Doctor not found'}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
+                          <img
+                            src={request.doctorId?.doctorImage || request.doctorId?.profileImage || "/images/user/user-03.png"}
+                            alt="Doctor"
+                            className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                          />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 text-sm">
+                            {request.hospitalId?.hospitalName || 'N/A'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {request.doctorId?.fullName ? `Dr. ${request.doctorId.fullName}` : 'Doctor not found'}
+                          </div>
+                        </div>
+                      </div>
                     </td>
                     
-                    {/* Required By */}
+                    {/* Required By Date */}
                     <td className="p-3 text-gray-600">
                       {request.requiredByDate ? dayjs(request.requiredByDate).format("DD/MM/YYYY") : '-'}
                     </td>
                     
-                    {/* Gender */}
-                    <td className="p-3 text-gray-900 capitalize">
-                      {request.gender || '-'}
+                    {/* Status */}
+                    <td className="p-3">
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        request.isAlloted 
+                          ? "bg-green-100 text-green-700" 
+                          : getStatusBadgeColor(request.status)
+                      }`}>
+                        {request.isAlloted ? 'allotted' : (request.status || 'pending')}
+                      </span>
                     </td>
                     
-                    {/* Marital Status */}
-                    <td className="p-3 text-gray-900 capitalize">
-                      {request.maritalStatus || '-'}
-                    </td>
-                    
-                    {/* Blood Group */}
-                    <td className="p-3 text-gray-900 font-medium">
-                      {request.bloodGroup || '-'}
-                    </td>
-                    
-                    {/* Cast */}
+                    {/* Request Added by */}
                     <td className="p-3 text-gray-900">
-                      {request.cast || '-'}
+                      {request.createdBy?.fullName || 'N/A'}
                     </td>
                     
-                    {/* Nationality */}
-                    <td className="p-3 text-gray-900">
-                      {request.nationality || '-'}
+                    {/* Allotted Date */}
+                    <td className="p-3 text-gray-600">
+                      {request.allottedAt ? dayjs(request.allottedAt).format("DD/MM/YYYY") : '-'}
                     </td>
                     
                     {/* Age Range */}
@@ -289,59 +328,89 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                       {request.ageRange?.min && request.ageRange?.max ? `${request.ageRange.min}-${request.ageRange.max}` : '-'}
                     </td>
                     
-                    {/* Height Range */}
-                    <td className="p-3 text-gray-900">
-                      {request.heightRange?.min && request.heightRange?.max ? `${request.heightRange.min}-${request.heightRange.max} cm` : '-'}
-                    </td>
-                    
-                    {/* Weight Range */}
-                    <td className="p-3 text-gray-900">
-                      {request.weightRange?.min && request.weightRange?.max ? `${request.weightRange.min}-${request.weightRange.max} kg` : '-'}
-                    </td>
-                    
-                    {/* Skin Colour */}
-                    <td className="p-3 text-gray-900 capitalize">
-                      {request.skinColour || '-'}
-                    </td>
-                    
-                    {/* Hair Colour */}
-                    <td className="p-3 text-gray-900 capitalize">
-                      {request.hairColour || '-'}
-                    </td>
-                    
-                    {/* Eye Colour */}
-                    <td className="p-3 text-gray-900 capitalize">
-                      {request.eyeColour || '-'}
-                    </td>
-                    
-                    {/* Education */}
-                    <td className="p-3 text-gray-900">
-                      {request.donorEducation || '-'}
-                    </td>
-                    
-                    {/* Status */}
-                    <td className="p-3">
-                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadgeColor(request.status)}`}>
-                        {request.status || 'pending'}
-                      </span>
-                    </td>
-                    
                     {/* Actions - Sticky Right */}
                     {!hideActions && (
                       <td className="sticky right-0 z-20 bg-white p-3 shadow-sm">
                         <div className="flex items-center gap-3">
-                          <button 
-                            onClick={(e) => handleDecline(request._id, e)}
-                            className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 active:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                          >
-                            Decline
-                          </button>
-                          <button 
-                            onClick={(e) => handleAllot(request._id, e)}
-                            className="px-4 py-2 text-sm font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600 active:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                          >
-                            Allot
-                          </button>
+                          {(() => {
+                            const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("user") || "{}") : {};
+                            const isAdmin = user.isAdmin;
+                            const isRequestCreator = (request.createdBy?._id || request.createdBy) === (user._id || user.id);
+                            
+                            console.log('Debug:', {
+                              requestId: request._id,
+                              createdBy: request.createdBy,
+                              userId: user._id || user.id,
+                              isAdmin,
+                              isRequestCreator,
+                              isAlloted: request.isAlloted
+                            });
+                            
+                            // For request creators (doctors)
+                            if (isRequestCreator) {
+                              if (request.isAlloted) {
+                                return (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      router.push(`/donor-requests/${request._id}`);
+                                    }}
+                                    className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                                  >
+                                    Donor Info
+                                  </button>
+                                );
+                              } else {
+                                return (
+                                  <button 
+                                    onClick={(e) => handleWithdrawRequest(request._id, e)}
+                                    className="px-4 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg hover:bg-gray-600 active:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                                  >
+                                    Withdraw Request
+                                  </button>
+                                );
+                              }
+                            }
+                            
+                            // For admins viewing others' requests
+                            if (isAdmin && !isRequestCreator) {
+                              if (request.isAlloted) {
+                                return (
+                                  <button 
+                                    onClick={(e) => handleCancelAllotment(request._id, e)}
+                                    className="px-4 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 active:bg-orange-700 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                                  >
+                                    Cancel Allotment
+                                  </button>
+                                );
+                              } else {
+                                return (
+                                  <>
+                                    <button 
+                                      onClick={(e) => handleDecline(request._id, e)}
+                                      className="w-20 px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 active:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                                    >
+                                      Decline
+                                    </button>
+                                    <button 
+                                      onClick={(e) => handleAllot(request._id, e)}
+                                      className="w-20 px-4 py-2 text-sm font-semibold text-white rounded-lg hover:opacity-90 active:opacity-80 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                                      style={{ backgroundColor: "#402575" }}
+                                    >
+                                      Allot
+                                    </button>
+                                  </>
+                                );
+                              }
+                            }
+                            
+                            // Fallback for debugging
+                            return (
+                              <div className="text-xs text-gray-500">
+                                No Action
+                              </div>
+                            );
+                          })()}
                         </div>
                       </td>
                     )}
@@ -358,10 +427,10 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
         </div>
       )}
       
-      <DoctorSelectionModal
-        isOpen={showDoctorModal}
-        onClose={() => setShowDoctorModal(false)}
-        onSelect={handleDoctorSelect}
+      <DonorSelectionModal
+        isOpen={showDonorModal}
+        onClose={() => setShowDonorModal(false)}
+        onSelect={handleDonorSelect}
         requestId={selectedRequestId}
       />
     </div>

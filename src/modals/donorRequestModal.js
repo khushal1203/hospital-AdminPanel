@@ -5,12 +5,18 @@ const donorRequestSchema = new mongoose.Schema(
     hospitalId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Centre",
-      required: true,
+      required: false,
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    doctorName: {
+      type: String,
+    },
+    hospitalName: {
+      type: String,
     },
     requiredByDate: {
       type: Date,
@@ -81,13 +87,13 @@ const donorRequestSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    allottedDoctors: [{
+    allottedDonors: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Donor",
     }],
     allottedTo: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Donor",
     },
     allottedAt: {
       type: Date,

@@ -91,6 +91,16 @@ const DonorSchema = new mongoose.Schema(
         default: false,
       },
       processStartDate: Date,
+      scans: [
+        {
+          scanDate: Date,
+          lmpDay: Number,
+          etValue: String,
+          rightOvary: String,
+          leftOvary: String,
+          createdAt: { type: Date, default: Date.now },
+        },
+      ],
     },
 
     // Follicular Scans Array
@@ -159,6 +169,14 @@ const DonorSchema = new mongoose.Schema(
     isAllotted: {
       type: Boolean,
       default: false,
+    },
+    allottedToRequest: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DonorRequest",
+    },
+    allottedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     registrationDate: {
       type: Date,
@@ -314,5 +332,9 @@ DonorSchema.pre("save", function (next) {
   next();
 });
 
-export const Donor =
-  mongoose.models.Donor || mongoose.model("Donor", DonorSchema);
+// Force model recreation to ensure new schema fields are recognized
+if (mongoose.models.Donor) {
+  delete mongoose.models.Donor;
+}
+
+export const Donor = mongoose.model("Donor", DonorSchema);

@@ -7,16 +7,105 @@ import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
 import { ColumnProvider } from "@/contexts/ColumnContext";
 import { FilterProvider } from "@/contexts/FilterContext";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import Link from "next/link";
+import { MdAdd, MdClose } from "react-icons/md";
 
 function ActiveDonorsContent() {
   const [donors, setDonors] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showSideFilter, setShowSideFilter] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("all");
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get("page")) || 1;
   const search = searchParams.get("search") || "";
   const limit = 10;
+
+  // Filter donors based on selected filter
+  const getFilteredDonors = () => {
+    if (selectedFilter === "all") return donors;
+    
+    return donors.filter(donor => {
+      switch (selectedFilter) {
+        case "bloodReport":
+          const bloodReport = donor.documents?.reports?.find(r => r.reportName?.toLowerCase() === "blood report");
+          return !bloodReport?.hasFile;
+        case "donorConsents":
+          const consent = donor.documents?.donorDocuments?.find(d => d.reportName?.toLowerCase() === "consent form");
+          return !consent?.hasFile;
+        case "affidavit":
+          const affidavit = donor.documents?.donorDocuments?.find(d => d.reportName?.toLowerCase() === "affidavit form");
+          return !affidavit?.hasFile;
+        case "follicularScan":
+          const follicular = donor.documents?.reports?.find(r => r.reportName?.toLowerCase() === "follicular scan");
+          return !follicular?.hasFile;
+        case "insurance":
+          const insurance = donor.documents?.otherDocuments?.find(d => d.reportName?.toLowerCase() === "life insurance document");
+          return !insurance?.hasFile;
+        case "allotted":
+          return donor.isAllotted;
+        case "opuPending":
+          const opu = donor.documents?.reports?.find(r => r.reportName?.toLowerCase() === "opu process");
+          return !opu?.hasFile;
+        default:
+          return true;
+      }
+    });
+  };
+
+  const filteredDonors = getFilteredDonors();
+
+  const handleApplyFilter = () => {
+    setShowSideFilter(false);
+  };
+
+  // Calculate filter counts
+  const getFilterCounts = () => {
+    const counts = {
+      all: donors.length,
+      bloodReport: 0,
+      donorConsents: 0,
+      affidavit: 0,
+      follicularScan: 0,
+      insurance: 0,
+      allotted: 0,
+      opuPending: 0
+    };
+
+    donors.forEach(donor => {
+      // Blood Report - hasFile false
+      const bloodReport = donor.documents?.reports?.find(r => r.reportName?.toLowerCase() === "blood report");
+      if (!bloodReport?.hasFile) counts.bloodReport++;
+
+      // Donor Consents - hasFile false
+      const consent = donor.documents?.donorDocuments?.find(d => d.reportName?.toLowerCase() === "consent form");
+      if (!consent?.hasFile) counts.donorConsents++;
+
+      // Affidavit - hasFile false
+      const affidavit = donor.documents?.donorDocuments?.find(d => d.reportName?.toLowerCase() === "affidavit form");
+      if (!affidavit?.hasFile) counts.affidavit++;
+
+      // Follicular Scan - hasFile false
+      const follicular = donor.documents?.reports?.find(r => r.reportName?.toLowerCase() === "follicular scan");
+      if (!follicular?.hasFile) counts.follicularScan++;
+
+      // Insurance - hasFile false
+      const insurance = donor.documents?.otherDocuments?.find(d => d.reportName?.toLowerCase() === "life insurance document");
+      if (!insurance?.hasFile) counts.insurance++;
+
+      // Allotted Donors
+      if (donor.isAllotted) counts.allotted++;
+
+      // OPU Pending - hasFile false
+      const opu = donor.documents?.reports?.find(r => r.reportName?.toLowerCase() === "opu process");
+      if (!opu?.hasFile) counts.opuPending++;
+    });
+
+    return counts;
+  };
+
+  const filterCounts = getFilterCounts();
 
   useEffect(() => {
     fetchDonors();
@@ -31,10 +120,12 @@ function ActiveDonorsContent() {
       const isAdmin = user.isAdmin;
       
       const skip = (page - 1) * limit;
-      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?status=active&donorType=oocyte&search=${search}&page=${page}&limit=${limit}`;
+      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?search=${search}&page=${page}&limit=${limit}`;
       if (!isAdmin) {
         url += `&createdBy=${userId}`;
       }
+      
+      console.log('Fetching donors from:', url);
       
       const res = await fetch(url, {
         headers: {
@@ -66,27 +157,189 @@ function ActiveDonorsContent() {
       <FilterProvider>
         <div className="flex h-screen flex-col">
           {/* Fixed Header with Toolbar */}
-          <div className="sticky top-0 z-30 flex-shrink-0 border-b border-gray-200 bg-white px-3 py-3 shadow-sm">
+          <div className="sticky top-0 z-[10000] flex-shrink-0 border-b border-gray-200 bg-white shadow-sm" style={{padding:"5px 15px 0px 15px"}}>
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
                 Active Donors
               </h1>
-              <div className="w-full sm:w-auto">
-                <DonorTableToolbar />
+              <div className="flex items-center gap-3">
+                <div className="w-full sm:w-auto">
+                  <DonorTableToolbar onFilterToggle={() => setShowSideFilter(!showSideFilter)} />
+                </div>
+                <Link
+                  href="/donors/add"
+                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  style={{ backgroundColor: "#ECE9F1", color: "#402575" }}
+                >
+                  <MdAdd className="h-5 w-5" />
+                  Add New
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* Scrollable Table Content */}
-          <div className="flex-1 overflow-hidden bg-gray-50">
-            <div className="h-full overflow-auto p-4">
-              <DonorListTable
-                donors={donors}
-                currentPage={page}
-                totalItems={total}
-                itemsPerPage={limit}
-              />
+          {/* Main Content Area with Side Filter */}
+          <div className="flex flex-1 overflow-hidden bg-gray-50 relative">
+            {/* Side Filter Panel - Initially hidden */}
+            <div className={`absolute left-4 top-4 w-72 bg-white border border-gray-200 rounded-xl shadow-md transform transition-transform duration-300 z-[9999] ${showSideFilter ? 'translate-x-0' : '-translate-x-[120%]'}`}>
+              <div className="flex flex-col">
+                {/* Filter Content */}
+                <div className="overflow-auto">
+                  <div className="divide-y divide-gray-100">
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "all" ? 'text-[#402575]' : ''}`} style={selectedFilter === "all" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="all"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "all"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "all" ? 'text-[#402575]' : 'text-gray-900'}`}>All Donors</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "all" ? 'white' : '#E5E7EB'}}>{filterCounts.all}</span>
+                    </label>
+
+                    {/* Blood Report */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "bloodReport" ? 'text-[#402575]' : ''}`} style={selectedFilter === "bloodReport" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="bloodReport"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "bloodReport"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "bloodReport" ? 'text-[#402575]' : 'text-gray-900'}`}>Blood Report</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "bloodReport" ? 'white' : '#E5E7EB'}}>{filterCounts.bloodReport}</span>
+                    </label>
+
+                    {/* Donor Consents */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "donorConsents" ? 'text-[#402575]' : ''}`} style={selectedFilter === "donorConsents" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="donorConsents"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "donorConsents"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "donorConsents" ? 'text-[#402575]' : 'text-gray-900'}`}>Donor Consents</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "donorConsents" ? 'white' : '#E5E7EB'}}>{filterCounts.donorConsents}</span>
+                    </label>
+
+                    {/* Affidavit of Donor */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "affidavit" ? 'text-[#402575]' : ''}`} style={selectedFilter === "affidavit" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="affidavit"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "affidavit"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "affidavit" ? 'text-[#402575]' : 'text-gray-900'}`}>Affidavit of Donor</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "affidavit" ? 'white' : '#E5E7EB'}}>{filterCounts.affidavit}</span>
+                    </label>
+
+                    {/* Follicular Scan */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "follicularScan" ? 'text-[#402575]' : ''}`} style={selectedFilter === "follicularScan" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="follicularScan"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "follicularScan"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "follicularScan" ? 'text-[#402575]' : 'text-gray-900'}`}>Follicular Scan</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "follicularScan" ? 'white' : '#E5E7EB'}}>{filterCounts.follicularScan}</span>
+                    </label>
+
+                    {/* Insurance */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "insurance" ? 'text-[#402575]' : ''}`} style={selectedFilter === "insurance" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="insurance"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "insurance"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "insurance" ? 'text-[#402575]' : 'text-gray-900'}`}>Insurance</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "insurance" ? 'white' : '#E5E7EB'}}>{filterCounts.insurance}</span>
+                    </label>
+
+                    {/* Allotted Donors */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "allotted" ? 'text-[#402575]' : ''}`} style={selectedFilter === "allotted" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="allotted"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "allotted"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "allotted" ? 'text-[#402575]' : 'text-gray-900'}`}>Allotted Donors</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "allotted" ? 'white' : '#E5E7EB'}}>{filterCounts.allotted}</span>
+                    </label>
+
+                    {/* OPU Pending */}
+                    <label className={`flex items-center justify-between p-4 hover:bg-purple-50/30 cursor-pointer transition-colors ${selectedFilter === "opuPending" ? 'text-[#402575]' : ''}`} style={selectedFilter === "opuPending" ? {backgroundColor: '#ECE9F1'} : {}}>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="donorFilter"
+                          value="opuPending"
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                          checked={selectedFilter === "opuPending"}
+                          onChange={(e) => setSelectedFilter(e.target.value)}
+                        />
+                        <span className={`ml-3 text-sm font-medium ${selectedFilter === "opuPending" ? 'text-[#402575]' : 'text-gray-900'}`}>OPU Pending</span>
+                      </div>
+                      <span className="text-xs text-black h-7 w-[47px] flex items-center justify-center rounded-full" style={{backgroundColor: selectedFilter === "opuPending" ? 'white' : '#E5E7EB'}}>{filterCounts.opuPending}</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Filter Actions */}
+                <div className="border-t border-gray-200 p-4">
+                  <button 
+                    onClick={handleApplyFilter}
+                    className="w-full rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
+                  >
+                    Apply Filter
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {/* Table Content */}
+            <div className={`w-full overflow-hidden transition-all duration-300 ${showSideFilter ? 'pl-80' : 'pl-0'}`}>
+              <div className="h-full overflow-auto p-4">
+                <DonorListTable
+                  donors={filteredDonors}
+                  currentPage={page}
+                  totalItems={filteredDonors.length}
+                  itemsPerPage={limit}
+                />
+              </div>
+            </div>
+
+
           </div>
         </div>
       </FilterProvider>

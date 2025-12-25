@@ -28,11 +28,11 @@ export default async function DonorProfilePage({ params }) {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="flex-shrink-0 bg-white px-4 py-4 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <BackButton href="/donors/active" />
             <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
               Donor Profile
             </h1>
-            <BackButton href="/donors/active" label="Back to Donors" />
           </div>
         </div>
         <div className="flex flex-1 flex-col overflow-hidden bg-gray-100">

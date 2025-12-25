@@ -18,11 +18,12 @@ function DonorRequestsContent() {
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get("page")) || 1;
   const search = searchParams.get("search") || "";
+  const status = searchParams.get("status") || "";
   const limit = 10;
 
   useEffect(() => {
     fetchDonorRequests();
-  }, [page, search]);
+  }, [page, search, status]);
 
   const fetchDonorRequests = async () => {
     try {
@@ -33,6 +34,9 @@ function DonorRequestsContent() {
       const isAdmin = user.isAdmin;
       
       let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/all?page=${page}&search=${search}`;
+      if (status) {
+        url += `&status=${status}`;
+      }
       if (!isAdmin) {
         url += `&createdBy=${userId}`;
       }
@@ -76,14 +80,36 @@ function DonorRequestsContent() {
                 <div className="w-full sm:w-auto">
                   <DonorTableToolbar />
                 </div>
-                <Link
-                  href="/donor-requests/add"
-                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  style={{ backgroundColor: "#ECE9F1", color: "#402575" }}
-                >
-                  <MdAdd className="h-5 w-5" />
-                  Add Request
-                </Link>
+                {(() => {
+                  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("user") || "{}") : {};
+                  const isAdmin = user.isAdmin;
+                  const isDoctor = user.role === 'doctor';
+                  
+                  if (isAdmin) {
+                    return (
+                      <Link
+                        href="/donor-requests/add"
+                        className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        style={{ backgroundColor: "#ECE9F1", color: "#402575" }}
+                      >
+                        <MdAdd className="h-5 w-5" />
+                        Add Request (Admin)
+                      </Link>
+                    );
+                  } else if (isDoctor) {
+                    return (
+                      <Link
+                        href="/donor-requests/doctor-add"
+                        className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        style={{ backgroundColor: "#ECE9F1", color: "#402575" }}
+                      >
+                        <MdAdd className="h-5 w-5" />
+                        Request Donor
+                      </Link>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
@@ -96,6 +122,7 @@ function DonorRequestsContent() {
                 currentPage={page}
                 totalItems={total}
                 itemsPerPage={limit}
+                onDataUpdate={fetchDonorRequests}
               />
             </div>
           </div>

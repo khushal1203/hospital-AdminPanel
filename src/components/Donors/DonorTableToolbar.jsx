@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setDocumentFilter } from "@/store/slices/filterSlice";
 import { toggleColumn } from "@/store/slices/columnSlice";
 
-export default function DonorTableToolbar() {
+export default function DonorTableToolbar({ onFilterToggle }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,50 +99,53 @@ export default function DonorTableToolbar() {
         {/* Filter Button */}
         <div className="relative">
           <button
-            onClick={() => setShowFilter(!showFilter)}
+            onClick={() => onFilterToggle ? onFilterToggle() : setShowFilter(!showFilter)}
             className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <MdFilterList className="h-4 w-4 text-gray-500" />
             <span>Filter</span>
-            {documentFilter !== "all" && (
+            {selectedStatus && (
               <span className="ml-1 rounded-full bg-purple-100 px-2 py-1 text-xs text-purple-800">
-                {documentFilter}
+                {selectedStatus}
               </span>
             )}
           </button>
 
-          {showFilter && (
+          {!onFilterToggle && showFilter && (
             <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
               <div className="p-2">
                 <div className="mb-2 text-xs font-medium text-gray-500">
-                  Document Status Filter
+                  Status Filter
                 </div>
                 <button
-                  onClick={() => {
-                    dispatch(setDocumentFilter("all"));
-                    setShowFilter(false);
-                  }}
-                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${documentFilter === "all" ? "bg-purple-50 text-purple-700" : ""}`}
+                  onClick={() => handleStatusFilter("")}
+                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${selectedStatus === "" ? "bg-purple-50 text-purple-700" : ""}`}
                 >
                   All
                 </button>
                 <button
-                  onClick={() => {
-                    dispatch(setDocumentFilter("pending"));
-                    setShowFilter(false);
-                  }}
-                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${documentFilter === "pending" ? "bg-purple-50 text-purple-700" : ""}`}
+                  onClick={() => handleStatusFilter("pending")}
+                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${selectedStatus === "pending" ? "bg-purple-50 text-purple-700" : ""}`}
                 >
                   Pending
                 </button>
                 <button
-                  onClick={() => {
-                    dispatch(setDocumentFilter("uploaded"));
-                    setShowFilter(false);
-                  }}
-                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${documentFilter === "uploaded" ? "bg-purple-50 text-purple-700" : ""}`}
+                  onClick={() => handleStatusFilter("allotted")}
+                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${selectedStatus === "allotted" ? "bg-purple-50 text-purple-700" : ""}`}
                 >
-                  Uploaded
+                  Allotted
+                </button>
+                <button
+                  onClick={() => handleStatusFilter("approved")}
+                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${selectedStatus === "approved" ? "bg-purple-50 text-purple-700" : ""}`}
+                >
+                  Approved
+                </button>
+                <button
+                  onClick={() => handleStatusFilter("rejected")}
+                  className={`w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-50 ${selectedStatus === "rejected" ? "bg-purple-50 text-purple-700" : ""}`}
+                >
+                  Rejected
                 </button>
               </div>
             </div>

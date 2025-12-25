@@ -1,6 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import StatsCard from "./StatsCard";
 import {
   MdPeople,
@@ -9,6 +8,8 @@ import {
   MdPersonAdd,
   MdChevronRight,
   MdMoreVert,
+  MdAdd,
+  MdCalendarToday,
 } from "react-icons/md";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import Link from "next/link";
@@ -17,6 +18,7 @@ import Link from "next/link";
  * AdminDashboard - Dashboard for admin, doctor, and laboratory roles
  */
 export default function AdminDashboard({ userRole }) {
+  const router = useRouter();
   const [stats, setStats] = useState({
     todayFollowUps: 0,
     activeCases: 0,
@@ -109,8 +111,8 @@ export default function AdminDashboard({ userRole }) {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Page Header */}
-      <div className="flex-shrink-0 bg-white px-4 py-3 shadow-sm">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+      <div className="flex-shrink-0 bg-white px-4 py-4 shadow-sm">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
               Dashboard
@@ -119,16 +121,29 @@ export default function AdminDashboard({ userRole }) {
               Here's your Oocyte donor summary.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-purple-500"
-            />
-            {/* <div className="text-sm text-gray-600">
-                            📅 {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-                        </div> */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Date Filter */}
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <MdCalendarToday className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white pl-10 pr-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:w-auto"
+              />
+            </div>
+            
+            {/* New Donor Button */}
+            <button
+              onClick={() => router.push('/donors/add')}
+              className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              style={{ backgroundColor: '#402575' }}
+            >
+              <MdAdd className="h-4 w-4" />
+              New Donor
+            </button>
           </div>
         </div>
       </div>

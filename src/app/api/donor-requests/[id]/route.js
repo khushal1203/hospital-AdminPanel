@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import DonorRequest from "@/modals/donorRequestModal";
-import Centre from "@/modals/centreModal";
-import User from "@/modals/userModal";
+import CentreModel from "@/modals/centreModal";
+import { User } from "@/modals/userModal";
 import jwt from "jsonwebtoken";
 
 export async function GET(request, { params }) {
@@ -18,8 +18,18 @@ export async function GET(request, { params }) {
 
     const { id } = await params;
     const donorRequest = await DonorRequest.findById(id)
-      .populate("hospitalId", "hospitalName city")
-      .populate("doctorId", "doctorName")
+      .populate({
+        path: "hospitalId",
+        select: "hospitalName phoneNumber email hospitalLicenseNumber address city state pincode"
+      })
+      .populate({
+        path: "doctorId", 
+        select: "fullName phoneNumber profileImage doctorImage"
+      })
+      .populate({
+        path: "allottedTo",
+        select: "fullName age gender bloodGroup donorImage contactNumber height weight"
+      })
       .populate("createdBy", "fullName");
 
     if (!donorRequest) {
@@ -51,8 +61,18 @@ export async function PUT(request, { params }) {
     const body = await request.json();
 
     const updatedRequest = await DonorRequest.findByIdAndUpdate(id, body, { new: true })
-      .populate("hospitalId", "hospitalName city")
-      .populate("doctorId", "doctorName")
+      .populate({
+        path: "hospitalId",
+        select: "hospitalName phoneNumber email hospitalLicenseNumber address city state pincode"
+      })
+      .populate({
+        path: "doctorId", 
+        select: "fullName phoneNumber profileImage doctorImage"
+      })
+      .populate({
+        path: "allottedTo",
+        select: "fullName age gender bloodGroup donorImage contactNumber height weight"
+      })
       .populate("createdBy", "fullName");
 
     if (!updatedRequest) {

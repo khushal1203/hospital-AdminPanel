@@ -7,6 +7,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { MdEdit, MdDelete, MdAdd, MdBusiness, MdPerson, MdChevronRight, MdMoreVert, MdSearch, MdFilterList, MdViewColumn } from "react-icons/md";
 import dayjs from "dayjs";
 import { toast } from "@/utils/toast";
+import Image from "next/image";
 
 export default function CentresPage() {
   const router = useRouter();
@@ -52,8 +53,10 @@ export default function CentresPage() {
                   const doctorData = await doctorRes.json();
                   return doctorData.success ? doctorData.user : null;
                 });
-                const doctors = await Promise.all(doctorPromises);
-                return { ...centre, doctors: doctors.filter(Boolean) };
+                const allUsers = await Promise.all(doctorPromises);
+                // Filter to only include users with doctor role
+                const doctors = allUsers.filter(user => user && user.role === 'doctor');
+                return { ...centre, doctors };
               } catch (error) {
                 console.error('Error fetching doctors for centre:', centre._id, error);
                 return { ...centre, doctors: [] };
@@ -266,31 +269,64 @@ export default function CentresPage() {
                         {/* Doctor Info */}
                         <td className="p-3">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
-                              <div className="flex h-full w-full items-center justify-center bg-green-100 text-xs font-bold text-green-600">
-                                {centre.doctorCount > 0 ? centre.doctorCount : 'D'}
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              {centre.doctors && centre.doctors.length > 0 ? (
-                                <>
+                            {centre.doctors && centre.doctors.length > 0 ? (
+                              <div className="flex items-center gap-2">
+                                {/* Doctor Images */}
+                                <div className="flex -space-x-2">
+                                  {centre.doctors.slice(0, 2).map((doctor, index) => (
+                                    <div key={doctor._id} className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full border-2 border-white bg-gray-200">
+                                      {doctor.doctorImage ? (
+                                        <Image
+                                          src={doctor.doctorImage}
+                                          alt={doctor.fullName}
+                                          width={32}
+                                          height={32}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="flex h-full w-full items-center justify-center bg-green-100 text-xs font-bold text-green-600">
+                                          {doctor.fullName?.charAt(0) || 'D'}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {centre.doctors.length > 2 && (
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-300 text-xs font-bold text-gray-600">
+                                      +{centre.doctors.length - 2}
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Doctor Names */}
+                                <div className="flex flex-col">
                                   <span className="font-medium text-gray-900 text-sm">
-                                    {centre.doctors.map(d => `Dr. ${d.fullName}`).join(', ')}
+                                    {centre.doctors.length === 1 
+                                      ? `Dr. ${centre.doctors[0].fullName}`
+                                      : centre.doctors.length === 2
+                                      ? centre.doctors.map(d => `Dr. ${d.fullName}`).join(', ')
+                                      : `Dr. ${centre.doctors[0].fullName} +${centre.doctors.length - 1} more`
+                                    }
                                   </span>
                                   <span className="text-xs text-gray-500">
                                     {centre.doctors.length === 1 
-                                      ? centre.doctors[0].role || 'Doctor'
-                                      : `${centre.doctors.length} doctors assigned`
+                                      ? 'Doctor'
+                                      : `${centre.doctors.length} doctors`
                                     }
                                   </span>
-                                </>
-                              ) : (
-                                <>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
+                                  <div className="flex h-full w-full items-center justify-center bg-gray-100 text-xs font-bold text-gray-500">
+                                    D
+                                  </div>
+                                </div>
+                                <div className="flex flex-col">
                                   <span className="font-medium text-gray-900 text-sm">No Doctors</span>
                                   <span className="text-xs text-gray-500">No doctors assigned</span>
-                                </>
-                              )}
-                            </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </td>
                         
