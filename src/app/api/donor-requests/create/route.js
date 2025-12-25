@@ -34,6 +34,13 @@ export async function POST(request) {
       donorEducation,
     } = body;
 
+    console.log('Creating donor request with data:', {
+      ...body,
+      createdBy: userId,
+      isAlloted: false,
+      allottedDoctors: [],
+    });
+
     const donorRequest = new DonorRequest({
       hospitalId,
       doctorId,
@@ -51,9 +58,12 @@ export async function POST(request) {
       eyeColour,
       donorEducation,
       createdBy: userId,
+      isAlloted: false,
+      allottedDoctors: [],
     });
 
     await donorRequest.save();
+    console.log('Saved donor request:', donorRequest);
 
     return NextResponse.json({
       success: true,

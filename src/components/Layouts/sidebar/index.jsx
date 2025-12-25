@@ -107,6 +107,7 @@ export default function Sidebar({
     if (role === ROLES.LABORATORY) {
       return [
         {
+          section: "MAIN MENU",
           items: [
             ...baseItems,
             {
@@ -114,10 +115,85 @@ export default function Sidebar({
               href: "/donors/active",
               icon: "/images/icon/activeDonors.svg",
             },
+          ],
+        },
+        {
+          section: "SEMEN",
+          items: [
             {
               name: "Semen Storage",
-              href: "/donors/semen",
+              href: "/storage",
               icon: "/images/icon/seemansDonor.svg",
+            },
+          ],
+        },
+        {
+          section: "TOOLS",
+          items: [
+            { name: "Help", href: "/help", icon: "/images/icon/help.svg" },
+            {
+              name: "Settings",
+              href: "/settings",
+              icon: "/images/icon/setting.svg",
+            },
+            {
+              name: "Logout",
+              href: "/logout",
+              icon: "/images/icon/logOut.svg",
+              onClick: handleLogout,
+            },
+          ],
+        },
+      ];
+    }
+
+    if (role === ROLES.DOCTOR) {
+      return [
+        {
+          section: "MAIN MENU",
+          items: [
+            ...baseItems,
+            {
+              name: "Follow-up",
+              href: "/donors/active",
+              icon: "/images/icon/activeDonors.svg",
+            },
+            {
+              name: "Request Status",
+              href: "/donors/requests",
+              icon: "/images/icon/donorRequest.svg",
+            },
+            {
+              name: "Alloted Donors",
+              href: "/donors/allotted",
+              icon: "/images/icon/donorhistory.svg",
+            },
+          ],
+        },
+        {
+          section: "SEMEN",
+          items: [
+            {
+              name: "Semen Storage",
+              href: "/storage",
+              icon: "/images/icon/seemansDonor.svg",
+            },
+          ],
+        },
+        {
+          section: "TOOLS",
+          items: [
+            { name: "Help", href: "/help", icon: "/images/icon/help.svg" },
+            {
+              name: "Settings",
+              href: "/settings",
+              icon: "/images/icon/setting.svg",
+            },
+            {
+              name: "Logout",
+              href: "/logout",
+              icon: "/images/icon/logOut.svg",
+              onClick: handleLogout,
             },
           ],
         },
@@ -136,18 +212,42 @@ export default function Sidebar({
         icon: "/images/icon/donorhistory.svg",
       },
       {
-        name: "Semen Storage",
-        href: "/donors/semen",
-        icon: "/images/icon/seemansDonor.svg",
-      },
-      {
         name: "Add Donor",
         href: "/donors/add",
         icon: "/images/icon/addDonor.svg",
       },
     ];
 
-    return [{ items: [...baseItems, ...donorItems] }];
+    return [
+      { section: "MAIN MENU", items: [...baseItems, ...donorItems] },
+      {
+        section: "SEMEN",
+        items: [
+          {
+            name: "Semen Storage",
+            href: "/storage",
+            icon: "/images/icon/seemansDonor.svg",
+          },
+        ],
+      },
+      {
+        section: "TOOLS",
+        items: [
+          { name: "Help", href: "/help", icon: "/images/icon/help.svg" },
+          {
+            name: "Settings",
+            href: "/settings",
+            icon: "/images/icon/setting.svg",
+          },
+          {
+            name: "Logout",
+            href: "/logout",
+            icon: "/images/icon/logOut.svg",
+            onClick: handleLogout,
+          },
+        ],
+      },
+    ];
   };
 
   const handleLogout = () => {

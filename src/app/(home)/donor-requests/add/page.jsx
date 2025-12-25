@@ -91,13 +91,20 @@ export default function AddDonorRequest() {
 
     try {
       const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      
+      const requestData = {
+        ...formData,
+        createdBy: user._id || user.id
+      };
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestData),
       });
 
       const data = await res.json();

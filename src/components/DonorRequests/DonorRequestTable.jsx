@@ -4,6 +4,8 @@ import { useState } from "react";
 import { MdChevronRight, MdMoreVert, MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
+import DoctorSelectionModal from "./DoctorSelectionModal";
+import { toast } from "@/utils/toast";
 
 const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
   const router = useRouter();
@@ -50,8 +52,10 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage }) => {
   );
 };
 
-export default function DonorRequestTable({ requests, currentPage, totalItems, itemsPerPage }) {
+export default function DonorRequestTable({ requests, currentPage, totalItems, itemsPerPage, hideActions = false }) {
   const [selectedRequests, setSelectedRequests] = useState([]);
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
   const router = useRouter();
 
   const handleDecline = (requestId, e) => {
@@ -62,12 +66,44 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
 
   const handleAllot = (requestId, e) => {
     e.stopPropagation();
-    // Add allot logic here
-    console.log('Allotting request:', requestId);
+    setSelectedRequestId(requestId);
+    setShowDoctorModal(true);
+  };
+
+  const handleDoctorSelect = async (requestId, doctor) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/${requestId}/allot`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ doctorId: doctor._id }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Request allotted to Dr. ${doctor.fullName}`);
+        // Refresh the page or update the state
+        window.location.reload();
+      } else {
+        toast.error(data.message || "Failed to allot request");
+      }
+    } catch (error) {
+      toast.error("Failed to allot request");
+    }
   };
 
   const handleRowClick = (requestId) => {
-    router.push(`/donor-requests/${requestId}`);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isAdminUser = user.isAdmin;
+    
+    if (isAdminUser) {
+      router.push(`/donor-requests/${requestId}`);
+    } else {
+      router.push(`/donors/allotted/${requestId}`);
+    }
   };
 
   const getStatusBadgeColor = (status) => {
@@ -181,9 +217,11 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                   <th className="p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 min-w-[100px]">
                     Status
                   </th>
-                  <th className="sticky right-0 top-0 z-30 bg-gradient-to-r from-purple-50 to-pink-50 p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 shadow-sm min-w-[120px]">
-                    Actions
-                  </th>
+                  {!hideActions && (
+                    <th className="sticky right-0 top-0 z-30 bg-gradient-to-r from-purple-50 to-pink-50 p-3 text-xs font-semibold uppercase tracking-wide text-gray-700 shadow-sm min-w-[120px]">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -289,22 +327,24 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                     </td>
                     
                     {/* Actions - Sticky Right */}
-                    <td className="sticky right-0 z-20 bg-white p-3 shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={(e) => handleDecline(request._id, e)}
-                          className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 active:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                        >
-                          Decline
-                        </button>
-                        <button 
-                          onClick={(e) => handleAllot(request._id, e)}
-                          className="px-4 py-2 text-sm font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600 active:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                        >
-                          Allot
-                        </button>
-                      </div>
-                    </td>
+                    {!hideActions && (
+                      <td className="sticky right-0 z-20 bg-white p-3 shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={(e) => handleDecline(request._id, e)}
+                            className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 active:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                          >
+                            Decline
+                          </button>
+                          <button 
+                            onClick={(e) => handleAllot(request._id, e)}
+                            className="px-4 py-2 text-sm font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600 active:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                          >
+                            Allot
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -317,6 +357,13 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
           />
         </div>
       )}
+      
+      <DoctorSelectionModal
+        isOpen={showDoctorModal}
+        onClose={() => setShowDoctorModal(false)}
+        onSelect={handleDoctorSelect}
+        requestId={selectedRequestId}
+      />
     </div>
   );
 }

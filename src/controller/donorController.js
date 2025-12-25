@@ -311,7 +311,7 @@ const isDonorComplete = (donor) => {
  * Get all donors with optional filters
  */
 export const getAllDonorsController = async (filters = {}) => {
-  const { donorType, status, search, skip = 0, limit } = filters;
+  const { donorType, status, search, skip = 0, limit, createdBy } = filters;
 
   let query = {};
 
@@ -321,6 +321,10 @@ export const getAllDonorsController = async (filters = {}) => {
 
   if (status) {
     query.status = status;
+  }
+
+  if (createdBy) {
+    query.createdBy = createdBy;
   }
 
   if (search) {
