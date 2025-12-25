@@ -2,12 +2,24 @@ import DonorRequest from "@/modals/donorRequestModal";
 import Centre from "@/modals/centreModal";
 import { User } from "@/modals/userModal";
 
-export const getAllDonorRequestsController = async ({ search = "", skip = 0, limit = 10, status = "" }) => {
+export const getAllDonorRequestsController = async ({ search = "", skip = 0, limit = 10, status = "", createdBy = "", allottedTo = "", allottedDoctors = "" }) => {
   try {
     let query = {};
     
     if (status) {
       query.status = status;
+    }
+    
+    if (createdBy) {
+      query.createdBy = createdBy;
+    }
+    
+    if (allottedTo) {
+      query.allottedTo = allottedTo;
+    }
+    
+    if (allottedDoctors) {
+      query.allottedDoctors = { $in: [allottedDoctors] };
     }
     
     if (search) {

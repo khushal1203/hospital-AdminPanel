@@ -28,7 +28,16 @@ function DonorRequestsContent() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/all?page=${page}&search=${search}`, {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user._id || user.id;
+      const isAdmin = user.isAdmin;
+      
+      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/all?page=${page}&search=${search}`;
+      if (!isAdmin) {
+        url += `&createdBy=${userId}`;
+      }
+      
+      const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

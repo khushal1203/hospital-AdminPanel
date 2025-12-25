@@ -77,12 +77,32 @@ const donorRequestSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    isAlloted: {
+      type: Boolean,
+      default: false,
+    },
+    allottedDoctors: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    allottedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    allottedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const DonorRequest = mongoose.models.DonorRequest || mongoose.model("DonorRequest", donorRequestSchema);
+// Force model recreation to ensure new schema fields are recognized
+if (mongoose.models.DonorRequest) {
+  delete mongoose.models.DonorRequest;
+}
+
+const DonorRequest = mongoose.model("DonorRequest", donorRequestSchema);
 
 export default DonorRequest;

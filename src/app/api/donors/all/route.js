@@ -17,6 +17,7 @@ export async function GET(req) {
       status: searchParams.get("status"),
       search: searchParams.get("search"),
       docFilter: searchParams.get("docFilter"),
+      createdBy: searchParams.get("createdBy"),
       skip,
       limit,
     };

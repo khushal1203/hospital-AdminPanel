@@ -20,6 +20,9 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page")) || 1;
     const search = searchParams.get("search") || "";
+    const createdBy = searchParams.get("createdBy") || "";
+    const allottedTo = searchParams.get("allottedTo") || "";
+    const allottedDoctors = searchParams.get("allottedDoctors") || "";
     const limit = 10;
     const skip = (page - 1) * limit;
 
@@ -27,6 +30,9 @@ export async function GET(request) {
       search,
       skip,
       limit,
+      createdBy,
+      allottedTo,
+      allottedDoctors,
     });
 
     return NextResponse.json({

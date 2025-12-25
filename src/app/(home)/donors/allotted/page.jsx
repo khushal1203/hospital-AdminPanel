@@ -2,14 +2,14 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import DonorListTable from "@/components/Donors/DonorListTable";
-import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
 import { ColumnProvider } from "@/contexts/ColumnContext";
 import { FilterProvider } from "@/contexts/FilterContext";
+import DonorRequestTable from "@/components/DonorRequests/DonorRequestTable";
+import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-function ActiveDonorsContent() {
-  const [donors, setDonors] = useState([]);
+function AllottedDonorsContent() {
+  const [requests, setRequests] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,24 +19,17 @@ function ActiveDonorsContent() {
   const limit = 10;
 
   useEffect(() => {
-    fetchDonors();
+    fetchAllottedRequests();
   }, [page, search]);
 
-  const fetchDonors = async () => {
+  const fetchAllottedRequests = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const userId = user._id || user.id;
-      const isAdmin = user.isAdmin;
       
-      const skip = (page - 1) * limit;
-      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?status=active&donorType=oocyte&search=${search}&page=${page}&limit=${limit}`;
-      if (!isAdmin) {
-        url += `&createdBy=${userId}`;
-      }
-      
-      const res = await fetch(url, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/all?page=${page}&search=${search}&allottedDoctors=${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -45,13 +38,13 @@ function ActiveDonorsContent() {
       const data = await res.json();
 
       if (data.success) {
-        setDonors(data.donors);
+        setRequests(data.requests);
         setTotal(data.total);
       } else {
         setError(data.message);
       }
     } catch (err) {
-      setError("Failed to fetch donors");
+      setError("Failed to fetch allotted requests");
     } finally {
       setLoading(false);
     }
@@ -69,10 +62,12 @@ function ActiveDonorsContent() {
           <div className="sticky top-0 z-30 flex-shrink-0 border-b border-gray-200 bg-white px-3 py-3 shadow-sm">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                Active Donors
+                Allotted Donors
               </h1>
-              <div className="w-full sm:w-auto">
-                <DonorTableToolbar />
+              <div className="flex items-center gap-3">
+                <div className="w-full sm:w-auto">
+                  <DonorTableToolbar />
+                </div>
               </div>
             </div>
           </div>
@@ -80,11 +75,12 @@ function ActiveDonorsContent() {
           {/* Scrollable Table Content */}
           <div className="flex-1 overflow-hidden bg-gray-50">
             <div className="h-full overflow-auto p-4">
-              <DonorListTable
-                donors={donors}
+              <DonorRequestTable
+                requests={requests}
                 currentPage={page}
                 totalItems={total}
                 itemsPerPage={limit}
+                hideActions={true}
               />
             </div>
           </div>
@@ -94,10 +90,10 @@ function ActiveDonorsContent() {
   );
 }
 
-export default function ActiveDonorsPage() {
+export default function AllottedDonorsPage() {
   return (
     <Suspense fallback={<LoadingSpinner message="Loading..." />}>
-      <ActiveDonorsContent />
+      <AllottedDonorsContent />
     </Suspense>
   );
 }
