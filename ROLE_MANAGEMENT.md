@@ -177,7 +177,6 @@ db.users.insertOne({
 const bcrypt = require('bcryptjs');
 const password = 'your-password';
 const hashedPassword = bcrypt.hashSync(password, 10);
-console.log(hashedPassword);
 ```
 
 ### Available Roles

@@ -272,13 +272,9 @@ export const createDonorController = async (body, userId) => {
     },
   };
 
-  console.log('Creating donor with data:', donorData);
 
   // Create donor
   const donor = await Donor.create(donorData);
-  
-  console.log('Donor created in database:', donor.toObject());
-
   return {
     success: true,
     message: "Donor created successfully",
@@ -480,8 +476,6 @@ export const updateDonorController = async (donorId, updates, userId) => {
     updateData.updatedBy = userId;
   }
 
-  console.log('Updating donor with processed data:', JSON.stringify(updateData, null, 2));
-
   const donor = await Donor.findByIdAndUpdate(donorId, updateData, {
     new: true,
     runValidators: true,
@@ -490,8 +484,6 @@ export const updateDonorController = async (donorId, updates, userId) => {
   if (!donor) {
     throw new Error("Donor not found");
   }
-
-  console.log('Updated donor in database:', JSON.stringify(donor.toObject(), null, 2));
 
   return {
     success: true,
