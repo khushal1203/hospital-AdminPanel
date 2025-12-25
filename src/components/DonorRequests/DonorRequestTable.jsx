@@ -60,7 +60,6 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
 
   const handleDecline = (requestId, e) => {
     e.stopPropagation();
-    console.log('Declining request:', requestId);
   };
 
   const handleWithdrawRequest = async (requestId, e) => {
@@ -335,17 +334,7 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                           {(() => {
                             const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("user") || "{}") : {};
                             const isAdmin = user.isAdmin;
-                            const isRequestCreator = (request.createdBy?._id || request.createdBy) === (user._id || user.id);
-                            
-                            console.log('Debug:', {
-                              requestId: request._id,
-                              createdBy: request.createdBy,
-                              userId: user._id || user.id,
-                              isAdmin,
-                              isRequestCreator,
-                              isAlloted: request.isAlloted
-                            });
-                            
+                            const isRequestCreator = (request.createdBy?._id || request.createdBy) === (user._id || user.id);s
                             // For request creators (doctors)
                             if (isRequestCreator) {
                               if (request.isAlloted) {

@@ -123,10 +123,7 @@ function ActiveDonorsContent() {
       let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?search=${search}&page=${page}&limit=${limit}`;
       if (!isAdmin) {
         url += `&createdBy=${userId}`;
-      }
-      
-      console.log('Fetching donors from:', url);
-      
+      }     
       const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,

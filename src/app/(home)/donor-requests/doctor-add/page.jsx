@@ -46,8 +46,6 @@ export default function DoctorAddDonorRequest() {
         hospitalName: user.centreName || user.hospitalName
       };
       
-      console.log('Request data:', requestData);
-      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/create`, {
         method: "POST",
         headers: {

@@ -113,8 +113,6 @@ export default function MedicalHistoryTab({ donor }) {
         };
       }
 
-      console.log("🔄 Updating section:", editModal.section);
-      console.log("📤 Data being sent to API:", JSON.stringify(dataToSave, null, 2));
 
       const token = localStorage.getItem("token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
@@ -128,7 +126,6 @@ export default function MedicalHistoryTab({ donor }) {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("📥 API Response:", JSON.stringify(result, null, 2));
         setDonorData(result.donor || updatedData);
       } else {
         throw new Error("Failed to update medical history");
@@ -151,10 +148,6 @@ export default function MedicalHistoryTab({ donor }) {
           scans: updatedScans
         }
       };
-
-      console.log("➕ Adding new follicular scan:", JSON.stringify(scanData, null, 2));
-      console.log("📤 Data being sent to API:", JSON.stringify(dataToSend, null, 2));
-
       const token = localStorage.getItem("token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
@@ -167,7 +160,6 @@ export default function MedicalHistoryTab({ donor }) {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("📥 API Response:", JSON.stringify(result, null, 2));
         setDonorData(result.donor);
       } else {
         throw new Error("Failed to add scan");
@@ -191,9 +183,6 @@ export default function MedicalHistoryTab({ donor }) {
         }
       };
 
-      console.log("❌ Deleting follicular scan at index:", index);
-      console.log("📤 Data being sent to API:", JSON.stringify(dataToSend, null, 2));
-
       const token = localStorage.getItem("token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donorId}`, {
         method: "PUT",
@@ -206,7 +195,6 @@ export default function MedicalHistoryTab({ donor }) {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("📥 API Response:", JSON.stringify(result, null, 2));
         setDonorData(result.donor);
       } else {
         throw new Error("Failed to delete scan");

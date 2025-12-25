@@ -54,10 +54,6 @@ export async function PUT(request, { params }) {
       },
       { new: true }
     );
-
-    console.log("Updated donor:", updatedDonor);
-    console.log("Donor Request ID:", id);
-
     return NextResponse.json({
       success: true,
       message: "Request allotted successfully",

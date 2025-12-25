@@ -40,14 +40,6 @@ export async function POST(request) {
       eyeColour,
       donorEducation,
     } = body;
-
-    console.log('Creating donor request with data:', {
-      ...body,
-      createdBy: userId,
-      isAlloted: false,
-      allottedDonors: [],
-    });
-
     const donorRequest = new DonorRequest({
       hospitalId: user.centreId, // User ki centreId ko hospitalId mein save kar rahe hain
       doctorId,

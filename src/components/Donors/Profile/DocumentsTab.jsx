@@ -275,11 +275,6 @@ export default function DocumentsTab({ donor }) {
           formData.append("document", file);
           formData.append("donorId", donor._id);
           formData.append("sectionKey", sectionKey);
-          console.log("Upload params:", {
-            sectionKey,
-            index,
-            reportName: documents[sectionKey][index].reportName,
-          });
           formData.append("index", index);
           formData.append(
             "reportName",
@@ -297,7 +292,6 @@ export default function DocumentsTab({ donor }) {
             });
 
             const data = await response.json();
-            console.log("Upload response:", data);
             if (data.success) {
               const updatedDoc = {
                 reportName: documents[sectionKey][index].reportName,

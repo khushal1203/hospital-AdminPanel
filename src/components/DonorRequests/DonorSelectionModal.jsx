@@ -44,7 +44,6 @@ export default function DonorSelectionModal({ isOpen, onClose, onSelect, request
 
       const data = await res.json();
       if (data.success) {
-        console.log('Donor data:', data.donors[0]); // Debug log
         setDonors(data.donors || []);
         setFilteredDonors(data.donors || []);
         if (data.donors.length === 0) {

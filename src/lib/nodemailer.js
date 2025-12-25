@@ -78,7 +78,6 @@ export const sendWelcomeEmail = async (email, fullName, password) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("Welcome email sent successfully to:", email);
     return { success: true };
   } catch (error) {
     console.error("Error sending welcome email:", error);
@@ -154,7 +153,6 @@ export const sendPasswordResetEmail = async (email, fullName, resetUrl) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("Password reset email sent successfully to:", email);
     return { success: true };
   } catch (error) {
     console.error("Error sending password reset email:", error);
