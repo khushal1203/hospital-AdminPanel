@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { MdEdit, MdMoreVert, MdPrint } from "react-icons/md";
+import { MdEdit, MdMoreVert, MdPrint, MdCancel } from "react-icons/md";
 import { toast } from "@/utils/toast";
 import { ButtonLoader } from "@/components/ui/LoadingSpinner";
 
@@ -33,6 +33,7 @@ export default function DonorProfileView({ donor }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [donorImage, setDonorImage] = useState(donor.donorImage);
   const [uploading, setUploading] = useState(false);
+  const [cancellingAllotment, setCancellingAllotment] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageUpload = async (event) => {
@@ -61,6 +62,37 @@ export default function DonorProfileView({ donor }) {
       toast.error("Failed to upload photo");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleCancelAllotment = async () => {
+    if (!confirm("Are you sure you want to cancel the allotment for this donor?")) {
+      return;
+    }
+
+    setCancellingAllotment(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/cancel-allotment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ donorId: donor._id }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success("Allotment cancelled successfully!");
+        window.location.reload();
+      } else {
+        toast.error(result.message || "Failed to cancel allotment");
+      }
+    } catch (error) {
+      toast.error("Failed to cancel allotment");
+    } finally {
+      setCancellingAllotment(false);
     }
   };
 
@@ -119,9 +151,11 @@ export default function DonorProfileView({ donor }) {
                 )}
               </div>
               <div className="text-center sm:pt-2 sm:text-left">
-                <div className="mb-1 flex items-center justify-center sm:justify-start">
-                  <Tag text="ALLOTTED" />
-                </div>
+                {donor.isAllotted && (
+                  <div className="mb-1 flex items-center justify-center sm:justify-start">
+                    <Tag text="ALLOTTED" />
+                  </div>
+                )}
                 <h2 className="mb-1 text-xl font-bold text-gray-900 sm:text-2xl">
                   {donor.fullName}
                 </h2>
@@ -135,11 +169,27 @@ export default function DonorProfileView({ donor }) {
               </div>
             </div>
 
-            <div className="flex justify-center sm:justify-end">
+            <div className="flex justify-center gap-2 sm:justify-end">
               <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:px-4">
                 <MdPrint className="h-4 w-4" />
                 <span className="hidden sm:inline">Print</span>
               </button>
+              {donor.isAllotted && (
+                <button 
+                  onClick={handleCancelAllotment}
+                  disabled={cancellingAllotment}
+                  className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 sm:px-4"
+                >
+                  {cancellingAllotment ? (
+                    <ButtonLoader />
+                  ) : (
+                    <MdCancel className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {cancellingAllotment ? "Cancelling..." : "Cancel Allotment"}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 

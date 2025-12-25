@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import DonorRequest from "@/modals/donorRequestModal";
+import { Donor } from "@/modals/donorModal";
 import jwt from "jsonwebtoken";
 
 export async function PUT(request, { params }) {
@@ -19,27 +20,43 @@ export async function PUT(request, { params }) {
 
     const { id } = await params;
     const body = await request.json();
-    const { doctorId } = body;
+    const { donorId } = body;
 
-    if (!doctorId) {
-      return NextResponse.json({ success: false, message: "Doctor ID is required" }, { status: 400 });
+    if (!donorId) {
+      return NextResponse.json({ success: false, message: "Donor ID is required" }, { status: 400 });
     }
 
+    // Update the donor request
     const donorRequest = await DonorRequest.findByIdAndUpdate(
       id,
       { 
-        $addToSet: { allottedDoctors: doctorId },
+        $addToSet: { allottedDonors: donorId },
         isAlloted: true,
-        allottedTo: doctorId,
+        allottedTo: donorId,
         status: "approved",
         allottedAt: new Date()
       },
       { new: true }
-    ).populate("allottedTo", "fullName email").populate("allottedDoctors", "fullName email");
+    ).populate("allottedTo", "fullName email").populate("allottedDonors", "fullName email");
 
     if (!donorRequest) {
       return NextResponse.json({ success: false, message: "Donor request not found" }, { status: 404 });
     }
+
+    // Update the donor status
+    const updatedDonor = await Donor.findByIdAndUpdate(
+      donorId,
+      {
+        isAllotted: true,
+        status: "allotted",
+        allottedToRequest: id,
+        allottedBy: id  // donor-request ki ID set kar rahe hain
+      },
+      { new: true }
+    );
+
+    console.log("Updated donor:", updatedDonor);
+    console.log("Donor Request ID:", id);
 
     return NextResponse.json({
       success: true,

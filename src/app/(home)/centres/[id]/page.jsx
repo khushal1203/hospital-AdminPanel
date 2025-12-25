@@ -78,10 +78,10 @@ export default function CentreDetailsPage() {
       setEditingUserIndex(userIndex);
       setEditData({
         doctorName: user?.fullName || "",
-        doctorPhoneNumber: "", // Not available in user data
+        doctorPhoneNumber: user?.phoneNumber || "",
         doctorEmail: user?.email || "",
-        medicalLicenseNumber: "", // Not available in user data
-        doctorImage: userIndex === 0 ? centre?.doctorImage || null : null,
+        medicalLicenseNumber: user?.medicalLicenseNumber || "",
+        doctorImage: user?.doctorImage || null,
       });
     } else if (section === "user") {
       const user = users[userIndex];
@@ -383,9 +383,9 @@ export default function CentreDetailsPage() {
                         <div className="mb-4 flex items-center justify-between">
                           <div className="flex items-center gap-4">
                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
-                              {centre?.doctorImage && index === 0 ? (
+                              {user.doctorImage ? (
                                 <img
-                                  src={centre.doctorImage}
+                                  src={user.doctorImage}
                                   alt={user.fullName}
                                   className="h-full w-full object-cover"
                                 />
@@ -441,6 +441,27 @@ export default function CentreDetailsPage() {
                                 {user.email || "-"}
                               </p>
                             </div>
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Phone Number
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <MdPhone className="h-4 w-4 text-gray-400" />
+                              <p className="text-gray-900">
+                                {user.phoneNumber || "-"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Medical License Number
+                            </label>
+                            <p className="text-gray-900">
+                              {user.medicalLicenseNumber || "-"}
+                            </p>
                           </div>
 
                           <div>
@@ -551,7 +572,7 @@ export default function CentreDetailsPage() {
               </div>
             </div>
             <div className="hidden lg:col-span-3 lg:block">
-              <CentreTimeline centre={centre} />
+              <CentreTimeline centre={centre} doctors={users} />
             </div>
           </div>
         </div>

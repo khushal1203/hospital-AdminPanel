@@ -165,29 +165,41 @@ export default function DonorRequestDetailsPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-9">
               <div className="space-y-6">
-                {/* Hospital & Doctor Information */}
+                {/* Request Information */}
                 <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
                   <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-3">
                         <MdLocalHospital className="h-6 w-6 text-blue-600" />
-                        <div>
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Hospital & Doctor Information
-                          </h2>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Request submitted by hospital and doctor
-                          </p>
-                        </div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Request sent by
+                        </h2>
                       </div>
-                      <button
-                        onClick={() => handleEdit("hospital")}
-                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        style={{ backgroundColor: "#ECE9F1" }}
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                          donorRequest?.status === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : donorRequest?.status === "approved" || donorRequest?.isAlloted
+                              ? "bg-green-100 text-green-800"
+                              : donorRequest?.status === "rejected" || donorRequest?.status === "declined"
+                                ? "bg-red-100 text-red-800"
+                                : donorRequest?.status === "fulfilled"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
+                        }`}
                       >
-                        <MdEdit className="h-4 w-4" />
-                        Edit
-                      </button>
+                        {donorRequest?.isAlloted ? "allotted" : donorRequest?.status || "pending"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-3 ml-9">
+                      <span className="text-base font-medium text-gray-900">
+                        {donorRequest?.hospitalId?.hospitalName || "-"}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        Request Date: {donorRequest?.createdAt
+                          ? dayjs(donorRequest.createdAt).format("DD MMM YYYY")
+                          : "-"}
+                      </span>
                     </div>
                   </div>
 
@@ -197,81 +209,124 @@ export default function DonorRequestDetailsPage() {
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                           Hospital Name
                         </label>
-                        <p className="text-gray-900">
+                        <p className="text-gray-900 font-semibold">
                           {donorRequest?.hospitalId?.hospitalName || "-"}
                         </p>
                       </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          Doctor Name
+                          Hospital Phone
                         </label>
                         <p className="text-gray-900">
-                          {donorRequest?.doctorId?.doctorName || "-"}
+                          {donorRequest?.hospitalId?.phoneNumber || "-"}
                         </p>
                       </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          Hospital City
+                          License Number
                         </label>
                         <p className="text-gray-900">
-                          {donorRequest?.hospitalId?.city || "-"}
+                          {donorRequest?.hospitalId?.hospitalLicenseNumber || "-"}
                         </p>
                       </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                          Request Status
+                          Email Address
                         </label>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            donorRequest?.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : donorRequest?.status === "approved"
-                                ? "bg-green-100 text-green-800"
-                                : donorRequest?.status === "rejected"
-                                  ? "bg-red-100 text-red-800"
-                                  : donorRequest?.status === "fulfilled"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {donorRequest?.status || "pending"}
-                        </span>
+                        <p className="text-gray-900">
+                          {donorRequest?.hospitalId?.email || "-"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                          State
+                        </label>
+                        <p className="text-gray-900">
+                          {donorRequest?.hospitalId?.state || "-"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                          Pincode
+                        </label>
+                        <p className="text-gray-900">
+                          {donorRequest?.hospitalId?.pincode || "-"}
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Basic Requirements */}
+                {/* Doctor Information */}
                 <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
-                  <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-violet-50 px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <MdPerson className="h-6 w-6 text-purple-600" />
-                        <div>
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Basic Requirements
-                          </h2>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Essential donor requirements and timeline
-                          </p>
-                        </div>
+                  <div className="border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <MdPerson className="h-6 w-6 text-green-600" />
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Doctor Information
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Requesting doctor details
+                        </p>
                       </div>
-                      <button
-                        onClick={() => handleEdit("requirements")}
-                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        style={{ backgroundColor: "#ECE9F1" }}
-                      >
-                        <MdEdit className="h-4 w-4" />
-                        Edit
-                      </button>
                     </div>
                   </div>
 
                   <div className="p-6">
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div className="flex items-center gap-6">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={donorRequest?.doctorId?.doctorImage || donorRequest?.doctorId?.profileImage || "/images/user/user-03.png"}
+                          alt="Doctor"
+                          className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
+                        />
+                      </div>
+                      <div className="flex-1 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Doctor Name
+                          </label>
+                          <p className="text-gray-900 font-semibold">
+                            {donorRequest?.doctorId?.fullName || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Phone Number
+                          </label>
+                          <p className="text-gray-900">
+                            {donorRequest?.doctorId?.phoneNumber || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Donor Preferences */}
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
+                  <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-violet-50 px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <MdPerson className="h-6 w-6 text-purple-600" />
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Donor Preferences
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Doctor's requested donor requirements
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                           Required By Date
@@ -329,38 +384,25 @@ export default function DonorRequestDetailsPage() {
                           </p>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Physical Requirements */}
-                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
-                  <div className="border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <MdHeight className="h-6 w-6 text-green-600" />
-                        <div>
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Physical Requirements
-                          </h2>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Physical characteristics requirements
-                          </p>
-                        </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                          Cast
+                        </label>
+                        <p className="text-gray-900">
+                          {donorRequest?.cast || "-"}
+                        </p>
                       </div>
-                      <button
-                        onClick={() => handleEdit("physical")}
-                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        style={{ backgroundColor: "#ECE9F1" }}
-                      >
-                        <MdEdit className="h-4 w-4" />
-                        Edit
-                      </button>
-                    </div>
-                  </div>
 
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                          Nationality
+                        </label>
+                        <p className="text-gray-900">
+                          {donorRequest?.nationality || "-"}
+                        </p>
+                      </div>
+
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                           Height Range
@@ -420,69 +462,107 @@ export default function DonorRequestDetailsPage() {
                           {donorRequest?.eyeColour || "-"}
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Background Requirements */}
-                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
-                  <div className="border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <MdSchool className="h-6 w-6 text-orange-600" />
-                        <div>
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Background Requirements
-                          </h2>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Cultural and educational requirements
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleEdit("background")}
-                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        style={{ backgroundColor: "#ECE9F1" }}
-                      >
-                        <MdEdit className="h-4 w-4" />
-                        Edit
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                          Cast
-                        </label>
-                        <p className="text-gray-900">
-                          {donorRequest?.cast || "-"}
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
-                          Nationality
-                        </label>
-                        <p className="text-gray-900">
-                          {donorRequest?.nationality || "-"}
-                        </p>
-                      </div>
 
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                           Education Requirement
                         </label>
-                        <p className="text-gray-900">
-                          {donorRequest?.donorEducation || "-"}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <MdSchool className="h-4 w-4 text-gray-400" />
+                          <p className="text-gray-900">
+                            {donorRequest?.donorEducation || "-"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Additional Information */}
+
+                {/* Allotted Donor Information - Show only if donor is allotted */}
+                {donorRequest?.isAlloted && donorRequest?.allottedTo && (
+                  <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
+                    <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <MdPerson className="h-6 w-6 text-emerald-600" />
+                        <div>
+                          <h2 className="text-lg font-semibold text-gray-900">
+                            Allotted Donor
+                          </h2>
+                          <p className="mt-1 text-sm text-gray-600">
+                            Donor assigned to this request
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="flex items-center gap-6">
+                        <div className="flex-shrink-0">
+                          <img
+                            src={donorRequest?.allottedTo?.donorImage || "/images/user/user-03.png"}
+                            alt="Donor"
+                            className="h-24 w-24 rounded-full object-cover border-2 border-emerald-200"
+                          />
+                        </div>
+                        <div className="flex-1 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Donor Name
+                            </label>
+                            <p className="text-gray-900 font-semibold">
+                              {donorRequest?.allottedTo?.fullName || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Age
+                            </label>
+                            <p className="text-gray-900">
+                              {donorRequest?.allottedTo?.age || "-"} years
+                            </p>
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Gender
+                            </label>
+                            <p className="text-gray-900 capitalize">
+                              {donorRequest?.allottedTo?.gender || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Blood Group
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <MdBloodtype className="h-4 w-4 text-red-500" />
+                              <p className="font-semibold text-gray-900">
+                                {donorRequest?.allottedTo?.bloodGroup || "-"}
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Contact Number
+                            </label>
+                            <p className="text-gray-900">
+                              {donorRequest?.allottedTo?.contactNumber || "-"}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                              Height / Weight
+                            </label>
+                            <p className="text-gray-900">
+                              {donorRequest?.allottedTo?.height || "-"} cm / {donorRequest?.allottedTo?.weight || "-"} kg
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               
               </div>
             </div>

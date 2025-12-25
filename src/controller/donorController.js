@@ -123,6 +123,7 @@ export const createDonorController = async (body, userId) => {
     bloodReportStatus: "pending",
     opuProcessStatus: "pending",
     createdBy: userId,
+    allottedBy: userId,
 
     // Predefined documents structure
     documents: {
@@ -271,8 +272,12 @@ export const createDonorController = async (body, userId) => {
     },
   };
 
+  console.log('Creating donor with data:', donorData);
+
   // Create donor
   const donor = await Donor.create(donorData);
+  
+  console.log('Donor created in database:', donor.toObject());
 
   return {
     success: true,
@@ -324,7 +329,10 @@ export const getAllDonorsController = async (filters = {}) => {
   }
 
   if (createdBy) {
-    query.createdBy = createdBy;
+    query.$or = [
+      { createdBy: createdBy },
+      { allottedBy: createdBy }
+    ];
   }
 
   if (search) {
@@ -406,7 +414,50 @@ export const getDonorByIdController = async (donorId) => {
  * Update donor
  */
 export const updateDonorController = async (donorId, updates, userId) => {
-  const updateData = { ...updates };
+  let updateData = { ...updates };
+
+  // Handle nested structure from frontend
+  if (updateData.follicularDetails && typeof updateData.follicularDetails === 'object') {
+    // If follicularDetails contains nested follicularDetails, extract it
+    if (updateData.follicularDetails.follicularDetails) {
+      const nestedFollicularDetails = updateData.follicularDetails.follicularDetails;
+      
+      // Extract scans if they exist and keep them in follicularDetails
+      if (nestedFollicularDetails.scans) {
+        // Keep scans inside follicularDetails, don't move to root level
+        // No action needed, scans will stay in follicularDetails.scans
+      }
+      
+      // Replace the outer follicularDetails with the nested one
+      updateData.follicularDetails = nestedFollicularDetails;
+      
+      // Extract other nested objects to root level
+      if (updateData.follicularDetails.obstetricHistory) {
+        updateData.obstetricHistory = updateData.follicularDetails.obstetricHistory;
+        delete updateData.follicularDetails.obstetricHistory;
+      }
+      
+      if (updateData.follicularDetails.physicalExamination) {
+        updateData.physicalExamination = updateData.follicularDetails.physicalExamination;
+        delete updateData.follicularDetails.physicalExamination;
+      }
+      
+      // Extract other root level fields
+      const rootFields = ['donorId', 'donorType', 'donorImage', 'dateOfBirth', 'age', 'fullName', 'husbandName', 'gender', 'aadharNumber', 'maritalStatus', 'cast', 'contactNumber', 'email', 'referenceName', 'referenceNumber', 'address', 'city', 'state', 'pincode', 'placeOfBirth', 'religion', 'bloodGroup', 'donorEducation', 'donorOccupation', 'monthlyIncome', 'spouseEducation', 'spouseOccupation', 'height', 'weight', 'skinColor', 'hairColor', 'eyeColor', 'menstrualHistory', 'contraceptives', 'medicalHistory', 'familyMedicalHistory', 'abnormalityInChild', 'bloodTransfusion', 'substanceAbuse', 'geneticAbnormality', 'status', 'isAllotted', 'allottedBy', 'consentFormStatus', 'affidavitStatus', 'follicularScanStatus', 'insuranceStatus', 'bloodReportStatus', 'opuProcessStatus', 'previousDonations', 'registrationDate', 'bmi', 'semenData', 'documents'];
+      
+      rootFields.forEach(field => {
+        if (updateData.follicularDetails[field] !== undefined) {
+          updateData[field] = updateData.follicularDetails[field];
+          delete updateData.follicularDetails[field];
+        }
+      });
+    }
+    // Handle direct scans in follicularDetails
+    else if (updateData.follicularDetails.scans) {
+      // Keep scans inside follicularDetails, don't move to root level
+      // No action needed, scans will stay in follicularDetails.scans
+    }
+  }
 
   // Convert enum values to lowercase
   if (updateData.gender) {
@@ -419,10 +470,17 @@ export const updateDonorController = async (donorId, updates, userId) => {
     updateData.donorType = updateData.donorType.toLowerCase();
   }
 
+  // Convert stimulationProcess to boolean if it exists in follicularDetails
+  if (updateData.follicularDetails && updateData.follicularDetails.stimulationProcess !== undefined) {
+    updateData.follicularDetails.stimulationProcess = Boolean(updateData.follicularDetails.stimulationProcess);
+  }
+
   // Only add updatedBy if userId is provided and valid
   if (userId) {
     updateData.updatedBy = userId;
   }
+
+  console.log('Updating donor with processed data:', JSON.stringify(updateData, null, 2));
 
   const donor = await Donor.findByIdAndUpdate(donorId, updateData, {
     new: true,
@@ -432,6 +490,8 @@ export const updateDonorController = async (donorId, updates, userId) => {
   if (!donor) {
     throw new Error("Donor not found");
   }
+
+  console.log('Updated donor in database:', JSON.stringify(donor.toObject(), null, 2));
 
   return {
     success: true,

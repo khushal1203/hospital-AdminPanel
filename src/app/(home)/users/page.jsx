@@ -84,7 +84,32 @@ export default function UserManagement() {
       const data = await res.json();
 
       if (data.success) {
-        setUsers(data.users);
+        // Fetch hospital names for users with centreId
+        const usersWithHospitals = await Promise.all(
+          data.users.map(async (user) => {
+            if (user.centreId) {
+              try {
+                const centreRes = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_END_POINT}/centres/${user.centreId}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  },
+                );
+                const centreData = await centreRes.json();
+                return {
+                  ...user,
+                  hospitalName: centreData.success ? centreData.centre.hospitalName : null,
+                };
+              } catch (error) {
+                return { ...user, hospitalName: null };
+              }
+            }
+            return { ...user, hospitalName: null };
+          })
+        );
+        setUsers(usersWithHospitals);
       } else {
         setError(data.message);
       }
@@ -272,6 +297,9 @@ export default function UserManagement() {
                       <th className="min-w-[180px] p-3 text-xs font-semibold uppercase tracking-wide text-gray-700">
                         User
                       </th>
+                      <th className="min-w-[180px] p-3 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                        Hospital
+                      </th>
                       <th className="min-w-[200px] p-3 text-xs font-semibold uppercase tracking-wide text-gray-700">
                         Email
                       </th>
@@ -350,9 +378,9 @@ export default function UserManagement() {
                         <td className="p-3">
                           <div className="flex items-center gap-3">
                             <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
-                              {user.profileImage ? (
+                              {user.doctorImage || user.profileImage ? (
                                 <img
-                                  src={user.profileImage}
+                                  src={user.doctorImage || user.profileImage}
                                   alt={user.fullName}
                                   className="h-full w-full object-cover"
                                 />
@@ -371,6 +399,11 @@ export default function UserManagement() {
                               </span>
                             </div>
                           </div>
+                        </td>
+
+                        {/* Hospital Name */}
+                        <td className="p-3 text-gray-900">
+                          {user.hospitalName || "-"}
                         </td>
 
                         {/* Email */}

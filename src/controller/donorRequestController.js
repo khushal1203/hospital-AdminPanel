@@ -7,7 +7,15 @@ export const getAllDonorRequestsController = async ({ search = "", skip = 0, lim
     let query = {};
     
     if (status) {
-      query.status = status;
+      if (status === "allotted") {
+        query.isAlloted = true;
+      } else if (status === "pending") {
+        query.isAlloted = false;
+        query.status = { $in: ["pending", undefined, null] };
+      } else {
+        query.status = status;
+        query.isAlloted = false;
+      }
     }
     
     if (createdBy) {
@@ -34,7 +42,7 @@ export const getAllDonorRequestsController = async ({ search = "", skip = 0, lim
       .populate("hospitalId", "hospitalName city")
       .populate({
         path: "doctorId",
-        select: "fullName email",
+        select: "fullName email profileImage doctorImage",
         model: "User"
       })
       .populate("createdBy", "fullName")

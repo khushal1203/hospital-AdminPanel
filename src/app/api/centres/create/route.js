@@ -23,7 +23,6 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    console.log("Request body:", body);
     
     const {
       hospitalName,
@@ -99,10 +98,7 @@ export async function POST(request) {
       state,
       pincode,
     });
-
-    console.log("About to save centre:", newCentre);
     await newCentre.save();
-    console.log("Centre saved successfully");
 
     // Create users for all doctors
     const createdUsers = [];

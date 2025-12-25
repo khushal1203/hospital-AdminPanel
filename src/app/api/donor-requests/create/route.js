@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import DonorRequest from "@/modals/donorRequestModal";
+import { User } from "@/modals/userModal";
 import jwt from "jsonwebtoken";
 
 export async function POST(request) {
@@ -14,6 +15,12 @@ export async function POST(request) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
+
+    // Get user's centreId for hospitalId
+    const user = await User.findById(userId).select('centreId doctorImage');
+    if (!user) {
+      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+    }
 
     const body = await request.json();
     const {
@@ -38,11 +45,11 @@ export async function POST(request) {
       ...body,
       createdBy: userId,
       isAlloted: false,
-      allottedDoctors: [],
+      allottedDonors: [],
     });
 
     const donorRequest = new DonorRequest({
-      hospitalId,
+      hospitalId: user.centreId, // User ki centreId ko hospitalId mein save kar rahe hain
       doctorId,
       requiredByDate,
       gender,
@@ -59,12 +66,10 @@ export async function POST(request) {
       donorEducation,
       createdBy: userId,
       isAlloted: false,
-      allottedDoctors: [],
+      allottedDonors: [],
     });
 
     await donorRequest.save();
-    console.log('Saved donor request:', donorRequest);
-
     return NextResponse.json({
       success: true,
       message: "Donor request created successfully",

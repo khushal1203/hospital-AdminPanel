@@ -49,9 +49,7 @@ export default function CentreTimeline({ centre, doctors = [] }) {
       case 'location':
         return centre?.address && centre?.city && centre?.state && centre?.pincode ? 'completed' : 'pending';
       case 'doctor':
-        return doctors.length > 0 && doctors.every(doctor => 
-          doctor.doctorName && doctor.doctorPhoneNumber && doctor.doctorEmail && doctor.medicalLicenseNumber
-        ) ? 'completed' : 'pending';
+        return doctors.length > 0 && doctors.some(doctor => doctor.role === 'doctor') ? 'completed' : 'pending';
       case 'verification':
         return centre?.isActive ? 'completed' : 'pending';
       default:
@@ -82,7 +80,7 @@ export default function CentreTimeline({ centre, doctors = [] }) {
       title: "Doctor Information",
       status: getSectionStatus('doctor'),
       date: centre?.updatedAt,
-      description: `${doctors.length} doctor${doctors.length !== 1 ? 's' : ''} added`
+      description: `${doctors.filter(d => d.role === 'doctor').length} doctor${doctors.filter(d => d.role === 'doctor').length !== 1 ? 's' : ''} added`
     },
     {
       title: "Verification Complete",

@@ -20,6 +20,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page")) || 1;
     const search = searchParams.get("search") || "";
+    const status = searchParams.get("status") || "";
     const createdBy = searchParams.get("createdBy") || "";
     const allottedTo = searchParams.get("allottedTo") || "";
     const allottedDoctors = searchParams.get("allottedDoctors") || "";
@@ -30,6 +31,7 @@ export async function GET(request) {
       search,
       skip,
       limit,
+      status,
       createdBy,
       allottedTo,
       allottedDoctors,
