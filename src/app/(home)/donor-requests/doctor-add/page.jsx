@@ -15,7 +15,7 @@ export default function DoctorAddDonorRequest() {
   const [formData, setFormData] = useState({
     requiredByDate: "",
     gender: "",
-    ageRange: { min: "", max: "" },
+    ageRange: { min: "", max: "" },     
     maritalStatus: "",
     cast: "",
     bloodGroup: "",
