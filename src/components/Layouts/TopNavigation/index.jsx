@@ -172,12 +172,27 @@ export default function TopNavigation() {
               >
                 <div className="relative h-10 w-10 flex-shrink-0">
                   <Image
-                    src={user?.profileImage || "/images/user/user-03.png"}
+                    src={(() => {
+                        // Use doctorImage if profileImage is default or empty
+                      if (!user?.profileImage || user?.profileImage === "/images/user/user-03.png") {
+                        if (user?.doctorImage) {
+                          return user.doctorImage;
+                        }
+                      }
+                      
+                      // Use profileImage if it's not default
+                      if (user?.profileImage && user?.profileImage !== "/images/user/user-03.png") {
+                        return user.profileImage;
+                      }
+                      
+                      // Fallback to default
+                      return "/images/user/user-03.png";
+                    })()}
                     alt="User"
                     width={40}
                     height={40}
                     className="h-full w-full rounded-full object-cover ring-2 ring-white/20"
-                    key={user?.profileImage}
+                    key={`${user?._id}-${user?.profileImage}-${user?.doctorImage}`}
                     onError={(e) => {
                       e.target.src = "/images/user/user-03.png";
                     }}
