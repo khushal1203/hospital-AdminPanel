@@ -28,7 +28,7 @@ export async function GET(request, { params }) {
       })
       .populate({
         path: "allottedTo",
-        select: "fullName age gender bloodGroup donorImage contactNumber height weight"
+        select: "fullName age gender bloodGroup donorImage contactNumber height weight maritalStatus religion dateOfBirth placeOfBirth cast"
       })
       .populate("createdBy", "fullName");
 
@@ -71,7 +71,7 @@ export async function PUT(request, { params }) {
       })
       .populate({
         path: "allottedTo",
-        select: "fullName age gender bloodGroup donorImage contactNumber height weight"
+        select: "fullName age gender bloodGroup donorImage contactNumber height weight maritalStatus religion dateOfBirth placeOfBirth cast"
       })
       .populate("createdBy", "fullName");
 

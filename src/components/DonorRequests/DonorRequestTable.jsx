@@ -339,15 +339,9 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                             if (isRequestCreator) {
                               if (request.isAlloted) {
                                 return (
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      router.push(`/donor-requests/${request._id}`);
-                                    }}
-                                    className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
-                                  >
-                                    Donor Info
-                                  </button>
+                                  <span className="px-4 py-2 text-sm font-semibold text-green-700 bg-green-100 rounded-lg">
+                                    Donor Allotted
+                                  </span>
                                 );
                               } else {
                                 return (

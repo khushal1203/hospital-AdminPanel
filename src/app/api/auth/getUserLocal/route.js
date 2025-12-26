@@ -39,9 +39,14 @@ export async function GET(req) {
       );
     }
 
-    // Set default profile image if not exists
-    if (!user.profileImage) {
+    // Only set default profile image if both profileImage and doctorImage are missing
+    // Don't override with default if doctorImage exists
+    if (!user.profileImage && !user.doctorImage) {
       user.profileImage = "/images/user/user-03.png";
+      await user.save();
+    } else if (user.profileImage === "/images/user/user-03.png" && user.doctorImage) {
+      // If profileImage is default but doctorImage exists, clear the default profileImage
+      user.profileImage = null;
       await user.save();
     }
 

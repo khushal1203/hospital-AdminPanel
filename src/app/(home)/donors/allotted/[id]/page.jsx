@@ -370,10 +370,120 @@ export default function DoctorDonorRequestView() {
                   </div>
                 </div>
               </div>
+
+              {/* Allotted Donor Information - Show only if donor is allotted */}
+              {donorRequest?.isAlloted && donorRequest?.allottedTo && (
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
+                  <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <MdPerson className="h-6 w-6 text-emerald-600" />
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Allotted Donor
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Donor assigned to this request
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="flex items-center gap-6">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={donorRequest?.allottedTo?.donorImage || "/images/user/user-03.png"}
+                          alt="Donor"
+                          className="h-24 w-24 rounded-full object-cover border-2 border-emerald-200"
+                        />
+                      </div>
+                      <div className="flex-1 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Donor Name
+                          </label>
+                          <p className="text-gray-900 font-semibold">
+                            {donorRequest?.allottedTo?.fullName || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Age
+                          </label>
+                          <p className="text-gray-900">
+                            {donorRequest?.allottedTo?.age || "-"} years
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Gender
+                          </label>
+                          <p className="text-gray-900 capitalize">
+                            {donorRequest?.allottedTo?.gender || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Blood Group
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <MdBloodtype className="h-4 w-4 text-red-500" />
+                            <p className="font-semibold text-gray-900">
+                              {donorRequest?.allottedTo?.bloodGroup || "-"}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Contact Number
+                          </label>
+                          <p className="text-gray-900">
+                            {donorRequest?.allottedTo?.contactNumber || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Height / Weight
+                          </label>
+                          <p className="text-gray-900">
+                            {donorRequest?.allottedTo?.height || "-"} cm / {donorRequest?.allottedTo?.weight || "-"} kg
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Education
+                          </label>
+                          <p className="text-gray-900">
+                            {donorRequest?.allottedTo?.education || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Occupation
+                          </label>
+                          <p className="text-gray-900">
+                            {donorRequest?.allottedTo?.occupation || "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Marital Status
+                          </label>
+                          <p className="text-gray-900 capitalize">
+                            {donorRequest?.allottedTo?.maritalStatus || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               </div>
             </div>
             <div className="hidden lg:col-span-3 lg:block">
-              <DonorRequestTimeline donorRequest={donorRequest} />
+              <div className="sticky top-4">
+                <DonorRequestTimeline donorRequest={donorRequest} />
+              </div>
             </div>
           </div>
         </div>
