@@ -14,9 +14,16 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
+    }
 
     const { id } = await params;
+    
+    if (!id) {
+      return NextResponse.json({ success: false, message: "ID parameter is required" }, { status: 400 });
+    }
     const donorRequest = await DonorRequest.findById(id)
       .populate({
         path: "hospitalId",
@@ -55,9 +62,16 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
+    }
 
     const { id } = await params;
+    
+    if (!id) {
+      return NextResponse.json({ success: false, message: "ID parameter is required" }, { status: 400 });
+    }
     const body = await request.json();
 
     const updatedRequest = await DonorRequest.findByIdAndUpdate(id, body, { new: true })
@@ -102,9 +116,16 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
+    }
 
     const { id } = await params;
+    
+    if (!id) {
+      return NextResponse.json({ success: false, message: "ID parameter is required" }, { status: 400 });
+    }
     const deletedRequest = await DonorRequest.findByIdAndDelete(id);
 
     if (!deletedRequest) {
