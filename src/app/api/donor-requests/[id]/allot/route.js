@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import DonorRequest from "@/modals/donorRequestModal";
 import { Donor } from "@/modals/donorModal";
+import Notification from "@/modals/notificationModal";
 import jwt from "jsonwebtoken";
 
 export async function PUT(request, { params }) {
@@ -54,6 +55,17 @@ export async function PUT(request, { params }) {
       },
       { new: true }
     );
+
+    // Create notification for doctor
+    await Notification.create({
+      type: "donor_allotted",
+      title: "Donor Allotted",
+      message: `A donor has been allotted to your request`,
+      recipientId: donorRequest.doctorId,
+      senderId: decoded.userId,
+      relatedId: id,
+    });
+
     return NextResponse.json({
       success: true,
       message: "Request allotted successfully",

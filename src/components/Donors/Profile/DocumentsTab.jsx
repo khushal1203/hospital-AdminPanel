@@ -244,6 +244,10 @@ export default function DocumentsTab({ donor }) {
 
       if (response.ok) {
         toast.success("Document deleted successfully!");
+        // Trigger timeline refresh
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('donorUpdated', { detail: { donorId: donor._id } }));
+        }
       } else {
         toast.error("Failed to delete document from server");
       }
@@ -324,6 +328,11 @@ export default function DocumentsTab({ donor }) {
               toast.success(
                 `${documents[sectionKey][index].reportName} uploaded successfully!`,
               );
+              
+              // Trigger timeline refresh
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('donorUpdated', { detail: { donorId: donor._id } }));
+              }
             }
           } catch (error) {
             console.error("Error uploading document:", error);
@@ -341,7 +350,10 @@ export default function DocumentsTab({ donor }) {
     fileInputRefs.current[inputId].click();
   };
 
-  const DocumentSection = ({ title, docs, type }) => (
+  const DocumentSection = ({ title, docs, type }) => {
+    const sectionKey = type === "donor" ? "donorDocuments" : type === "reports" ? "reports" : "otherDocuments";
+    
+    return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -369,7 +381,12 @@ export default function DocumentsTab({ donor }) {
               <tr key={index}>
                 <td className="p-3 text-gray-900">{doc.reportName}</td>
                 <td className="p-3 text-gray-900">
-                  {doc.isUploaded ? (
+                  {uploading[`${sectionKey}-${index}`] ? (
+                    <span className="flex items-center gap-1 text-blue-600">
+                      <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+                      Uploading...
+                    </span>
+                  ) : doc.isUploaded ? (
                     <span className="flex items-center gap-1 text-green-600">
                       <span className="h-2 w-2 rounded-full bg-green-500"></span>
                       Uploaded
@@ -429,10 +446,15 @@ export default function DocumentsTab({ donor }) {
                               : "otherDocuments";
                         handleUpload(sectionKey, index);
                       }}
-                      className="rounded-md p-1.5 text-purple-600 transition-colors hover:bg-purple-50 hover:text-purple-800"
-                      title="Upload document"
+                      disabled={uploading[`${type === "donor" ? "donorDocuments" : type === "reports" ? "reports" : "otherDocuments"}-${index}`]}
+                      className="rounded-md p-1.5 text-purple-600 transition-colors hover:bg-purple-50 hover:text-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={uploading[`${type === "donor" ? "donorDocuments" : type === "reports" ? "reports" : "otherDocuments"}-${index}`] ? "Uploading..." : "Upload document"}
                     >
-                      <MdCloudUpload className="h-5 w-5" />
+                      {uploading[`${type === "donor" ? "donorDocuments" : type === "reports" ? "reports" : "otherDocuments"}-${index}`] ? (
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
+                      ) : (
+                        <MdCloudUpload className="h-5 w-5" />
+                      )}
                     </button>
                   )}
                 </td>
@@ -442,7 +464,8 @@ export default function DocumentsTab({ donor }) {
         </table>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">

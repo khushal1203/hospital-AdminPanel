@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import DonorRequest from "@/modals/donorRequestModal";
 import { User } from "@/modals/userModal";
+import Notification from "@/modals/notificationModal";
 import jwt from "jsonwebtoken";
 
 export async function POST(request) {
@@ -62,6 +63,22 @@ export async function POST(request) {
     });
 
     await donorRequest.save();
+
+    // Create notification for admin
+    const adminUsers = await User.find({ role: "admin" }).select("_id");
+    const doctorUser = await User.findById(userId).select("fullName");
+    
+    for (const admin of adminUsers) {
+      await Notification.create({
+        type: "doctor_request",
+        title: "New Donor Request",
+        message: `Dr. ${doctorUser.fullName} has submitted a new donor request`,
+        recipientId: admin._id,
+        senderId: userId,
+        relatedId: donorRequest._id,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Donor request created successfully",

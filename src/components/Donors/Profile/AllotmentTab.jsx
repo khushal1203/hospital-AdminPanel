@@ -166,13 +166,47 @@ export default function AllotmentTab({ donor }) {
     fileInputRefs.current[inputId].click();
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = async (index) => {
     if (confirm("Are you sure you want to delete this document?")) {
-      setDocuments(prev => ({
-        ...prev,
-        allotmentDocuments: prev.allotmentDocuments.filter((_, i) => i !== index)
-      }));
-      toast.success("Document deleted successfully!");
+      try {
+        // Call API to delete document from server
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/delete-document`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            donorId: donor._id,
+            sectionKey: "allotmentDocuments",
+            index,
+          }),
+        });
+
+        if (response.ok) {
+          setDocuments(prev => ({
+            ...prev,
+            allotmentDocuments: prev.allotmentDocuments.map((doc, i) => 
+              i === index ? {
+                ...doc,
+                documentName: null,
+                filePath: null,
+                uploadBy: null,
+                uploadDate: null,
+                hasFile: false,
+                isUploaded: false
+              } : doc
+            )
+          }));
+          toast.success("Document deleted successfully!");
+        } else {
+          toast.error("Failed to delete document from server");
+        }
+      } catch (error) {
+        console.error("Error deleting document:", error);
+        toast.error("Failed to delete document");
+      }
     }
   };
 
@@ -251,7 +285,12 @@ export default function AllotmentTab({ donor }) {
                 <tr key={index}>
                   <td className="p-3 text-gray-900">{doc.reportName}</td>
                   <td className="p-3 text-gray-900">
-                    {doc.isUploaded ? (
+                    {uploading[`allotmentDocuments-${index}`] ? (
+                      <span className="flex items-center gap-1 text-blue-600">
+                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+                        Uploading...
+                      </span>
+                    ) : doc.isUploaded ? (
                       <span className="flex items-center gap-1 text-green-600">
                         <span className="h-2 w-2 rounded-full bg-green-500"></span>
                         Uploaded
@@ -292,10 +331,15 @@ export default function AllotmentTab({ donor }) {
                     ) : (
                       <button
                         onClick={() => handleUpload(index)}
-                        className="rounded-md p-1.5 text-purple-600 transition-colors hover:bg-purple-50 hover:text-purple-800"
-                        title="Upload document"
+                        disabled={uploading[`allotmentDocuments-${index}`]}
+                        className="rounded-md p-1.5 text-purple-600 transition-colors hover:bg-purple-50 hover:text-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={uploading[`allotmentDocuments-${index}`] ? "Uploading..." : "Upload document"}
                       >
-                        <MdCloudUpload className="h-5 w-5" />
+                        {uploading[`allotmentDocuments-${index}`] ? (
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
+                        ) : (
+                          <MdCloudUpload className="h-5 w-5" />
+                        )}
                       </button>
                     )}
                   </td>
