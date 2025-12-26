@@ -286,6 +286,41 @@ const DonorSchema = new mongoose.Schema(
           hasFile: { type: Boolean, default: false },
         },
       ],
+      allotmentDocuments: [
+        {
+          reportName: String,
+          documentName: String,
+          filePath: String,
+          uploadBy: String,
+          uploadDate: Date,
+          hasFile: { type: Boolean, default: false },
+        },
+      ],
+    },
+
+    // Case Status
+    isCaseDone: {
+      type: Boolean,
+      default: false,
+    },
+    caseDoneDate: {
+      type: Date,
+    },
+    caseDoneBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    // Allotment Remarks
+    allotmentRemarks: {
+      oocyteRetrievalDate: String,
+      numberOfOocytes: String,
+      oocyteQuality: String,
+      fertilizationOutcome: String,
+      remarksAddedBy: String,
+      remarks: String,
+      addedBy: String,
+      addedAt: Date,
     },
 
     // Metadata

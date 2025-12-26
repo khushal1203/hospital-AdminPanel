@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/connectdb";
 import DonorRequest from "@/modals/donorRequestModal";
 import CentreModel from "@/modals/centreModal";
 import { User } from "@/modals/userModal";
+import { Donor } from "@/modals/donorModal";
 import jwt from "jsonwebtoken";
 
 export async function GET(request, { params }) {

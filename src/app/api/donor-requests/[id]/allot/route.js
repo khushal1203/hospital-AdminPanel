@@ -50,7 +50,7 @@ export async function PUT(request, { params }) {
         isAllotted: true,
         status: "allotted",
         allottedToRequest: id,
-        allottedBy: id  // donor-request ki ID set kar rahe hain
+        allottedBy: decoded.id || decoded._id || decoded.userId  // admin user ki ID set kar rahe hain
       },
       { new: true }
     );

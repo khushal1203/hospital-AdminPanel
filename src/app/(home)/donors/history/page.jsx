@@ -1,28 +1,64 @@
+"use client";
+
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import DonorListTable from "@/components/Donors/DonorListTable";
 import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
-import { getAllDonorsController } from "@/controller/donorController";
-import { connectDB } from "@/lib/connectdb";
 import { ColumnProvider } from "@/contexts/ColumnContext";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-export const dynamic = "force-dynamic";
-
-export const metadata = {
-  title: "Donors History | Hospital Admin Panel",
-  description: "History of past donors",
-};
-
-export default async function DonorsHistoryPage({ searchParams }) {
-  await connectDB();
-  const params = await searchParams;
-  const page = parseInt(params?.page) || 1;
+function DonorsHistoryContent() {
+  const [donors, setDonors] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const page = parseInt(searchParams.get("page")) || 1;
+  const search = searchParams.get("search") || "";
   const limit = 10;
-  const skip = (page - 1) * limit;
 
-  const { donors, total } = await getAllDonorsController({
-    status: "completed",
-    skip,
-    limit,
-  });
+  useEffect(() => {
+    fetchDonors();
+  }, [page, search]);
+
+  const fetchDonors = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user._id || user.id;
+      const isAdmin = user.isAdmin;
+      
+      const skip = (page - 1) * limit;
+      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?search=${search}&page=${page}&limit=${limit}&isCaseDone=true`;
+      if (!isAdmin) {
+        url += `&createdBy=${userId}`;
+      }
+      
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setDonors(data.donors);
+        setTotal(data.total);
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError("Failed to fetch donors");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <LoadingSpinner message="" />;
+  }
 
   return (
     <ColumnProvider>
@@ -40,7 +76,7 @@ export default async function DonorsHistoryPage({ searchParams }) {
         <div className="flex flex-1 flex-col overflow-hidden bg-gray-100">
           <div className="flex-1 overflow-auto p-3 sm:p-6">
             <DonorListTable
-              donors={JSON.parse(JSON.stringify(donors))}
+              donors={donors}
               currentPage={page}
               totalItems={total}
               itemsPerPage={limit}
@@ -49,5 +85,13 @@ export default async function DonorsHistoryPage({ searchParams }) {
         </div>
       </div>
     </ColumnProvider>
+  );
+}
+
+export default function DonorsHistoryPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner message="Loading..." />}>
+      <DonorsHistoryContent />
+    </Suspense>
   );
 }

@@ -2,12 +2,13 @@ import { MdAdd, MdVisibility, MdClose, MdCloudUpload } from "react-icons/md";
 import dayjs from "dayjs";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "@/utils/toast";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function DocumentsTab({ donor }) {
+  const { user } = useCurrentUser();
   const [showModal, setShowModal] = useState(false);
   const [currentSection, setCurrentSection] = useState("");
   const [reportName, setReportName] = useState("");
-  const [currentUser, setCurrentUser] = useState("");
   const fileInputRefs = useRef({});
 
   const defaultDocuments = {
@@ -119,12 +120,6 @@ export default function DocumentsTab({ donor }) {
   const [uploading, setUploading] = useState({});
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      const userData = JSON.parse(user);
-      setCurrentUser(userData.name || userData.fullName || "Unknown User");
-    }
-
     // Load documents from database and localStorage
     const uploadedDocs = JSON.parse(
       localStorage.getItem("uploadedDocs") || "{}",
@@ -280,6 +275,9 @@ export default function DocumentsTab({ donor }) {
             "reportName",
             documents[sectionKey][index].reportName,
           );
+          if (user?._id) {
+            formData.append("uploadedBy", user._id);
+          }
 
           try {
             const token = localStorage.getItem("token");
@@ -297,7 +295,7 @@ export default function DocumentsTab({ donor }) {
                 reportName: documents[sectionKey][index].reportName,
                 documentName: file.name,
                 filePath: data.filePath,
-                uploadBy: currentUser,
+                uploadBy: user?.name || user?.fullName || "Unknown User",
                 uploadDate: new Date().toISOString(),
                 hasFile: true,
                 isUploaded: true,

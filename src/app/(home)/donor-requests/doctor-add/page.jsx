@@ -7,6 +7,7 @@ import { MdArrowBack, MdDateRange, MdPerson } from "react-icons/md";
 import InputGroup from "@/components/FormElements/InputGroup";
 import SelectField from "@/components/FormElements/SelectField";
 import BackButton from "@/components/ui/BackButton";
+import DonorRequestTimeline from "@/components/DonorRequests/DonorRequestTimeline";
 
 export default function DoctorAddDonorRequest() {
   const router = useRouter();
@@ -107,28 +108,29 @@ export default function DoctorAddDonorRequest() {
       {/* Scrollable Content */}
       <div className="flex-1 overflow-hidden bg-gray-50">
         <div className="h-full overflow-auto p-4">
-          <div className="mx-auto max-w-4xl">
-            {/* Error Message */}
-            {error && (
-              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
-                <div className="flex items-center">
-                  <svg
-                    className="mr-3 h-5 w-5 text-red-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <p className="font-medium text-red-800">{error}</p>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-9">
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+                  <div className="flex items-center">
+                    <svg
+                      className="mr-3 h-5 w-5 text-red-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="font-medium text-red-800">{error}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Requirements */}
@@ -397,6 +399,14 @@ export default function DoctorAddDonorRequest() {
                 </button>
               </div>
             </form>
+            </div>
+            
+            {/* Timeline Sidebar */}
+            <div className="hidden lg:col-span-3 lg:block">
+              <div className="sticky top-4">
+                <DonorRequestTimeline formData={formData} />
+              </div>
+            </div>
           </div>
         </div>
       </div>

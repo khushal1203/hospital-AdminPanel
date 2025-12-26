@@ -4,12 +4,12 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ColumnProvider } from "@/contexts/ColumnContext";
 import { FilterProvider } from "@/contexts/FilterContext";
-import DonorRequestTable from "@/components/DonorRequests/DonorRequestTable";
+import AllottedDonorsTable from "@/components/Donors/AllottedDonorsTable";
 import DonorTableToolbar from "@/components/Donors/DonorTableToolbar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 function AllottedDonorsContent() {
-  const [requests, setRequests] = useState([]);
+  const [donors, setDonors] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,17 +19,17 @@ function AllottedDonorsContent() {
   const limit = 10;
 
   useEffect(() => {
-    fetchAllottedRequests();
+    fetchAllottedDonors();
   }, [page, search]);
 
-  const fetchAllottedRequests = async () => {
+  const fetchAllottedDonors = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const userId = user._id || user.id;
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/all?page=${page}&search=${search}&allottedDoctors=${userId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?page=${page}&search=${search}&createdBy=${userId}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -38,13 +38,15 @@ function AllottedDonorsContent() {
       const data = await res.json();
 
       if (data.success) {
-        setRequests(data.requests);
-        setTotal(data.total);
+        // Filter only allotted donors
+        const allottedDonors = data.donors.filter(donor => donor.allottedBy === userId);
+        setDonors(allottedDonors);
+        setTotal(allottedDonors.length);
       } else {
         setError(data.message);
       }
     } catch (err) {
-      setError("Failed to fetch allotted requests");
+      setError("Failed to fetch allotted donors");
     } finally {
       setLoading(false);
     }
@@ -75,12 +77,11 @@ function AllottedDonorsContent() {
           {/* Scrollable Table Content */}
           <div className="flex-1 overflow-hidden bg-gray-50">
             <div className="h-full overflow-auto p-4">
-              <DonorRequestTable
-                requests={requests}
+              <AllottedDonorsTable
+                donors={donors}
                 currentPage={page}
                 totalItems={total}
                 itemsPerPage={limit}
-                hideActions={true}
               />
             </div>
           </div>

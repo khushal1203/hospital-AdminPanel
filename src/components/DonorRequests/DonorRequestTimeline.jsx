@@ -1,5 +1,8 @@
 import { MdCheckCircle, MdLocalHospital, MdPerson, MdDateRange } from "react-icons/md";
 import dayjs from "dayjs";
+import { maskName } from "@/utils/privacy";
+import { useState } from "react";
+import { toast } from "@/utils/toast";
 
 const TimelineItem = ({ title, status, date, isLast, description }) => {
   const isCompleted = status === "completed";
@@ -41,6 +44,57 @@ const TimelineItem = ({ title, status, date, isLast, description }) => {
 };
 
 export default function DonorRequestTimeline({ formData, donorRequest }) {
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const handleRejectDonor = async () => {
+    try {
+      setRejecting(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/${donorRequest._id}/reject-donor`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Donor rejected successfully");
+        setShowRejectModal(false);
+        window.location.reload();
+      } else {
+        toast.error(data.message || "Failed to reject donor");
+      }
+    } catch (error) {
+      toast.error("Failed to reject donor");
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const handleAcceptDonor = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donor-requests/${donorRequest._id}/accept-donor`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Donor accepted");
+        window.location.reload();
+      } else {
+        toast.error(data.message || "Failed to accept donor");
+      }
+    } catch (error) {
+      toast.error("Failed to accept donor");
+    }
+  };
   // Use formData for add page, donorRequest for details page
   const data = formData || donorRequest;
   
@@ -81,10 +135,10 @@ export default function DonorRequestTimeline({ formData, donorRequest }) {
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900">
-              Allotted Donor
+              {donorRequest.status === "accepted" ? "Accepted Donor" : "Allotted Donor"}
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Please review the donor details below
+              {donorRequest.status === "accepted" ? "Donor has been accepted" : "Please review the donor details below"}
             </p>
           </div>
           
@@ -96,7 +150,7 @@ export default function DonorRequestTimeline({ formData, donorRequest }) {
                 className="h-16 w-16 rounded-full object-cover border-2 border-gray-200"
               />
               <div>
-                <h4 className="font-semibold text-gray-900">{donor.fullName || "N/A"}</h4>
+                <h4 className="font-semibold text-gray-900">{maskName(donor.fullName)}</h4>
                 <p className="text-sm text-gray-600">{donor.age || "N/A"} years • {donor.gender || "N/A"}</p>
               </div>
             </div>
@@ -137,16 +191,37 @@ export default function DonorRequestTimeline({ formData, donorRequest }) {
             </div>
             
             <div className="pt-4 border-t border-gray-200">
-              <div className="flex gap-3">
-                <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                  Accept Donor
-                </button>
-                <button className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-                  Reject Donor
-                </button>
-              </div>
+              {donorRequest.status === "accepted" ? (
+                <div className="text-center py-2">
+                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    ✓ Accepted
+                  </span>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleAcceptDonor}
+                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                  >
+                    Accept Donor
+                  </button>
+                  <button 
+                    onClick={() => setShowRejectModal(true)}
+                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                  >
+                    Reject Donor
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+          
+          <RejectModal 
+            showRejectModal={showRejectModal}
+            setShowRejectModal={setShowRejectModal}
+            handleRejectDonor={handleRejectDonor}
+            rejecting={rejecting}
+          />
         </div>
       );
     }
@@ -253,3 +328,44 @@ export default function DonorRequestTimeline({ formData, donorRequest }) {
     </div>
   );
 }
+
+// Reject Modal Component - Outside the main component
+const RejectModal = ({ showRejectModal, setShowRejectModal, handleRejectDonor, rejecting }) => {
+  if (!showRejectModal) return null;
+  
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h3 className="text-xl font-semibold text-gray-900">
+            Reject Request?
+          </h3>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-600 leading-relaxed">
+            Are you sure you want to reject this donor request? Once rejected, it cannot be reversed. The bank will be notified of your decision.
+          </p>
+        </div>
+
+        <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 rounded-xl">
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowRejectModal(false)}
+              className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRejectDonor}
+              disabled={rejecting}
+              className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {rejecting ? "Rejecting..." : "Reject Donor"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

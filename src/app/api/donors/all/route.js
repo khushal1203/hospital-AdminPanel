@@ -18,6 +18,8 @@ export async function GET(req) {
       search: searchParams.get("search"),
       docFilter: searchParams.get("docFilter"),
       createdBy: searchParams.get("createdBy"),
+      excludeCaseDone: searchParams.get("excludeCaseDone") === "true",
+      isCaseDone: searchParams.get("isCaseDone") === "true",
       skip,
       limit,
     };

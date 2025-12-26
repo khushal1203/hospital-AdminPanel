@@ -120,7 +120,7 @@ function ActiveDonorsContent() {
       const isAdmin = user.isAdmin;
       
       const skip = (page - 1) * limit;
-      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?search=${search}&page=${page}&limit=${limit}`;
+      let url = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?search=${search}&page=${page}&limit=${limit}&excludeCaseDone=true`;
       if (!isAdmin) {
         url += `&createdBy=${userId}`;
       }     

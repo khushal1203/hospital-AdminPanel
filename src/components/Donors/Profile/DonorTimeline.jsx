@@ -1,6 +1,6 @@
-import { MdCheckCircle, MdUpload, MdPrint } from "react-icons/md";
+import { MdCheckCircle, MdUpload, MdPrint, MdDescription, MdComment, MdClose } from "react-icons/md";
 import dayjs from "dayjs";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { toast } from "@/utils/toast";
 
 const TimelineItem = ({
@@ -37,6 +37,21 @@ const TimelineItem = ({
     );
   }
 
+  // Special icon for different timeline items
+  const getTimelineIcon = () => {
+    if (title === "Allotment Documents") {
+      return <MdDescription className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "Allotment Remarks") {
+      return <MdComment className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    return (
+      <div
+        className={`h-2 w-2 rounded-full ${isCompleted ? "bg-purple-600" : "bg-gray-300"}`}
+      ></div>
+    );
+  };
+
   return (
     <div className="relative flex gap-4 pb-8">
       {/* Connector Line */}
@@ -46,9 +61,7 @@ const TimelineItem = ({
 
       {/* Icon */}
       <div className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white">
-        <div
-          className={`h-2 w-2 rounded-full ${isCompleted ? "bg-purple-600" : "bg-gray-300"}`}
-        ></div>
+        {getTimelineIcon()}
       </div>
 
       {/* Content */}
@@ -87,6 +100,43 @@ const TimelineItem = ({
 
 export default function DonorTimeline({ donor }) {
   const fileInputRefs = useRef({});
+  const [showCaseDoneModal, setShowCaseDoneModal] = useState(false);
+  const [markingCaseDone, setMarkingCaseDone] = useState(false);
+
+  const handleMarkCaseDone = async () => {
+    setMarkingCaseDone(true);
+    try {
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donor._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          isCaseDone: true,
+          caseDoneDate: new Date().toISOString(),
+          caseDoneBy: user._id || user.id
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Case marked as done successfully!");
+        setShowCaseDoneModal(false);
+        window.location.reload();
+      } else {
+        toast.error(data.message || "Failed to mark case as done");
+      }
+    } catch (error) {
+      console.error("Error marking case as done:", error);
+      toast.error("Failed to mark case as done. Please try again.");
+    } finally {
+      setMarkingCaseDone(false);
+    }
+  };
 
   const handleDocumentUpload = async (documentTitle) => {
     const docTypeMap = {
@@ -138,6 +188,20 @@ export default function DonorTimeline({ donor }) {
     }
     fileInputRefs.current[inputId].click();
   };
+  // Helper function to check allotment document status
+  const getAllotmentDocumentStatus = () => {
+    if (donor?.documents?.allotmentDocuments) {
+      const hasUploadedDocs = donor.documents.allotmentDocuments.some(doc => doc.hasFile === true);
+      return hasUploadedDocs ? "uploaded" : "pending";
+    }
+    return "pending";
+  };
+
+  // Helper function to check remarks status
+  const getRemarksStatus = () => {
+    return donor?.allotmentRemarks ? "completed" : "pending";
+  };
+
   // Helper function to check if document has file uploaded (same logic as DonorListTable)
   const getDocumentStatus = (docType) => {
     if (!donor?.documents) return "pending";
@@ -164,7 +228,7 @@ export default function DonorTimeline({ donor }) {
       if (searchTerm === "blood" && reportName === "blood report") return true;
       if (
         searchTerm === "insurance" &&
-        reportName === "life insurance document"
+        reportName === "insurance documents"
       )
         return true;
       if (searchTerm === "opu" && reportName === "opu process") return true;
@@ -183,7 +247,7 @@ export default function DonorTimeline({ donor }) {
   // Construct timeline steps based on donor data
   const steps = [
     {
-      title: "Case Registered on",
+      title: "Case Registered",
       status: "completed",
       date: donor.createdAt,
     },
@@ -213,11 +277,30 @@ export default function DonorTimeline({ donor }) {
       date: donor.updatedAt,
     },
     {
+      title: "Allotment Documents",
+      status: getAllotmentDocumentStatus(),
+      date: donor.updatedAt,
+    },
+    {
+      title: "Allotment Remarks",
+      status: getRemarksStatus(),
+      date: donor?.allotmentRemarks?.addedAt || null,
+    },
+    {
       title: "OPU Process",
       status: getDocumentStatus("opu"),
       date: null,
     },
   ];
+
+  // Check if all steps are completed
+  const areAllStepsCompleted = () => {
+    return steps.every(step => 
+      step.status === "completed" || 
+      step.status === "uploaded" || 
+      step.status === "allotted"
+    );
+  };
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -235,6 +318,72 @@ export default function DonorTimeline({ donor }) {
           />
         ))}
       </div>
+      
+      {/* Case Done Button */}
+      {areAllStepsCompleted() && !donor.isCaseDone && (
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <button
+            onClick={() => setShowCaseDoneModal(true)}
+            className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+          >
+            Case Done
+          </button>
+        </div>
+      )}
+      
+      {/* Case Done Status */}
+      {donor.isCaseDone && (
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-2 text-green-600">
+            <MdCheckCircle className="h-5 w-5" />
+            <span className="text-sm font-medium">Case Completed</span>
+          </div>
+          {donor.caseDoneDate && (
+            <p className="text-center text-xs text-gray-500 mt-1">
+              {dayjs(donor.caseDoneDate).format("DD MMM YYYY, HH:mm")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Case Done Confirmation Modal */}
+      {showCaseDoneModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-96 max-w-md rounded-lg bg-white p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Mark Case as Done?
+              </h3>
+              <button
+                onClick={() => setShowCaseDoneModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <MdClose className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6">
+              Your action will be saved, and you can always check the history in the Alloted Donors tab.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCaseDoneModal(false)}
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMarkCaseDone}
+                disabled={markingCaseDone}
+                className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {markingCaseDone ? "Processing..." : "Yes, Done"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

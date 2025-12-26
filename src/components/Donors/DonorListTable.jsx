@@ -18,8 +18,10 @@ import {
 import { useColumns } from "@/contexts/ColumnContext";
 import { useSelector } from "react-redux";
 import { getUserRole } from "@/utils/roleUtils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const StatusBadge = ({ status, donor, documentType }) => {
+  const { user } = useCurrentUser();
   const [currentStatus, setCurrentStatus] = useState(() => {
     if (!donor?.documents || !documentType) return status;
 
@@ -41,7 +43,7 @@ const StatusBadge = ({ status, donor, documentType }) => {
       if (searchTerm === "blood" && reportName === "blood report") return true;
       if (
         searchTerm === "insurance" &&
-        reportName === "life insurance document"
+        reportName === "insurance documents"
       )
         return true;
       if (searchTerm === "opu" && reportName === "opu process") return true;
@@ -103,6 +105,9 @@ const StatusBadge = ({ status, donor, documentType }) => {
         formData.append("sectionKey", mapping.sectionKey);
         formData.append("index", mapping.index);
         formData.append("reportName", mapping.reportName);
+        if (user?._id) {
+          formData.append("uploadedBy", user._id);
+        }
 
         try {
           const token = localStorage.getItem("token");
@@ -304,7 +309,7 @@ export default function DonorListTable({
           (d) => d.reportName?.toLowerCase() === "blood report",
         ),
         donor.documents?.otherDocuments?.find(
-          (d) => d.reportName?.toLowerCase() === "life insurance document",
+          (d) => d.reportName?.toLowerCase() === "insurance documents",
         ),
         donor.documents?.reports?.find(
           (d) => d.reportName?.toLowerCase() === "opu process",

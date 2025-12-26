@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { MdEdit, MdMoreVert, MdPrint, MdCancel } from "react-icons/md";
+import { MdEdit, MdMoreVert, MdPrint, MdCancel, MdCheckCircle } from "react-icons/md";
 import { toast } from "@/utils/toast";
 import { ButtonLoader } from "@/components/ui/LoadingSpinner";
 
@@ -10,6 +10,7 @@ import DonorTimeline from "./DonorTimeline";
 import OverviewTab from "./OverviewTab";
 import MedicalHistoryTab from "./MedicalHistoryTab";
 import DocumentsTab from "./DocumentsTab";
+import AllotmentTab from "./AllotmentTab";
 import {
   MdOutlineDashboard,
   MdHistory,
@@ -29,12 +30,38 @@ const Tag = ({ text, type }) => {
   );
 };
 
-export default function DonorProfileView({ donor }) {
+export default function DonorProfileView({ donor: initialDonor }) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [donorImage, setDonorImage] = useState(donor.donorImage);
+  const [donor, setDonor] = useState(initialDonor);
+  const [donorImage, setDonorImage] = useState(initialDonor.donorImage);
   const [uploading, setUploading] = useState(false);
   const [cancellingAllotment, setCancellingAllotment] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Listen for donor updates
+  useEffect(() => {
+    const handleDonorUpdate = async (event) => {
+      if (event.detail.donorId === donor._id) {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/${donor._id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await response.json();
+          if (data.success) {
+            setDonor(data.donor);
+          }
+        } catch (error) {
+          console.error("Error refreshing donor data:", error);
+        }
+      }
+    };
+
+    window.addEventListener('donorUpdated', handleDonorUpdate);
+    return () => window.removeEventListener('donorUpdated', handleDonorUpdate);
+  }, [donor._id]);
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -174,7 +201,7 @@ export default function DonorProfileView({ donor }) {
                 <MdPrint className="h-4 w-4" />
                 <span className="hidden sm:inline">Print</span>
               </button>
-              {donor.isAllotted && (
+              {donor.isAllotted && !donor.isCaseDone && (
                 <button 
                   onClick={handleCancelAllotment}
                   disabled={cancellingAllotment}
@@ -189,6 +216,12 @@ export default function DonorProfileView({ donor }) {
                     {cancellingAllotment ? "Cancelling..." : "Cancel Allotment"}
                   </span>
                 </button>
+              )}
+              {donor.isCaseDone && (
+                <div className="flex items-center gap-2 rounded-lg border-2 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-1.5 text-sm font-semibold text-green-700 shadow-sm">
+                  <MdCheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Case Done</span>
+                </div>
               )}
             </div>
           </div>
@@ -228,11 +261,7 @@ export default function DonorProfileView({ donor }) {
             {activeTab === "overview" && <OverviewTab donor={donor} />}
             {activeTab === "medical" && <MedicalHistoryTab donor={donor} />}
             {activeTab === "documents" && <DocumentsTab donor={donor} />}
-            {activeTab === "allotment" && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-500 shadow-sm sm:p-8">
-                Allotment Details
-              </div>
-            )}
+            {activeTab === "allotment" && <AllotmentTab donor={donor} />}
           </div>
 
           {/* Timeline - Hidden on mobile, shown on desktop */}
