@@ -16,11 +16,42 @@ export default function Sidebar({
   const [role, setRole] = useState(null);
   const [adminStatus, setAdminStatus] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      if (data.notifications) {
+        const count = data.notifications.filter(n => !n.isRead).length;
+        setUnreadCount(count);
+      }
+    } catch (error) {
+      console.error("Error fetching notification count:", error);
+    }
+  };
 
   useEffect(() => {
     setRole(getUserRole());
     setAdminStatus(isAdmin());
     setIsLoaded(true);
+    
+    if (isAdmin() || role === ROLES.DOCTOR) {
+      fetchNotificationCount();
+      // Refresh count every 30 seconds
+      const interval = setInterval(fetchNotificationCount, 30000);
+      return () => clearInterval(interval);
+    }
   }, []);
 
   const getNavItems = () => {
@@ -51,7 +82,7 @@ export default function Sidebar({
               href: "/donors/requests",
               icon: "/images/icon/donorRequest.svg",
             },
-            { name: "Alerts", href: "/alerts", icon: "/images/icon/alert.svg" },
+            { name: "Alerts", href: "/alerts", icon: "/images/icon/alert.svg", hasNotifications: true },
             {
               name: "Centres/Doctors",
               href: "/centres",
@@ -177,6 +208,7 @@ export default function Sidebar({
               href: "/donors/allotted",
               icon: "/images/icon/donorhistory.svg",
             },
+            { name: "Alerts", href: "/alerts", icon: "/images/icon/alert.svg", hasNotifications: true },
           ],
         },
         {
@@ -266,7 +298,25 @@ export default function Sidebar({
   };
 
   const navItems = getNavItems();
-  const isActive = (href) => pathname === href;
+  const isActive = (href) => {
+    if (pathname === href) return true;
+    // Handle sub-routes for specific menu items - be more specific to avoid conflicts
+    if (href === '/donors/active' && (pathname.startsWith('/donors/add') || pathname.startsWith('/donors/active/'))) return true;
+    if (href === '/donors/requests' && pathname.startsWith('/donors/requests/')) return true;
+    if (href === '/donors/history' && pathname.startsWith('/donors/history/')) return true;
+    if (href === '/donors/allotted' && pathname.startsWith('/donors/allotted/')) return true;
+    if (href === '/donors/add' && pathname.startsWith('/donors/add/')) return true;
+    if (href === '/storage' && pathname.startsWith('/storage/')) return true;
+    if (href === '/alerts' && pathname.startsWith('/alerts/')) return true;
+    if (href === '/centres' && pathname.startsWith('/centres/')) return true;
+    if (href === '/users' && pathname.startsWith('/users/')) return true;
+    if (href === '/consent-forms' && pathname.startsWith('/consent-forms/')) return true;
+    if (href === '/dashboard' && pathname.startsWith('/dashboard/')) return true;
+    if (href === '/help' && pathname.startsWith('/help/')) return true;
+    if (href === '/settings' && pathname.startsWith('/settings/')) return true;
+    if (href === '/profile' && pathname.startsWith('/profile/')) return true;
+    return false;
+  };
 
   // Don't render until role is loaded
   if (!isLoaded) {
@@ -437,6 +487,11 @@ export default function Sidebar({
                           }`}
                         >
                           {item.name}
+                          {item.hasNotifications && unreadCount > 0 && (
+                            <span className="ml-2 inline-flex h-5 w-5 min-w-[20px] items-center justify-center rounded-full bg-white text-xs font-bold text-black border border-gray-300 leading-none">
+                              {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                          )}
                         </span>
                       </Link>
                       )}

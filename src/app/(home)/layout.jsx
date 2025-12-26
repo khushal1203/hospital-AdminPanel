@@ -31,7 +31,7 @@ function Header({ onMenuClick, onToggleCollapse }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-purple-600/20 bg-[#402575] shadow-sm">
+    <header className="sticky top-0 z-[20000] border-b border-purple-600/20 bg-[#402575] shadow-sm">
       <div
         className="flex items-center justify-between px-4"
         style={{ padding: "12px 11px 11px 11px" }}
@@ -87,17 +87,23 @@ function Header({ onMenuClick, onToggleCollapse }) {
                 <Image
                   src={(() => {
                     // Use doctorImage if profileImage is default or empty
-                    if (!user?.profileImage || user?.profileImage === "/images/user/user-03.png") {
+                    if (
+                      !user?.profileImage ||
+                      user?.profileImage === "/images/user/user-03.png"
+                    ) {
                       if (user?.doctorImage) {
                         return user.doctorImage;
                       }
                     }
-                    
+
                     // Use profileImage if it's not default
-                    if (user?.profileImage && user?.profileImage !== "/images/user/user-03.png") {
+                    if (
+                      user?.profileImage &&
+                      user?.profileImage !== "/images/user/user-03.png"
+                    ) {
                       return user.profileImage;
                     }
-                    
+
                     // Fallback to default
                     return "/images/user/user-03.png";
                   })()}
@@ -124,7 +130,7 @@ function Header({ onMenuClick, onToggleCollapse }) {
               />
             </button>
             {showUserMenu && (
-              <div className="animate-in slide-in-from-top-2 absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl ring-1 ring-black/5 duration-200">
+              <div className="animate-in slide-in-from-top-2 absolute right-0 z-[30000] mt-2 w-64 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl ring-1 ring-black/5 duration-200">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-[#402575] to-[#5B4B8A] px-4 py-4">
                   <div className="flex items-center gap-3">
@@ -132,17 +138,23 @@ function Header({ onMenuClick, onToggleCollapse }) {
                       <Image
                         src={(() => {
                           // Use doctorImage if profileImage is default or empty
-                          if (!user?.profileImage || user?.profileImage === "/images/user/user-03.png") {
+                          if (
+                            !user?.profileImage ||
+                            user?.profileImage === "/images/user/user-03.png"
+                          ) {
                             if (user?.doctorImage) {
                               return user.doctorImage;
                             }
                           }
-                          
+
                           // Use profileImage if it's not default
-                          if (user?.profileImage && user?.profileImage !== "/images/user/user-03.png") {
+                          if (
+                            user?.profileImage &&
+                            user?.profileImage !== "/images/user/user-03.png"
+                          ) {
                             return user.profileImage;
                           }
-                          
+
                           // Fallback to default
                           return "/images/user/user-03.png";
                         })()}
@@ -298,7 +310,7 @@ export default function DashboardLayout({ children }) {
             onMenuClick={() => setSidebarOpen(true)}
             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
           />
-          <main className={`scrollbar-hide flex-1 overflow-y-auto bg-white`}>
+          <main className={`flex-1 overflow-y-auto bg-white scrollbar-hide`}>
             {children}
           </main>
         </div>

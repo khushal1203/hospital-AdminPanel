@@ -9,71 +9,54 @@ import {
   MdWarning,
 } from "react-icons/md";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 export default function NotificationDropdown() {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Static notification data
-  const notifications = [
-    {
-      id: 1,
-      type: "donor_allotted",
-      title: "Donor Allotted",
-      message: "Sarah Johnson has been allotted to Dr. Smith",
-      time: "2 minutes ago",
-      icon: MdPersonAdd,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      isRead: false,
-    },
-    {
-      id: 2,
-      type: "document_uploaded",
-      title: "Document Uploaded",
-      message: "Blood report uploaded for donor Emma Wilson",
-      time: "15 minutes ago",
-      icon: MdAssignment,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      isRead: false,
-    },
-    {
-      id: 3,
-      type: "process_completed",
-      title: "OPU Process Completed",
-      message: "OPU process completed for donor Lisa Brown",
-      time: "1 hour ago",
-      icon: MdCheckCircle,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      isRead: true,
-    },
-    {
-      id: 4,
-      type: "consent_pending",
-      title: "Consent Form Pending",
-      message: "Consent form pending for donor Maria Garcia",
-      time: "2 hours ago",
-      icon: MdWarning,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      isRead: true,
-    },
-    {
-      id: 5,
-      type: "donor_registered",
-      title: "New Donor Registered",
-      message: "New oocyte donor registered by Dr. Johnson",
-      time: "3 hours ago",
-      icon: MdPersonAdd,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      isRead: true,
-    },
-  ];
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setNotifications(data.notifications);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case "doctor_request":
+        return { icon: MdPersonAdd, color: "text-blue-600", bgColor: "bg-blue-50" };
+      case "donor_allotted":
+        return { icon: MdPersonAdd, color: "text-green-600", bgColor: "bg-green-50" };
+      case "document_uploaded":
+        return { icon: MdAssignment, color: "text-purple-600", bgColor: "bg-purple-50" };
+      default:
+        return { icon: MdWarning, color: "text-orange-600", bgColor: "bg-orange-50" };
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -121,41 +104,52 @@ export default function NotificationDropdown() {
 
           {/* Notifications List */}
           <div className="scrollbar-hide max-h-96 overflow-y-auto">
-            {notifications.map((notification) => {
-              const Icon = notification.icon;
-              return (
-                <div
-                  key={notification.id}
-                  className={`cursor-pointer border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50 ${
-                    !notification.isRead ? "bg-blue-50/50" : ""
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`rounded-full p-2 ${notification.bgColor} flex-shrink-0`}
-                    >
-                      <Icon className={`h-4 w-4 ${notification.color}`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="truncate text-sm font-medium text-gray-900">
-                          {notification.title}
-                        </p>
-                        {!notification.isRead && (
-                          <div className="ml-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
-                        )}
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">
+                No notifications
+              </div>
+            ) : (
+              notifications.map((notification) => {
+                const iconData = getNotificationIcon(notification.type);
+                const Icon = iconData.icon;
+                return (
+                  <div
+                    key={notification._id}
+                    className={`cursor-pointer border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50 ${
+                      !notification.isRead ? "bg-blue-50/50" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`rounded-full p-2 ${iconData.bgColor} flex-shrink-0`}
+                      >
+                        <Icon className={`h-4 w-4 ${iconData.color}`} />
                       </div>
-                      <p className="mt-1 line-clamp-2 text-sm text-gray-600">
-                        {notification.message}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-400">
-                        {notification.time}
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="truncate text-sm font-medium text-gray-900">
+                            {notification.title}
+                          </p>
+                          {!notification.isRead && (
+                            <div className="ml-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                          )}
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-sm text-gray-600">
+                          {notification.message}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          {dayjs(notification.createdAt).fromNow()}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* Footer */}

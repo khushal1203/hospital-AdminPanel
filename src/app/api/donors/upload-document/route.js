@@ -2,10 +2,23 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/connectdb";
 import { Donor } from "@/modals/donorModal";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import jwt from "jsonwebtoken";
 
 export async function POST(request) {
   try {
     await connectDB();
+
+    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    let currentUserId = null;
+    
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        currentUserId = decoded.userId;
+      } catch (error) {
+        console.error("Token verification failed:", error);
+      }
+    }
 
     const formData = await request.formData();
     const file = formData.get("document");
@@ -13,7 +26,6 @@ export async function POST(request) {
     const sectionKey = formData.get("sectionKey");
     const index = Number(formData.get("index"));
     const reportName = formData.get("reportName");
-    const uploadedBy = formData.get("uploadedBy");
 
     if (!file || !donorId || !sectionKey || Number.isNaN(index)) {
       return NextResponse.json(
@@ -81,7 +93,7 @@ export async function POST(request) {
       reportName: finalReportName,
       documentName: file.name,
       filePath: fileUrl,
-      uploadBy: uploadedBy || "Current User",
+      uploadBy: currentUserId || "Unknown User",
       uploadDate: new Date(),
       hasFile: true,
       isUploaded: true,

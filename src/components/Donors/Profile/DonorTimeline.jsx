@@ -1,6 +1,6 @@
-import { MdCheckCircle, MdUpload, MdPrint, MdDescription, MdComment, MdClose } from "react-icons/md";
+import { MdCheckCircle, MdUpload, MdPrint, MdDescription, MdComment, MdClose, MdPersonAdd, MdLocalHospital, MdAssignment, MdSecurity, MdHealthAndSafety, MdMedicalServices } from "react-icons/md";
 import dayjs from "dayjs";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toast } from "@/utils/toast";
 
 const TimelineItem = ({
@@ -39,11 +39,32 @@ const TimelineItem = ({
 
   // Special icon for different timeline items
   const getTimelineIcon = () => {
+    if (title === "Case Registered") {
+      return <MdPersonAdd className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "Blood Report") {
+      return <MdMedicalServices className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "Allotted Donor") {
+      return <MdLocalHospital className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "Consent Form") {
+      return <MdAssignment className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "Affidavit Form") {
+      return <MdSecurity className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "Insurance Documents") {
+      return <MdHealthAndSafety className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
     if (title === "Allotment Documents") {
       return <MdDescription className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
     }
     if (title === "Allotment Remarks") {
       return <MdComment className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
+    }
+    if (title === "OPU Process") {
+      return <MdMedicalServices className={`h-3 w-3 ${isCompleted ? "text-purple-600" : "text-gray-400"}`} />;
     }
     return (
       <div
@@ -102,6 +123,19 @@ export default function DonorTimeline({ donor }) {
   const fileInputRefs = useRef({});
   const [showCaseDoneModal, setShowCaseDoneModal] = useState(false);
   const [markingCaseDone, setMarkingCaseDone] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Listen for donor updates
+  useEffect(() => {
+    const handleDonorUpdate = (event) => {
+      if (event.detail.donorId === donor._id) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('donorUpdated', handleDonorUpdate);
+    return () => window.removeEventListener('donorUpdated', handleDonorUpdate);
+  }, [donor._id]);
 
   const handleMarkCaseDone = async () => {
     setMarkingCaseDone(true);
@@ -303,7 +337,7 @@ export default function DonorTimeline({ donor }) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div key={refreshKey} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h3 className="mb-6 text-lg font-semibold text-gray-900">
         Donor Case Timeline
       </h3>
@@ -324,8 +358,9 @@ export default function DonorTimeline({ donor }) {
         <div className="mt-6 pt-4 border-t border-gray-100">
           <button
             onClick={() => setShowCaseDoneModal(true)}
-            className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+            className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
           >
+            <MdCheckCircle className="h-4 w-4" />
             Case Done
           </button>
         </div>
