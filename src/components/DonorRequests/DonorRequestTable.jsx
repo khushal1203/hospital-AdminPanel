@@ -339,9 +339,15 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                             if (isRequestCreator) {
                               if (request.isAlloted) {
                                 return (
-                                  <span className="px-4 py-2 text-sm font-semibold text-green-700 bg-green-100 rounded-lg">
-                                    Donor Allotted
-                                  </span>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      router.push(`/donors/allotted/${request._id}`);
+                                    }}
+                                    className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap"
+                                  >
+                                    Donor Info
+                                  </button>
                                 );
                               } else {
                                 return (
@@ -357,7 +363,7 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                             
                             // For admins viewing others' requests
                             if (isAdmin && !isRequestCreator) {
-                              if (request.isAlloted) {
+                              if (request.isAlloted && request.status !== "accepted") {
                                 return (
                                   <button 
                                     onClick={(e) => handleCancelAllotment(request._id, e)}
@@ -365,6 +371,12 @@ export default function DonorRequestTable({ requests, currentPage, totalItems, i
                                   >
                                     Cancel Allotment
                                   </button>
+                                );
+                              } else if (request.status === "accepted") {
+                                return (
+                                  <span className="px-4 py-2 text-sm font-semibold text-green-700 bg-green-100 rounded-lg">
+                                    Donor Accepted
+                                  </span>
                                 );
                               } else {
                                 return (

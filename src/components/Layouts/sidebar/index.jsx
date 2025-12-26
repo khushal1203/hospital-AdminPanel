@@ -168,15 +168,25 @@ export default function Sidebar({
               icon: "/images/icon/donorRequest.svg",
             },
             {
+              name: "Donors/Patients",
+              href: "/donors/history",
+              icon: "/images/icon/donorPatines.svg",
+            },
+            {
               name: "Alloted Donors",
               href: "/donors/allotted",
               icon: "/images/icon/donorhistory.svg",
             },
-            // {
-            //   name: "Add Donor",
-            //   href: "/donors/add",
-            //   icon: "/images/icon/addDonor.svg",
-            // },
+          ],
+        },
+        {
+          section: "SEMEN",
+          items: [
+            {
+              name: "Semen Storage",
+              href: "/storage",
+              icon: "/images/icon/seemansDonor.svg",
+            },
           ],
         },
         {

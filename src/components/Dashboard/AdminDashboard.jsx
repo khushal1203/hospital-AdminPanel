@@ -38,6 +38,8 @@ export default function AdminDashboard({ userRole }) {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const userId = user._id || user.id;
         if (!token) return;
 
         // Fetch stats
@@ -49,8 +51,13 @@ export default function AdminDashboard({ userRole }) {
           setStats(statsData.stats);
         }
 
-        // Fetch all donors
-        const donorsRes = await fetch(`${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?date=${selectedDate}`, {
+        // Fetch donors based on user role
+        let donorsUrl = `${process.env.NEXT_PUBLIC_API_END_POINT}/donors/all?date=${selectedDate}`;
+        if (userRole === 'doctor') {
+          donorsUrl += `&createdBy=${userId}`;
+        }
+        
+        const donorsRes = await fetch(donorsUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const donorsData = await donorsRes.json();
@@ -102,7 +109,7 @@ export default function AdminDashboard({ userRole }) {
     };
 
     fetchData();
-  }, [selectedDate]);
+  }, [selectedDate, userRole]);
 
   if (loading) {
     return <LoadingSpinner message="    " />;

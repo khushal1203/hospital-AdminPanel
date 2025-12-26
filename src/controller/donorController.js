@@ -1,4 +1,5 @@
 import { Donor } from "@/modals/donorModal";
+import mongoose from "mongoose";
 
 /**
  * Create a new donor
@@ -241,6 +242,26 @@ export const createDonorController = async (body, userId) => {
           isUploaded: false,
         },
       ],
+      allotmentDocuments: [
+        {
+          reportName: "Donor Agreement",
+          documentName: null,
+          filePath: null,
+          uploadBy: null,
+          uploadDate: null,
+          hasFile: false,
+          isUploaded: false,
+        },
+        {
+          reportName: "Hospital Evaluation Report",
+          documentName: null,
+          filePath: null,
+          uploadBy: null,
+          uploadDate: null,
+          hasFile: false,
+          isUploaded: false,
+        },
+      ],
     },
 
     // Always include nested objects (even if empty)
@@ -312,7 +333,7 @@ const isDonorComplete = (donor) => {
  * Get all donors with optional filters
  */
 export const getAllDonorsController = async (filters = {}) => {
-  const { donorType, status, search, skip = 0, limit, createdBy } = filters;
+  const { donorType, status, search, skip = 0, limit, createdBy, excludeCaseDone, isCaseDone } = filters;
 
   let query = {};
 
@@ -324,21 +345,53 @@ export const getAllDonorsController = async (filters = {}) => {
     query.status = status;
   }
 
+  if (excludeCaseDone) {
+    query.isCaseDone = { $ne: true };
+  }
+
+  if (isCaseDone !== undefined) {
+    query.isCaseDone = isCaseDone;
+  }
+
+  // Handle createdBy filter first
   if (createdBy) {
+    const userObjectId = new mongoose.Types.ObjectId(createdBy);
     query.$or = [
-      { createdBy: createdBy },
-      { allottedBy: createdBy }
+      { createdBy: userObjectId },
+      { allottedBy: userObjectId }
     ];
   }
 
+  // Handle search - combine with existing $or if present
   if (search) {
-    query.$or = [
-      { fullName: { $regex: search, $options: "i" } },
-      { donorId: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
-    ];
+    const searchQuery = {
+      $or: [
+        { fullName: { $regex: search, $options: "i" } },
+        { donorId: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ]
+    };
+    
+    if (createdBy) {
+      // Use $and to combine both conditions
+      const userObjectId = new mongoose.Types.ObjectId(createdBy);
+      query = {
+        ...query,
+        $and: [
+          {
+            $or: [
+              { createdBy: userObjectId },
+              { allottedBy: userObjectId }
+            ]
+          },
+          searchQuery
+        ]
+      };
+      delete query.$or; // Remove the original $or since we're using $and now
+    } else {
+      query = { ...query, ...searchQuery };
+    }
   }
-
   const total = await Donor.countDocuments(query);
 
   let donorQuery = Donor.find(query).sort({ createdAt: -1 }).select("-__v");
@@ -394,7 +447,24 @@ export const getDonorByIdController = async (donorId) => {
     throw new Error("Invalid donor ID format");
   }
 
-  const donor = await Donor.findById(donorId).select("-__v");
+  const donor = await Donor.findById(donorId)
+    .populate({
+      path: "documents.donorDocuments.uploadBy",
+      select: "fullName name",
+    })
+    .populate({
+      path: "documents.reports.uploadBy",
+      select: "fullName name",
+    })
+    .populate({
+      path: "documents.otherDocuments.uploadBy",
+      select: "fullName name",
+    })
+    .populate({
+      path: "documents.allotmentDocuments.uploadBy",
+      select: "fullName name",
+    })
+    .select("-__v");
 
   if (!donor) {
     throw new Error("Donor not found");
@@ -588,5 +658,30 @@ export const getPendingBloodCollectionsController = async () => {
   return {
     success: true,
     donors,
+  };
+};
+
+/**
+ * Save donor remarks
+ */
+export const saveDonorRemarksController = async (donorId, remarksData) => {
+  const donor = await Donor.findByIdAndUpdate(
+    donorId,
+    {
+      $set: {
+        "allotmentRemarks": remarksData
+      }
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!donor) {
+    throw new Error("Donor not found");
+  }
+
+  return {
+    success: true,
+    message: "Remarks saved successfully",
+    donor,
   };
 };

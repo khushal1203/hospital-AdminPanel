@@ -13,6 +13,7 @@ export async function POST(request) {
     const sectionKey = formData.get("sectionKey");
     const index = Number(formData.get("index"));
     const reportName = formData.get("reportName");
+    const uploadedBy = formData.get("uploadedBy");
 
     if (!file || !donorId || !sectionKey || Number.isNaN(index)) {
       return NextResponse.json(
@@ -80,7 +81,7 @@ export async function POST(request) {
       reportName: finalReportName,
       documentName: file.name,
       filePath: fileUrl,
-      uploadBy: "Current User",
+      uploadBy: uploadedBy || "Current User",
       uploadDate: new Date(),
       hasFile: true,
       isUploaded: true,

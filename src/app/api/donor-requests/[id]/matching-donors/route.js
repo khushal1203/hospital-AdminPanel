@@ -28,7 +28,11 @@ export async function GET(request, { params }) {
 
     // Build matching criteria with flexible range matching
     const matchingCriteria = {
-      status: { $in: ["active", "pending", "allotted"] }, // Include allotted donors too
+      status: { $in: ["active", "pending"] }, // Exclude allotted donors
+      $or: [
+        { isAllotted: { $exists: false } },
+        { isAllotted: false }
+      ]
     };
 
     // Strict matches
@@ -91,7 +95,11 @@ export async function GET(request, { params }) {
     // If no exact matches found, try with relaxed criteria (only essential matches)
     if (matchingDonors.length === 0) {
       const relaxedCriteria = {
-        status: { $in: ["active", "pending", "allotted"] },
+        status: { $in: ["active", "pending"] }, // Exclude allotted donors
+        $or: [
+          { isAllotted: { $exists: false } },
+          { isAllotted: false }
+        ]
       };
       
       // Only match essential criteria

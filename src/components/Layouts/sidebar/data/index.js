@@ -83,6 +83,12 @@ const DOCTOR_NAV = [
         items: [],
       },
       {
+        title: "Allotted Donors",
+        url: "/donors/allotted",
+        icon: FaUsers,
+        items: [],
+      },
+      {
         title: "Active Donors",
         url: "/donors/active",
         icon: MdPeople,
@@ -92,6 +98,12 @@ const DOCTOR_NAV = [
         title: "Donors History",
         url: "/donors/history",
         icon: FiUser,
+        items: [],
+      },
+      {
+        title: "Semen Storage",
+        url: "/storage",
+        icon: MdStorage,
         items: [],
       },
       {
